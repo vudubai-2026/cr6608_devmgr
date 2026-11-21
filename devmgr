@@ -3,519 +3,629 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Xiaomi CR6608 - Quản lý thiết bị</title>
+  <meta name="theme-color" content="#F3F5EC" id="meta-theme">
+  <title>CR6608 · PIXEL DEVMGR v5.0</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
+    /* ==========================================================================
+       GOOGLE PIXEL + RETRO PIXEL FONT DESIGN SYSTEM (ZERO EXTERNAL DEPS)
+       ========================================================================== */
     :root {
-      --bg: #f3f4f6;
-      --card: #ffffff;
-      --card-sub: #f9fafb;
-      --text: #111827;
-      --text-muted: #6b7280;
-      --border: #e5e7eb;
-      --primary: #2563eb;
-      --primary-bg: #eff6ff;
-      --danger: #dc2626;
-      --danger-bg: #fef2f2;
-      --success: #16a34a;
-      --success-bg: #f0fdf4;
-      --warn: #d97706;
-      --warn-bg: #fffbeb;
-      --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      /* Crisp geometric pixel-style font stack using built-in OS fonts */
+      --font-px: ui-monospace, "Cascadia Mono", "Consolas", "Courier New", monospace;
+      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+      /* Google Pixel Sage / Material You Dynamic Palette (Light) */
+      --bg: #F3F5EC;
+      --surf: #FFFFFF;
+      --surf-2: #E8ECE0;
+      --surf-3: #DCE2D1;
+      --text: #141812;
+      --text-dim: #4E5649;
+      --border: #141812;
+      --border-soft: #B8C2AE;
+
+      --accent: #2E6B27;
+      --accent-fg: #FFFFFF;
+      --accent-soft: #C8F0BE;
+      --accent-soft-fg: #0A2106;
+
+      --warn: #B25E00;
+      --warn-soft: #FFE0B5;
+      --danger: #BA1A1A;
+      --danger-soft: #FFDAD6;
+      --info: #005AC1;
+      --info-soft: #D8E2FF;
+
+      --px-shadow: 3px 3px 0px #141812;
+      --px-shadow-sm: 2px 2px 0px #141812;
     }
 
     [data-theme="dark"] {
-      --bg: #111827;
-      --card: #1f2937;
-      --card-sub: #18202c;
-      --text: #f9fafb;
-      --text-muted: #9ca3af;
-      --border: #374151;
-      --primary: #60a5fa;
-      --primary-bg: #1e3a8a;
-      --danger: #f87171;
-      --danger-bg: #7f1d1d;
-      --success: #4ade80;
-      --success-bg: #14532d;
-      --warn: #fbbf24;
-      --warn-bg: #78350f;
+      /* Google Pixel Dark OLED + Phosphor Sage */
+      --bg: #10130E;
+      --surf: #181D15;
+      --surf-2: #22291E;
+      --surf-3: #2C3527;
+      --text: #E5ECE0;
+      --text-dim: #9DA896;
+      --border: #8FA184;
+      --border-soft: #3B4635;
+
+      --accent: #8CD97E;
+      --accent-fg: #072104;
+      --accent-soft: #1B4216;
+      --accent-soft-fg: #C8F0BE;
+
+      --warn: #FFB95C;
+      --warn-soft: #4A2800;
+      --danger: #FFB4AB;
+      --danger-soft: #690005;
+      --info: #ADC6FF;
+      --info-soft: #00306C;
+
+      --px-shadow: 3px 3px 0px #000000;
+      --px-shadow-sm: 2px 2px 0px #000000;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
     }
 
     body {
-      font-family: var(--font);
-      background: var(--bg);
+      font-family: var(--font-ui);
+      background-color: var(--bg);
+      /* Subtle Pixel Dot Matrix Background */
+      background-image: radial-gradient(var(--border-soft) 1px, transparent 1px);
+      background-size: 16px 16px;
       color: var(--text);
       line-height: 1.4;
       font-size: 14px;
-      padding-bottom: calc(76px + env(safe-area-inset-bottom));
+      padding-bottom: calc(82px + env(safe-area-inset-bottom));
+      min-height: 100vh;
+    }
+
+    .px-font {
+      font-family: var(--font-px);
+      letter-spacing: -0.02em;
+      font-variant-numeric: tabular-nums;
     }
 
     .container {
-      max-width: 960px;
+      max-width: 980px;
       margin: 0 auto;
       padding: 0 12px;
     }
 
-    /* 1. HEADER & PURPOSEFUL TOP BAR */
-    .header {
-      position: sticky; top: 0; z-index: 30;
-      background: var(--card);
-      border-bottom: 1px solid var(--border);
+    /* ==========================================================================
+       1. PIXEL TOP APP BAR
+       ========================================================================== */
+    .top-bar {
+      position: sticky; top: 0; z-index: 40;
+      background: var(--bg);
+      border-bottom: 2px solid var(--border);
       padding: 10px 12px;
-      margin: 0 -12px 10px -12px;
+      margin: 0 -12px 12px -12px;
       display: flex; justify-content: space-between; align-items: center; gap: 8px;
     }
-    .header-left { display: flex; align-items: center; gap: 8px; min-width: 0; }
-    .header-title { font-size: 16px; font-weight: 700; white-space: nowrap; }
-    .status-dot {
-      display: inline-flex; align-items: center; gap: 4px;
-      font-size: 11px; font-weight: 600; padding: 2px 7px; border-radius: 4px;
-      background: var(--success-bg); color: var(--success);
+    .brand { display: flex; align-items: center; gap: 8px; min-width: 0; }
+    .px-logo {
+      width: 30px; height: 30px; background: var(--accent); color: var(--accent-fg);
+      border: 2px solid var(--border); box-shadow: var(--px-shadow-sm);
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-px); font-weight: 900; font-size: 14px; flex-shrink: 0;
     }
-    .status-dot.syncing { background: var(--primary-bg); color: var(--primary); }
-    .status-dot.err { background: var(--danger-bg); color: var(--danger); }
+    .brand-title {
+      font-family: var(--font-px); font-size: 15px; font-weight: 900;
+      text-transform: uppercase; letter-spacing: 0.02em; white-space: nowrap;
+    }
+    .live-pill {
+      font-family: var(--font-px); font-size: 10px; font-weight: 800;
+      padding: 2px 6px; border: 1.5px solid var(--border);
+      background: var(--accent-soft); color: var(--accent-soft-fg);
+      text-transform: uppercase; white-space: nowrap;
+    }
+    .live-pill.syncing { background: var(--info-soft); color: var(--info); }
+    .live-pill.err { background: var(--danger-soft); color: var(--danger); }
 
-    .header-actions { display: flex; align-items: center; gap: 6px; }
-    .btn-top {
-      height: 32px; padding: 0 10px; border-radius: 6px;
-      border: 1px solid var(--border); background: var(--card-sub); color: var(--text);
-      font-size: 12px; font-weight: 600; cursor: pointer;
-      display: inline-flex; align-items: center; justify-content: center; gap: 4px;
+    .top-btns { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+    .px-btn {
+      height: 32px; padding: 0 9px;
+      background: var(--surf); color: var(--text);
+      border: 2px solid var(--border); box-shadow: var(--px-shadow-sm);
+      font-family: var(--font-px); font-size: 11px; font-weight: 800;
+      cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 4px;
+      text-transform: uppercase;
     }
-    .btn-top:active { opacity: 0.75; }
+    .px-btn:active { transform: translate(2px, 2px); box-shadow: none; }
+    .px-btn.accent { background: var(--accent); color: var(--accent-fg); }
+    .px-btn.danger { background: var(--danger); color: #FFF; }
+    .px-btn.soft { background: var(--surf-2); }
 
-    /* 2. OVERVIEW KPI & SYSTEM TELEMETRY */
-    .overview {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 10px 12px;
-      margin-bottom: 10px;
-      display: flex; flex-direction: column; gap: 8px;
+    /* Error Banner */
+    .err-banner {
+      background: var(--danger-soft); color: var(--danger);
+      border: 2px solid var(--danger); box-shadow: var(--px-shadow-sm);
+      padding: 8px 10px; margin-bottom: 12px;
+      display: none; justify-content: space-between; align-items: center; gap: 8px;
+      font-family: var(--font-px); font-size: 11.5px; font-weight: 700;
     }
-    .kpi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-    .kpi-box {
-      background: var(--card-sub); border: 1px solid var(--border);
-      border-radius: 6px; padding: 6px 8px;
-    }
-    .kpi-lbl { font-size: 11px; color: var(--text-muted); font-weight: 600; }
-    .kpi-val { font-family: var(--mono); font-size: 13px; font-weight: 700; margin-top: 1px; }
 
-    .sys-bar {
+    /* ==========================================================================
+       2. PIXEL AT-A-GLANCE WIDGET (GOOGLE PIXEL STYLE + TELEMETRY)
+       ========================================================================== */
+    .pixel-widget {
+      background: var(--surf);
+      border: 2px solid var(--border);
+      box-shadow: var(--px-shadow);
+      padding: 12px;
+      margin-bottom: 12px;
+      display: flex; flex-direction: column; gap: 10px;
+    }
+    .widget-head {
       display: flex; justify-content: space-between; align-items: center;
-      padding-top: 6px; border-top: 1px solid var(--border);
-      font-size: 11px; color: var(--text-muted); font-family: var(--mono);
+      font-family: var(--font-px); font-size: 11px; font-weight: 800; color: var(--text-dim);
+      text-transform: uppercase;
     }
-    .top3-bar {
+    .kpi-row {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+    }
+    .kpi-cell {
+      background: var(--surf-2); border: 1.5px solid var(--border);
+      padding: 7px 8px; display: flex; flex-direction: column; gap: 2px;
+    }
+    .kpi-k { font-family: var(--font-px); font-size: 10px; font-weight: 700; color: var(--text-dim); text-transform: uppercase; }
+    .kpi-v { font-family: var(--font-px); font-size: 13.5px; font-weight: 900; }
+    .kpi-v.rx { color: var(--info); }
+    .kpi-v.tx { color: var(--accent); }
+
+    /* Hardware System Health Bars */
+    .sys-strip {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px;
+      padding-top: 8px; border-top: 1.5px dashed var(--border-soft);
+      font-family: var(--font-px); font-size: 11px;
+    }
+    .sys-box { display: flex; flex-direction: column; gap: 2px; }
+    .sys-lbl { font-size: 9.5px; color: var(--text-dim); font-weight: 700; }
+    .sys-val { font-weight: 900; }
+    .px-meter {
+      height: 6px; background: var(--surf-3); border: 1px solid var(--border);
+      margin-top: 2px; overflow: hidden;
+    }
+    .px-meter > i { display: block; height: 100%; background: var(--accent); font-style: normal; }
+
+    /* Top 3 Consumers */
+    .top3-strip {
       display: flex; align-items: center; gap: 6px; overflow-x: auto; scrollbar-width: none;
-      padding-top: 6px; border-top: 1px solid var(--border); font-size: 11px;
+      padding-top: 8px; border-top: 1.5px dashed var(--border-soft);
     }
-    .top3-bar::-webkit-scrollbar { display: none; }
-    .top3-tag {
-      padding: 2px 7px; border-radius: 4px; border: 1px solid var(--border);
-      background: var(--card-sub); white-space: nowrap; cursor: pointer;
-      display: inline-flex; align-items: center; gap: 4px; color: var(--text);
+    .top3-strip::-webkit-scrollbar { display: none; }
+    .top3-chip {
+      background: var(--surf-2); border: 1.5px solid var(--border);
+      padding: 3px 8px; font-family: var(--font-px); font-size: 11px;
+      display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; cursor: pointer;
+      color: var(--text);
     }
-    .top3-tag b { font-weight: 600; max-width: 85px; overflow: hidden; text-overflow: ellipsis; }
-    .top3-tag span { font-family: var(--mono); color: var(--primary); font-weight: 700; }
+    .top3-chip b { max-width: 85px; overflow: hidden; text-overflow: ellipsis; }
+    .top3-chip span { color: var(--info); font-weight: 900; }
 
-    /* 3. SEARCH, FILTER & SORT CONTROLS */
-    .controls { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
-    .search-wrap { position: relative; display: flex; align-items: center; }
-    .search-input {
-      width: 100%; height: 38px; padding: 0 32px 0 12px;
-      border-radius: 6px; border: 1px solid var(--border);
-      background: var(--card); color: var(--text); font-size: 13px; outline: none;
+    /* ==========================================================================
+       3. PIXEL SEARCH, FILTER & SORT BAR
+       ========================================================================== */
+    .controls { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+    .search-box {
+      display: flex; align-items: center; background: var(--surf);
+      border: 2px solid var(--border); box-shadow: var(--px-shadow-sm);
+      height: 40px; padding: 0 10px; gap: 8px;
     }
-    .search-input:focus { border-color: var(--primary); }
-    .search-clear {
-      position: absolute; right: 6px; width: 24px; height: 24px;
-      border: none; background: transparent; color: var(--text-muted);
-      cursor: pointer; display: none; font-size: 13px;
+    .search-box input {
+      border: none; background: transparent; outline: none; width: 100%;
+      color: var(--text); font-family: var(--font-px); font-size: 12.5px; font-weight: 700;
     }
-
-    .filter-row {
-      display: flex; gap: 5px; overflow-x: auto; scrollbar-width: none; align-items: center;
+    .chip-scroll {
+      display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; align-items: center; padding-bottom: 2px;
     }
-    .filter-row::-webkit-scrollbar { display: none; }
-    .pill {
-      height: 28px; padding: 0 9px; border-radius: 5px;
-      border: 1px solid var(--border); background: var(--card); color: var(--text-muted);
-      font-size: 12px; font-weight: 600; white-space: nowrap; cursor: pointer;
+    .chip-scroll::-webkit-scrollbar { display: none; }
+    .px-chip {
+      height: 28px; padding: 0 9px;
+      background: var(--surf); color: var(--text-dim);
+      border: 1.5px solid var(--border);
+      font-family: var(--font-px); font-size: 11px; font-weight: 800;
+      white-space: nowrap; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;
     }
-    .pill.active {
-      background: var(--primary); color: #ffffff; border-color: var(--primary);
+    .px-chip.active {
+      background: var(--accent-soft); color: var(--accent-soft-fg);
+      box-shadow: var(--px-shadow-sm);
     }
-    .sep { width: 1px; height: 16px; background: var(--border); flex-shrink: 0; }
-
-    .err-box {
-      background: var(--danger-bg); color: var(--danger); border: 1px solid var(--danger);
-      border-radius: 6px; padding: 8px 12px; margin-bottom: 10px;
-      display: none; justify-content: space-between; align-items: center; font-size: 12px; font-weight: 600;
+    .px-chip.sort.active {
+      background: var(--info-soft); color: var(--info);
     }
 
-    /* 4. DEVICE LIST & PURPOSEFUL CARD LAYOUT */
-    .device-grid {
-      display: grid; grid-template-columns: 1fr; gap: 8px;
+    /* ==========================================================================
+       4. DEVICE CARDS (PIXEL BLOCK GRID + TACTILE CONTROLS)
+       ========================================================================== */
+    .grid {
+      display: grid; grid-template-columns: 1fr; gap: 10px;
     }
-    @media (min-width: 680px) { .device-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (min-width: 680px) { .grid { grid-template-columns: repeat(2, 1fr); } }
 
     .card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 10px 12px;
-      display: flex; flex-direction: column; gap: 8px;
-      contain: content; cursor: pointer; user-select: none;
+      background: var(--surf);
+      border: 2px solid var(--border);
+      box-shadow: var(--px-shadow);
+      padding: 11px 12px;
+      display: flex; flex-direction: column; gap: 9px;
+      contain: content; cursor: pointer; user-select: none; position: relative;
     }
-    .card.offline { opacity: 0.68; background: var(--card-sub); }
-    .card.pinned { border-left: 3px solid var(--primary); }
-    .card.selected { border-color: var(--primary); background: var(--primary-bg); }
+    .card.offline { opacity: 0.72; background: var(--surf-2); box-shadow: none; }
+    .card.pinned { border-top: 5px solid var(--accent); }
+    .card.selected { background: var(--accent-soft); }
 
-    /* Row 1: Identity + Block Switch */
-    .c-row1 { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
-    .c-id { display: flex; align-items: center; gap: 9px; min-width: 0; flex: 1; }
-    .chk-sel {
-      width: 18px; height: 18px; border-radius: 4px; border: 1.5px solid var(--primary);
+    .c-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+    .c-left { display: flex; align-items: center; gap: 9px; min-width: 0; flex: 1; }
+
+    .sel-box {
+      width: 20px; height: 20px; border: 2px solid var(--border); background: var(--surf);
       display: none; align-items: center; justify-content: center;
-      font-size: 11px; font-weight: 800; flex-shrink: 0; background: var(--card); color: var(--primary);
+      font-family: var(--font-px); font-weight: 900; font-size: 12px; flex-shrink: 0;
     }
-    .select-mode .chk-sel { display: flex; }
-    .card.selected .chk-sel { background: var(--primary); color: #fff; }
+    .select-mode .sel-box { display: flex; }
+    .card.selected .sel-box { background: var(--accent); color: var(--accent-fg); }
 
-    .ico-btn {
-      width: 36px; height: 36px; border-radius: 6px;
-      border: 1px solid var(--border); background: var(--card-sub);
-      font-size: 18px; display: flex; align-items: center; justify-content: center;
+    .ico-tile {
+      width: 40px; height: 40px;
+      background: var(--surf-2); border: 2px solid var(--border); box-shadow: var(--px-shadow-sm);
+      font-size: 20px; display: flex; align-items: center; justify-content: center;
       cursor: pointer; flex-shrink: 0; position: relative;
     }
-    .pin-badge {
-      position: absolute; top: -5px; left: -5px; font-size: 10px;
-      display: none;
+    .ico-tile:active { transform: translate(2px, 2px); box-shadow: none; }
+    .pin-flag {
+      position: absolute; top: -6px; left: -6px; font-size: 11px;
+      background: var(--accent); color: var(--accent-fg); border: 1.5px solid var(--border);
+      padding: 0 3px; display: none;
     }
-    .card.pinned .pin-badge { display: block; }
+    .card.pinned .pin-flag { display: block; }
 
-    .c-names { display: flex; flex-direction: column; min-width: 0; flex: 1; }
-    .c-title-wrap { display: flex; align-items: center; gap: 4px; }
+    .c-info { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+    .c-name-row { display: flex; align-items: center; gap: 4px; }
     .c-name {
-      font-size: 14px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      font-size: 14.5px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
-    .btn-rename {
-      border: none; background: transparent; color: var(--text-muted);
-      font-size: 13px; padding: 2px 4px; cursor: pointer;
+    .btn-pen {
+      border: none; background: transparent; color: var(--text-dim);
+      font-family: var(--font-px); font-size: 13px; padding: 2px 4px; cursor: pointer;
     }
-    .c-sub {
-      font-size: 11.5px; color: var(--text-muted);
+    .c-meta {
+      font-family: var(--font-px); font-size: 11px; color: var(--text-dim);
       display: flex; align-items: center; gap: 5px;
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
 
-    /* Compact Toggle Switch */
-    .sw-box { display: flex; flex-direction: column; align-items: center; gap: 2px; flex-shrink: 0; }
-    .sw { position: relative; display: inline-block; width: 40px; height: 22px; }
-    .sw input { opacity: 0; width: 0; height: 0; }
-    .sw-slider {
-      position: absolute; inset: 0; background: #cbd5e1; border-radius: 22px;
-      cursor: pointer; transition: background 0.15s;
+    /* Pixel Block Switch */
+    .sw-wrap { display: flex; flex-direction: column; align-items: center; gap: 2px; flex-shrink: 0; }
+    .px-sw { position: relative; display: inline-block; width: 44px; height: 24px; }
+    .px-sw input { opacity: 0; width: 0; height: 0; }
+    .px-track {
+      position: absolute; inset: 0; background: var(--surf-3);
+      border: 2px solid var(--border); cursor: pointer;
     }
-    [data-theme="dark"] .sw-slider { background: #4b5563; }
-    .sw-slider::before {
-      content: ""; position: absolute; width: 16px; height: 16px; left: 3px; bottom: 3px;
-      background: #ffffff; border-radius: 50%; transition: transform 0.15s;
+    .px-track::before {
+      content: ""; position: absolute; width: 14px; height: 14px; left: 3px; top: 3px;
+      background: var(--text-dim); border: 1.5px solid var(--border);
+      transition: transform 0.12s steps(2);
     }
-    .sw input:checked + .sw-slider { background: var(--danger); }
-    .sw input:checked + .sw-slider::before { transform: translateX(18px); }
-    .sw-lbl { font-size: 9.5px; font-weight: 700; color: var(--text-muted); }
+    .px-sw input:checked + .px-track { background: var(--danger); }
+    .px-sw input:checked + .px-track::before {
+      transform: translateX(20px); background: #FFFFFF;
+    }
+    .sw-txt { font-family: var(--font-px); font-size: 9px; font-weight: 900; color: var(--text-dim); }
 
     /* Tags */
-    .c-tags { display: flex; gap: 4px; flex-wrap: wrap; }
+    .tags { display: flex; gap: 4px; flex-wrap: wrap; }
     .tag {
-      font-size: 10.5px; font-weight: 600; padding: 1px 6px; border-radius: 4px;
-      background: var(--card-sub); border: 1px solid var(--border); color: var(--text-muted);
+      font-family: var(--font-px); font-size: 10px; font-weight: 800;
+      padding: 1px 6px; border: 1.5px solid var(--border);
+      background: var(--surf-2); color: var(--text); text-transform: uppercase;
     }
-    .tag.grp { background: var(--primary-bg); color: var(--primary); border-color: transparent; }
-    .tag.qos { background: var(--warn-bg); color: var(--warn); border-color: transparent; }
-    .tag.blk { background: var(--danger-bg); color: var(--danger); border-color: transparent; }
-    .tag.new { background: var(--danger); color: #ffffff; border-color: transparent; }
+    .tag.grp { background: var(--info-soft); color: var(--info); }
+    .tag.qos { background: var(--warn-soft); color: var(--warn); }
+    .tag.blk { background: var(--danger-soft); color: var(--danger); }
+    .tag.new { background: var(--accent); color: var(--accent-fg); }
 
-    /* RSSI Bars */
-    .rssi { display: inline-flex; align-items: flex-end; gap: 1.5px; height: 10px; }
-    .rssi i { width: 2.5px; background: var(--border); font-style: normal; }
-    .rssi i:nth-child(1) { height: 30%; } .rssi i:nth-child(2) { height: 55%; }
-    .rssi i:nth-child(3) { height: 80%; } .rssi i:nth-child(4) { height: 100%; }
+    /* Pixel RSSI Bars */
+    .rssi { display: inline-flex; align-items: flex-end; gap: 2px; height: 11px; }
+    .rssi i { width: 3px; background: var(--border-soft); font-style: normal; }
+    .rssi i:nth-child(1) { height: 25%; } .rssi i:nth-child(2) { height: 50%; }
+    .rssi i:nth-child(3) { height: 75%; } .rssi i:nth-child(4) { height: 100%; }
     .rssi[data-l="1"] i:nth-child(1) { background: var(--danger); }
     .rssi[data-l="2"] i:nth-child(-n+2) { background: var(--warn); }
-    .rssi[data-l="3"] i:nth-child(-n+3), .rssi[data-l="4"] i { background: var(--success); }
+    .rssi[data-l="3"] i:nth-child(-n+3), .rssi[data-l="4"] i { background: var(--accent); }
 
-    /* Row 2: Network Telemetry (IP/MAC + Speed + Sparkline) */
-    .c-net {
-      background: var(--card-sub); border: 1px solid var(--border); border-radius: 6px;
+    /* Telemetry Strip (IP/MAC + Speed + Pixel Sparkline) */
+    .net-box {
+      background: var(--surf-2); border: 1.5px solid var(--border);
       padding: 6px 8px; display: flex; justify-content: space-between; align-items: center; gap: 8px;
     }
-    .net-addrs { display: flex; flex-direction: column; gap: 2px; font-family: var(--mono); font-size: 11.5px; min-width: 0; }
-    .copy-link {
+    .addrs { display: flex; flex-direction: column; gap: 2px; font-family: var(--font-px); font-size: 11px; min-width: 0; }
+    .cp-btn {
       border: none; background: transparent; padding: 0; text-align: left;
       color: var(--text); font-family: inherit; font-size: inherit; cursor: pointer;
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
-    .copy-link span { color: var(--text-muted); font-size: 10.5px; }
+    .cp-btn span { color: var(--text-dim); font-size: 10px; }
 
-    .net-spd { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-    .spd-col { display: flex; flex-direction: column; align-items: flex-end; font-family: var(--mono); font-size: 11px; font-weight: 700; }
-    .spd-rx { color: var(--primary); }
-    .spd-tx { color: var(--success); }
-    .spark { width: 52px; height: 22px; display: block; }
-    .spark polyline { fill: none; stroke: var(--primary); stroke-width: 1.6; }
+    .spd-box { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+    .spd-nums { display: flex; flex-direction: column; align-items: flex-end; font-family: var(--font-px); font-size: 11px; font-weight: 900; }
+    .spd-d { color: var(--info); }
+    .spd-u { color: var(--accent); }
+    .spark { width: 54px; height: 22px; display: block; }
+    .spark polyline { fill: none; stroke: var(--accent); stroke-width: 2; shape-rendering: crispEdges; }
 
-    /* Row 3: Purposeful Action Buttons */
-    .c-acts { display: flex; justify-content: space-between; align-items: center; gap: 6px; }
-    .act-left { display: flex; gap: 5px; flex-wrap: wrap; }
-    .btn-act {
-      height: 28px; padding: 0 8px; border-radius: 5px;
-      border: 1px solid var(--border); background: var(--card); color: var(--text);
-      font-size: 11.5px; font-weight: 600; cursor: pointer;
+    /* Card Action Row */
+    .c-foot { display: flex; justify-content: space-between; align-items: center; gap: 6px; }
+    .foot-l { display: flex; gap: 5px; flex-wrap: wrap; }
+    .act-btn {
+      height: 27px; padding: 0 7px;
+      background: var(--surf); color: var(--text);
+      border: 1.5px solid var(--border); box-shadow: var(--px-shadow-sm);
+      font-family: var(--font-px); font-size: 10.5px; font-weight: 800; cursor: pointer;
+      text-transform: uppercase;
     }
-    .btn-act:active { opacity: 0.7; }
-    .btn-act.primary { background: var(--primary-bg); color: var(--primary); border-color: transparent; }
-    .btn-act.danger { background: var(--danger-bg); color: var(--danger); border-color: transparent; }
+    .act-btn:active { transform: translate(1px, 1px); box-shadow: none; }
+    .act-btn.info { background: var(--info-soft); color: var(--info); }
+    .act-btn.danger { background: var(--danger-soft); color: var(--danger); }
 
-    /* 5. BULK BAR, FAB & BOTTOM TABS */
+    /* ==========================================================================
+       5. BULK BAR, PIXEL FAB & BOTTOM NAVIGATION
+       ========================================================================== */
     .bulk-bar {
-      position: fixed; bottom: calc(64px + env(safe-area-inset-bottom)); left: 12px; right: 12px;
-      max-width: 936px; margin: 0 auto;
-      background: var(--primary); color: #ffffff;
-      border-radius: 8px; padding: 8px 12px;
-      display: none; justify-content: space-between; align-items: center; z-index: 45;
+      position: fixed; bottom: calc(68px + env(safe-area-inset-bottom)); left: 12px; right: 12px;
+      max-width: 956px; margin: 0 auto;
+      background: var(--accent); color: var(--accent-fg);
+      border: 2px solid var(--border); box-shadow: var(--px-shadow);
+      padding: 8px 12px; display: none; justify-content: space-between; align-items: center; z-index: 45;
     }
     .bulk-bar.show { display: flex; }
-    .bulk-btns { display: flex; gap: 6px; }
-    .bulk-btn {
-      height: 28px; padding: 0 10px; border-radius: 5px; border: none;
-      background: rgba(255,255,255,0.22); color: #ffffff; font-size: 12px; font-weight: 600; cursor: pointer;
-    }
 
-    .fab-add {
-      position: fixed; right: 16px; bottom: calc(68px + env(safe-area-inset-bottom));
-      height: 42px; padding: 0 14px; border-radius: 8px;
-      background: var(--primary); color: #ffffff; border: none;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-      font-size: 13px; font-weight: 700; cursor: pointer; z-index: 35;
-      display: flex; align-items: center; gap: 6px;
+    .fab-px {
+      position: fixed; right: 16px; bottom: calc(72px + env(safe-area-inset-bottom));
+      height: 44px; padding: 0 14px;
+      background: var(--accent); color: var(--accent-fg);
+      border: 2px solid var(--border); box-shadow: var(--px-shadow);
+      font-family: var(--font-px); font-size: 12px; font-weight: 900;
+      cursor: pointer; z-index: 35; display: flex; align-items: center; gap: 6px;
+      text-transform: uppercase;
     }
+    .fab-px:active { transform: translate(2px, 2px); box-shadow: none; }
 
     .bottom-nav {
       position: fixed; bottom: 0; left: 0; right: 0;
-      height: calc(54px + env(safe-area-inset-bottom));
+      height: calc(58px + env(safe-area-inset-bottom));
       padding-bottom: env(safe-area-inset-bottom);
-      background: var(--card); border-top: 1px solid var(--border);
+      background: var(--surf); border-top: 2px solid var(--border);
       display: flex; z-index: 40;
     }
-    .nav-tab {
-      flex: 1; border: none; background: transparent; color: var(--text-muted);
-      font-size: 13px; font-weight: 600; cursor: pointer;
-      display: flex; align-items: center; justify-content: center; gap: 6px;
-      border-top: 2px solid transparent;
+    .nav-item {
+      flex: 1; border: none; background: transparent; color: var(--text-dim);
+      font-family: var(--font-px); font-size: 12px; font-weight: 800;
+      cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;
+      text-transform: uppercase;
     }
-    .nav-tab.active {
-      color: var(--primary); border-top-color: var(--primary); font-weight: 700;
+    .nav-item + .nav-item { border-left: 2px solid var(--border); }
+    .nav-item.active {
+      background: var(--accent-soft); color: var(--accent-soft-fg); font-weight: 900;
     }
 
-    /* 6. MODALS & DETAIL DRAWER */
+    /* ==========================================================================
+       6. PIXEL MODALS & BOTTOM SHEET
+       ========================================================================== */
     .scrim {
-      position: fixed; inset: 0; background: rgba(0,0,0,0.45);
+      position: fixed; inset: 0; background: rgba(0, 0, 0, 0.55);
       display: flex; align-items: center; justify-content: center; padding: 14px; z-index: 100;
     }
     .scrim.sheet { align-items: flex-end; padding: 0; }
     .scrim[hidden] { display: none; }
 
-    .modal {
-      background: var(--card); border: 1px solid var(--border);
-      border-radius: 10px; padding: 16px; width: 100%; max-width: 440px;
-      max-height: 88vh; overflow-y: auto;
+    .dialog {
+      background: var(--surf); border: 2px solid var(--border); box-shadow: var(--px-shadow);
+      padding: 16px; width: 100%; max-width: 460px; max-height: 88vh; overflow-y: auto;
     }
-    .scrim.sheet .modal {
-      max-width: 640px; border-radius: 12px 12px 0 0;
-      padding-bottom: calc(20px + env(safe-area-inset-bottom));
+    .scrim.sheet .dialog {
+      max-width: 680px; border-bottom: none; box-shadow: 0 -4px 0 var(--border);
+      padding-bottom: calc(22px + env(safe-area-inset-bottom));
     }
-    .m-title { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
-    .m-desc { font-size: 12.5px; color: var(--text-muted); margin-bottom: 12px; }
-    .m-input, select.m-input {
-      width: 100%; height: 38px; padding: 0 10px; border-radius: 6px;
-      border: 1px solid var(--border); background: var(--card-sub); color: var(--text);
-      font-size: 13px; margin-bottom: 10px; outline: none;
+    .dlg-h { font-family: var(--font-px); font-size: 15px; font-weight: 900; margin-bottom: 4px; text-transform: uppercase; }
+    .dlg-p { font-size: 12.5px; color: var(--text-dim); margin-bottom: 12px; }
+    .px-input, select.px-input {
+      width: 100%; height: 38px; padding: 0 10px;
+      border: 2px solid var(--border); background: var(--surf-2); color: var(--text);
+      font-family: var(--font-px); font-size: 13px; font-weight: 700; margin-bottom: 10px; outline: none;
     }
-    .m-input:focus { border-color: var(--primary); }
-    .m-lbl { font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; display: block; }
-    .m-footer { display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; }
+    .px-lbl { font-family: var(--font-px); font-size: 11px; font-weight: 800; color: var(--text-dim); margin-bottom: 4px; display: block; text-transform: uppercase; }
+    .dlg-foot { display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; }
 
-    .kv-grid {
+    .kv-box {
       display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
-      background: var(--card-sub); border: 1px solid var(--border);
-      border-radius: 6px; padding: 10px; margin-bottom: 12px;
+      background: var(--surf-2); border: 1.5px solid var(--border);
+      padding: 10px; margin-bottom: 12px;
     }
-    .kv-item { display: flex; flex-direction: column; }
-    .kv-k { font-size: 10.5px; color: var(--text-muted); font-weight: 600; }
-    .kv-v { font-family: var(--mono); font-size: 12px; font-weight: 700; word-break: break-all; }
+    .kv-k { font-family: var(--font-px); font-size: 10px; color: var(--text-dim); font-weight: 700; text-transform: uppercase; }
+    .kv-v { font-family: var(--font-px); font-size: 12px; font-weight: 900; word-break: break-all; }
 
-    .sheet-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
-    .btn-block {
-      height: 38px; border-radius: 6px; border: 1px solid var(--border);
-      background: var(--card-sub); color: var(--text); font-size: 12.5px; font-weight: 600; cursor: pointer;
-    }
-    .btn-block.primary { background: var(--primary); color: #ffffff; border-color: var(--primary); }
-    .btn-block.danger { background: var(--danger); color: #ffffff; border-color: var(--danger); }
-
+    .sheet-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
     .icon-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; max-height: 200px; overflow-y: auto; margin-bottom: 10px; }
-    .icon-cell {
-      height: 40px; border-radius: 6px; border: 1px solid var(--border);
-      background: var(--card-sub); font-size: 18px; cursor: pointer;
+    .icon-opt {
+      height: 40px; border: 1.5px solid var(--border); background: var(--surf-2);
+      font-size: 18px; cursor: pointer;
     }
-    .icon-cell.sel { border-color: var(--primary); background: var(--primary-bg); border-width: 2px; }
+    .icon-opt.sel { background: var(--accent-soft); border-width: 2.5px; }
 
-    .toast-wrap {
-      position: fixed; bottom: calc(68px + env(safe-area-inset-bottom)); left: 12px; right: 12px;
-      display: flex; flex-direction: column; align-items: center; gap: 6px;
-      z-index: 120; pointer-events: none;
+    .toast-box {
+      position: fixed; bottom: calc(70px + env(safe-area-inset-bottom)); left: 12px; right: 12px;
+      display: flex; flex-direction: column; align-items: center; gap: 6px; z-index: 120; pointer-events: none;
     }
     .toast {
-      padding: 8px 14px; border-radius: 6px; font-size: 12.5px; font-weight: 600;
-      background: #1f2937; color: #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+      padding: 8px 14px; background: var(--text); color: var(--bg);
+      border: 2px solid var(--border); box-shadow: var(--px-shadow-sm);
+      font-family: var(--font-px); font-size: 11.5px; font-weight: 800;
     }
-    [data-theme="dark"] .toast { background: #f3f4f6; color: #111827; }
   </style>
 </head>
 <body>
 
   <div class="container">
-    <!-- 1. TOP HEADER -->
-    <header class="header">
-      <div class="header-left">
-        <span class="header-title">Xiaomi CR6608</span>
-        <span class="status-dot" id="sync-badge">● Online</span>
+    <!-- 1. PIXEL TOP BAR -->
+    <header class="top-bar">
+      <div class="brand">
+        <div class="px-logo">PX</div>
+        <span class="brand-title">CR6608</span>
+        <span class="live-pill" id="sync-pill">ONLINE</span>
       </div>
-      <div class="header-actions">
-        <button type="button" class="btn-top" id="btn-poll" title="Chu kỳ tự động cập nhật">⏱ 5s</button>
-        <button type="button" class="btn-top" id="btn-theme" title="Đổi giao diện Sáng/Tối">🌓</button>
-        <button type="button" class="btn-top" id="btn-settings" title="Cài đặt & Khởi động lại">⚙️</button>
-        <button type="button" class="btn-top" id="btn-refresh" title="Làm mới ngay">↻</button>
+      <div class="top-btns">
+        <button type="button" class="px-btn" id="btn-poll" title="Chu kỳ làm mới">⏱ 5S</button>
+        <button type="button" class="px-btn" id="btn-theme" title="Sáng / Tối">🌓</button>
+        <button type="button" class="px-btn" id="btn-tools" title="Công cụ & Cài đặt">⚙️</button>
+        <button type="button" class="px-btn accent" id="btn-refresh" title="Làm mới">↻</button>
       </div>
     </header>
 
-    <div class="err-box" id="err-box">
-      <span id="err-msg">Mất kết nối tới Router CR6608.</span>
-      <button type="button" class="btn-act" id="btn-retry">Thử lại</button>
+    <div class="err-banner" id="err-banner">
+      <span id="err-msg">MẤT KẾT NỐI ROUTER CR6608</span>
+      <button type="button" class="px-btn" id="btn-retry">THỬ LẠI</button>
     </div>
 
-    <!-- 2. SUMMARY & TELEMETRY -->
-    <section class="overview">
-      <div class="kpi-grid">
-        <div class="kpi-box">
-          <div class="kpi-lbl">↓ Tải xuống</div>
-          <div class="kpi-val" id="tot-rx">0 B/s</div>
+    <!-- 2. PIXEL AT-A-GLANCE WIDGET -->
+    <section class="pixel-widget">
+      <div class="widget-head">
+        <span>📡 NETWORK TELEMETRY</span>
+        <span id="clock-txt">--:--</span>
+      </div>
+
+      <div class="kpi-row">
+        <div class="kpi-cell">
+          <span class="kpi-k">↓ DOWNLOAD</span>
+          <span class="kpi-v rx" id="tot-rx">0 B/s</span>
         </div>
-        <div class="kpi-box">
-          <div class="kpi-lbl">↑ Tải lên</div>
-          <div class="kpi-val" id="tot-tx">0 B/s</div>
+        <div class="kpi-cell">
+          <span class="kpi-k">↑ UPLOAD</span>
+          <span class="kpi-v tx" id="tot-tx">0 B/s</span>
         </div>
-        <div class="kpi-box">
-          <div class="kpi-lbl">Thiết bị Online</div>
-          <div class="kpi-val" id="tot-cnt">0 / 0</div>
+        <div class="kpi-cell">
+          <span class="kpi-k">CLIENTS</span>
+          <span class="kpi-v" id="tot-cnt">0 / 0</span>
         </div>
       </div>
 
-      <!-- Router Hardware Status (Auto-hidden if "sys" absent) -->
-      <div class="sys-bar" id="sys-bar" style="display:none">
-        <span>CPU: <b id="sys-load">-</b></span>
-        <span>RAM: <b id="sys-mem">-</b></span>
-        <span>Uptime: <b id="sys-up">-</b></span>
-        <span>Clients: <b id="sys-cli">-</b></span>
+      <!-- Hardware Telemetry (Auto-hidden if backend omits "sys") -->
+      <div class="sys-strip" id="sys-strip" style="display:none">
+        <div class="sys-box">
+          <span class="sys-lbl">CPU LOAD</span>
+          <span class="sys-val" id="sys-load">-</span>
+          <div class="px-meter"><i id="bar-cpu" style="width:0%"></i></div>
+        </div>
+        <div class="sys-box">
+          <span class="sys-lbl">RAM USED</span>
+          <span class="sys-val" id="sys-mem">-</span>
+          <div class="px-meter"><i id="bar-ram" style="width:0%"></i></div>
+        </div>
+        <div class="sys-box">
+          <span class="sys-lbl">UPTIME</span>
+          <span class="sys-val" id="sys-up">-</span>
+        </div>
+        <div class="sys-box">
+          <span class="sys-lbl">ACTIVE</span>
+          <span class="sys-val" id="sys-cli">-</span>
+        </div>
       </div>
 
       <!-- Top 3 Bandwidth Consumers -->
-      <div class="top3-bar" id="top3-bar" style="display:none">
-        <span style="color:var(--text-muted);font-weight:700;white-space:nowrap">Top 3:</span>
+      <div class="top3-strip" id="top3-strip" style="display:none">
+        <span class="px-font" style="font-size:10px;font-weight:900;color:var(--text-dim);white-space:nowrap">🔥 TOP 3:</span>
         <div id="top3-list" style="display:flex;gap:6px"></div>
       </div>
     </section>
 
     <!-- 3. SEARCH, FILTER & SORT -->
     <section class="controls">
-      <div class="search-wrap">
-        <input type="search" class="search-input" id="search" placeholder="Tìm tên máy, IP, MAC, hãng, nhóm..." autocomplete="off">
-        <button type="button" class="search-clear" id="search-clear">✕</button>
+      <div class="search-box">
+        <span class="px-font" style="font-weight:900">&gt;_</span>
+        <input type="search" id="search" placeholder="TÌM TÊN, IP, MAC, HÃNG, NHÓM..." autocomplete="off">
+        <button type="button" class="px-btn" id="search-clear" style="display:none;height:24px;padding:0 6px">✕</button>
       </div>
 
-      <div class="filter-row" id="filter-row">
-        <button type="button" class="pill active" data-f="all">Tất cả</button>
-        <button type="button" class="pill" data-f="5g">5GHz</button>
-        <button type="button" class="pill" data-f="2g">2.4GHz</button>
-        <button type="button" class="pill" data-f="lan">LAN</button>
-        <button type="button" class="pill" data-f="blocked">Đang chặn</button>
-        <button type="button" class="pill" data-f="weak">Sóng yếu</button>
-        <span class="sep"></span>
-        <div id="group-pills" style="display:inline-flex;gap:5px"></div>
+      <div class="chip-scroll" id="filter-row">
+        <button type="button" class="px-chip active" data-f="all">TẤT CẢ</button>
+        <button type="button" class="px-chip" data-f="5g">5GHZ</button>
+        <button type="button" class="px-chip" data-f="2g">2.4GHZ</button>
+        <button type="button" class="px-chip" data-f="lan">LAN</button>
+        <button type="button" class="px-chip" data-f="blocked">ĐANG CHẶN</button>
+        <button type="button" class="px-chip" data-f="weak">SÓNG YẾU</button>
+        <div id="group-chips" style="display:inline-flex;gap:6px"></div>
       </div>
 
-      <div class="filter-row" id="sort-row">
-        <span style="font-size:11.5px;color:var(--text-muted);font-weight:600">Sắp xếp:</span>
-        <button type="button" class="pill active" data-s="default">Mặc định</button>
-        <button type="button" class="pill" data-s="speed">Tốc độ</button>
-        <button type="button" class="pill" data-s="name">Tên A-Z</button>
-        <button type="button" class="pill" data-s="newest">Mới nhất</button>
+      <div class="chip-scroll" id="sort-row">
+        <span class="px-font" style="font-size:10.5px;font-weight:800;color:var(--text-dim)">SORT:</span>
+        <button type="button" class="px-chip sort active" data-s="default">MẶC ĐỊNH</button>
+        <button type="button" class="px-chip sort" data-s="speed">⚡ TỐC ĐỘ</button>
+        <button type="button" class="px-chip sort" data-s="name">🔤 TÊN A-Z</button>
+        <button type="button" class="px-chip sort" data-s="newest">🆕 MỚI NHẤT</button>
       </div>
     </section>
 
-    <!-- 4. DEVICE CARDS -->
+    <!-- 4. DEVICE GRID -->
     <main>
-      <div class="device-grid" id="list"></div>
-      <div id="empty" style="display:none;text-align:center;padding:40px 12px;color:var(--text-muted)">
-        Không có thiết bị nào phù hợp.
+      <div class="grid" id="list"></div>
+      <div id="empty" class="px-font" style="display:none;text-align:center;padding:42px 12px;color:var(--text-dim);font-weight:700">
+        [ KHÔNG CÓ THIẾT BỊ NÀO PHÙ HỢP ]
       </div>
     </main>
   </div>
 
-  <!-- Bulk Action Bar -->
+  <!-- Multi-Select Action Bar -->
   <div class="bulk-bar" id="bulk-bar">
-    <span style="font-size:12.5px;font-weight:700" id="bulk-cnt">Đã chọn 0</span>
-    <div class="bulk-btns">
-      <button type="button" class="bulk-btn" id="bulk-block">Chặn</button>
-      <button type="button" class="bulk-btn" id="bulk-unblock">Bỏ chặn</button>
-      <button type="button" class="bulk-btn" id="bulk-kick">Kick</button>
-      <button type="button" class="bulk-btn" id="bulk-exit">✕</button>
+    <span class="px-font" style="font-size:12px;font-weight:900" id="bulk-cnt">CHỌN: 0</span>
+    <div style="display:flex;gap:6px">
+      <button type="button" class="px-btn danger" id="bulk-block">CHẶN</button>
+      <button type="button" class="px-btn" id="bulk-unblock">BỎ CHẶN</button>
+      <button type="button" class="px-btn" id="bulk-kick">KICK</button>
+      <button type="button" class="px-btn" id="bulk-exit">✕</button>
     </div>
   </div>
 
-  <button type="button" class="fab-add" id="fab-add">+ Chặn MAC</button>
+  <button type="button" class="fab-px" id="fab-add">+ CHẶN MAC</button>
 
-  <!-- Bottom Tabs -->
+  <!-- Bottom Pixel Tabs -->
   <nav class="bottom-nav">
-    <button type="button" class="nav-tab active" id="tab-clients">Kết nối (<span id="cnt-cli">0</span>)</button>
-    <button type="button" class="nav-tab" id="tab-blacklist">Blacklist (<span id="cnt-blk">0</span>)</button>
+    <button type="button" class="nav-item active" id="tab-clients">📱 KẾT NỐI (<span id="cnt-cli">0</span>)</button>
+    <button type="button" class="nav-item" id="tab-blacklist">🚫 BLACKLIST (<span id="cnt-blk">0</span>)</button>
   </nav>
 
-  <!-- Modal / Bottom Sheet -->
+  <!-- Dialog / Bottom Sheet -->
   <div class="scrim" id="dlg-scrim" hidden>
-    <div class="modal" id="dlg-box" role="dialog" aria-modal="true">
-      <div class="m-title" id="dlg-title"></div>
-      <div class="m-desc" id="dlg-desc"></div>
+    <div class="dialog" id="dlg-box" role="dialog" aria-modal="true">
+      <div class="dlg-h" id="dlg-title"></div>
+      <div class="dlg-p" id="dlg-desc"></div>
       <div id="dlg-body" style="display:none"></div>
-      <div class="m-footer" id="dlg-footer">
-        <button type="button" class="btn-act" id="dlg-cancel">Đóng</button>
-        <button type="button" class="btn-act primary" id="dlg-ok">Xác nhận</button>
+      <div class="dlg-foot" id="dlg-foot">
+        <button type="button" class="px-btn" id="dlg-cancel">ĐÓNG</button>
+        <button type="button" class="px-btn accent" id="dlg-ok">XÁC NHẬN</button>
       </div>
     </div>
   </div>
 
-  <div class="toast-wrap" id="toast-wrap"></div>
+  <div class="toast-box" id="toast-box"></div>
 
   <script>
+    /**
+     * Xiaomi CR6608 Device Manager v5.0 (Google Pixel + Retro Pixel Font Edition)
+     * Single-file Vanilla JS | Zero External Deps | Diff DOM | Full API Compatibility
+     */
     const DEMO_MODE = false;
     const API = '/cgi-bin/devmgr';
-    const STORAGE_KEY = 'cr6608_std_prefs_v1';
-    const KNOWN_KEY = 'cr6608_std_known_v1';
-    const CACHE_KEY = 'cr6608_std_cache_v1';
+    const STORAGE_KEY = 'cr6608_px_v5_prefs';
+    const KNOWN_KEY = 'cr6608_px_v5_known';
+    const CACHE_KEY = 'cr6608_px_v5_cache';
 
     const ICONS = ['📱','💻','🖥️','📺','📟','🎮','💡','📷','🤖','🔊','⌚','🔌','🖨️','📡','🚗','🔒','❄️','🧹','📻','🚪','🛎️','🌐','📦','🏷️'];
     const DEFAULT_GROUPS = ['Gia đình', 'Khách', 'IoT'];
@@ -539,7 +649,8 @@
       icons: {},
       pinned: [],
       groups: {},
-      customGroups: []
+      customGroups: [],
+      notes: {} // Extra feature: Local device notes per MAC
     };
 
     const state = {
@@ -563,6 +674,7 @@
     };
 
     const $ = id => document.getElementById(id);
+    const vibrate = (ms = 14) => navigator.vibrate && navigator.vibrate(ms);
 
     function loadPrefs() {
       try {
@@ -573,7 +685,8 @@
           icons: raw.icons || {},
           pinned: Array.isArray(raw.pinned) ? raw.pinned : [],
           groups: raw.groups || {},
-          customGroups: Array.isArray(raw.customGroups) ? raw.customGroups : []
+          customGroups: Array.isArray(raw.customGroups) ? raw.customGroups : [],
+          notes: raw.notes || {}
         };
       } catch (e) {
         return { ...defaultPrefs };
@@ -588,27 +701,34 @@
       const sysDark = matchMedia('(prefers-color-scheme: dark)').matches;
       const active = state.prefs.theme === 'auto' ? (sysDark ? 'dark' : 'light') : state.prefs.theme;
       document.documentElement.dataset.theme = active;
-      const pSec = state.prefs.pollMs === 0 ? 'Tay' : (state.prefs.pollMs / 1000) + 's';
+      $('meta-theme').content = active === 'dark' ? '#10130E' : '#F3F5EC';
+      const pSec = state.prefs.pollMs === 0 ? 'TAY' : (state.prefs.pollMs / 1000) + 'S';
       $('btn-poll').textContent = `⏱ ${pSec}`;
     }
 
+    function updateClock() {
+      const now = new Date();
+      $('clock-txt').textContent = now.toTimeString().slice(0, 5);
+    }
+
     function toast(msg) {
-      const wrap = $('toast-wrap');
+      const box = $('toast-box');
       const el = document.createElement('div');
       el.className = 'toast';
       el.textContent = msg;
-      wrap.appendChild(el);
-      setTimeout(() => el.remove(), 2400);
+      box.appendChild(el);
+      setTimeout(() => el.remove(), 2300);
     }
 
     function copyText(txt, lbl) {
+      vibrate();
       if (navigator.clipboard && window.isSecureContext) {
-        navigator.clipboard.writeText(txt).then(() => toast(`Đã sao chép ${lbl}: ${txt}`));
+        navigator.clipboard.writeText(txt).then(() => toast(`ĐÃ CHÉP ${lbl}: ${txt}`));
       } else {
         const i = document.createElement('input');
         i.value = txt; document.body.appendChild(i); i.select();
         document.execCommand('copy'); i.remove();
-        toast(`Đã sao chép ${lbl}: ${txt}`);
+        toast(`ĐÃ CHÉP ${lbl}: ${txt}`);
       }
     }
 
@@ -632,16 +752,16 @@
       const d = Math.floor(sec / 86400);
       const h = Math.floor((sec % 86400) / 3600);
       const m = Math.floor((sec % 3600) / 60);
-      return d > 0 ? `${d}d ${h}h` : `${h}h ${m}m`;
+      return d > 0 ? `${d}D ${h}H` : `${h}H ${m}M`;
     }
 
     function fmtLastSeen(unixSec) {
       if (!unixSec || unixSec <= 0) return '';
       const diff = Math.max(1, Math.floor(Date.now() / 1000) - unixSec);
-      if (diff < 60) return 'Thấy lần cuối vừa xong';
-      if (diff < 3600) return `Thấy lần cuối ${Math.floor(diff / 60)} phút trước`;
-      if (diff < 86400) return `Thấy lần cuối ${Math.floor(diff / 3600)} giờ trước`;
-      return `Thấy lần cuối ${Math.floor(diff / 86400)} ngày trước`;
+      if (diff < 60) return 'Thấy vừa xong';
+      if (diff < 3600) return `Thấy ${Math.floor(diff / 60)}p trước`;
+      if (diff < 86400) return `Thấy ${Math.floor(diff / 3600)}h trước`;
+      return `Thấy ${Math.floor(diff / 86400)}d trước`;
     }
 
     function fmtQos(kbps) {
@@ -692,7 +812,7 @@
       const arr = speedHistory.get(mac);
       if (!arr || arr.length < 2) return '';
       const max = Math.max(1024, ...arr);
-      const w = 52, h = 20;
+      const w = 54, h = 20;
       const step = w / (arr.length - 1);
       return arr.map((v, i) => `${(i * step).toFixed(1)},${(h - (v / max) * (h - 2) - 1).toFixed(1)}`).join(' ');
     }
@@ -705,7 +825,7 @@
     }
 
     /* ==========================================================================
-       DOM SYNC ENGINE
+       DOM DIFFING ENGINE
        ========================================================================== */
     function syncCard(container, d) {
       const mac = d.mac;
@@ -715,6 +835,7 @@
       const isPinned = state.prefs.pinned.includes(mac);
       const isSel = state.selected.has(mac);
       const grp = state.prefs.groups[mac] || '';
+      const note = (state.prefs.notes[mac] || '').trim();
 
       let rssiLvl = 0;
       if (d.band !== 'LAN' && typeof d.signal === 'number' && d.signal < 0) {
@@ -723,55 +844,55 @@
 
       let ref = domRegistry.get(mac);
       if (!ref) {
-        const el = document.createElement('div');
+        const el = document.createElement('article');
         el.className = 'card';
         el.dataset.mac = mac;
         el.innerHTML = `
-          <div class="c-row1">
-            <div class="c-id">
-              <div class="chk-sel">✓</div>
-              <button type="button" class="ico-btn" title="Đổi biểu tượng">
+          <div class="c-head">
+            <div class="c-left">
+              <div class="sel-box">✓</div>
+              <button type="button" class="ico-tile" title="Đổi biểu tượng">
                 <span class="v-ico"></span>
-                <span class="pin-badge">📌</span>
+                <span class="pin-flag">📌</span>
               </button>
-              <div class="c-names">
-                <div class="c-title-wrap">
+              <div class="c-info">
+                <div class="c-name-row">
                   <span class="c-name v-name"></span>
-                  <button type="button" class="btn-rename" title="Đổi tên">✎</button>
+                  <button type="button" class="btn-pen" title="Đổi tên">✎</button>
                 </div>
-                <div class="c-sub">
+                <div class="c-meta">
                   <span class="v-sub"></span>
                   <span class="rssi v-rssi"><i></i><i></i><i></i><i></i></span>
                 </div>
               </div>
             </div>
-            <div class="sw-box">
-              <label class="sw"><input type="checkbox" class="v-chk"><span class="sw-slider"></span></label>
-              <span class="sw-lbl">CHẶN</span>
+            <div class="sw-wrap">
+              <label class="px-sw"><input type="checkbox" class="v-chk"><span class="px-track"></span></label>
+              <span class="sw-txt">CHẶN</span>
             </div>
           </div>
-          <div class="c-tags v-tags"></div>
-          <div class="c-net">
-            <div class="net-addrs">
-              <button type="button" class="copy-link c-ip"><span>IP: </span><b class="v-ip"></b></button>
-              <button type="button" class="copy-link c-mac"><span>MAC: </span><b class="v-mac"></b></button>
+          <div class="tags v-tags"></div>
+          <div class="net-box">
+            <div class="addrs">
+              <button type="button" class="cp-btn c-ip"><span>IP: </span><b class="v-ip"></b></button>
+              <button type="button" class="cp-btn c-mac"><span>MAC: </span><b class="v-mac"></b></button>
             </div>
-            <div class="net-spd">
-              <div class="spd-col">
-                <span class="spd-rx">↓ <span class="v-rx"></span></span>
-                <span class="spd-tx">↑ <span class="v-tx"></span></span>
+            <div class="spd-box">
+              <div class="spd-nums">
+                <span class="spd-d">↓ <span class="v-rx"></span></span>
+                <span class="spd-u">↑ <span class="v-tx"></span></span>
               </div>
-              <svg class="spark" viewBox="0 0 52 22"><polyline class="v-spark" points=""></polyline></svg>
+              <svg class="spark" viewBox="0 0 54 22"><polyline class="v-spark" points=""></polyline></svg>
             </div>
           </div>
-          <div class="c-acts">
-            <div class="act-left">
-              <button type="button" class="btn-act primary b-qos">QoS</button>
-              <button type="button" class="btn-act b-static">Gán IP</button>
-              <button type="button" class="btn-act b-wol">WOL</button>
-              <button type="button" class="btn-act b-kick">Kick</button>
+          <div class="c-foot">
+            <div class="foot-l">
+              <button type="button" class="act-btn info b-qos">QoS</button>
+              <button type="button" class="act-btn b-static">Gán IP</button>
+              <button type="button" class="act-btn b-wol">WOL</button>
+              <button type="button" class="act-btn b-kick">Kick</button>
             </div>
-            <button type="button" class="btn-act danger b-bl">Blacklist</button>
+            <button type="button" class="act-btn danger b-bl">Blacklist</button>
           </div>
         `;
 
@@ -794,31 +915,32 @@
           cache: {}
         };
 
-        el.querySelector('.ico-btn').onclick = e => { e.stopPropagation(); openIconPicker(el._d.mac, ref.cache.ico); };
-        el.querySelector('.btn-rename').onclick = e => { e.stopPropagation(); openRename(el._d); };
+        el.querySelector('.ico-tile').onclick = e => { e.stopPropagation(); vibrate(); openIconPicker(el._d.mac, ref.cache.ico); };
+        el.querySelector('.btn-pen').onclick = e => { e.stopPropagation(); vibrate(); openRename(el._d); };
         el.querySelector('.c-ip').onclick = e => { e.stopPropagation(); if (el._d.ip) copyText(el._d.ip, 'IP'); };
         el.querySelector('.c-mac').onclick = e => { e.stopPropagation(); copyText(el._d.mac, 'MAC'); };
 
-        el.querySelector('.sw-box').onclick = e => e.stopPropagation();
+        el.querySelector('.sw-wrap').onclick = e => e.stopPropagation();
         ref.chk.onchange = e => {
+          vibrate();
           const cur = el._d;
           postAction({ action: e.target.checked ? 'block' : 'unblock', mac: cur.mac })
             .then(ok => { if (!ok) e.target.checked = !e.target.checked; else fetchList(); });
         };
 
-        el.querySelector('.b-qos').onclick = e => { e.stopPropagation(); openQosModal(el._d); };
+        el.querySelector('.b-qos').onclick = e => { e.stopPropagation(); vibrate(); openQosModal(el._d); };
         ref.stat.onclick = e => {
           e.stopPropagation();
           const cur = el._d;
           if (!cur.ip) return;
-          openConfirm('Cố định IP', `Gán cứng IP ${cur.ip} cho "${resolveProfile(cur).name}"?`, () =>
+          openConfirm('Cố định IP', `Khóa cứng IP ${cur.ip} cho "${resolveProfile(cur).name}"?`, () =>
             postAction({ action: 'static_lease', mac: cur.mac, ip: cur.ip })
           );
         };
         el.querySelector('.b-wol').onclick = e => {
           e.stopPropagation();
           const cur = el._d;
-          openConfirm('Wake-on-LAN', `Gửi gói đánh thức tới [${cur.mac}]?`, () =>
+          openConfirm('Wake-on-LAN', `Gửi gói Magic Packet tới [${cur.mac}]?`, () =>
             postAction({ action: 'wol', mac: cur.mac })
           );
         };
@@ -838,22 +960,21 @@
           );
         };
 
-        // Long press -> Multi-select | Tap -> Detail Drawer
         let lpTimer = null, lpFired = false;
         el.addEventListener('pointerdown', e => {
           if (e.target.closest('button, label, input')) return;
           lpFired = false;
           lpTimer = setTimeout(() => { lpFired = true; enterSelectMode(el._d.mac); }, 450);
         });
-        const stopLp = () => { if (lpTimer) { clearTimeout(lpTimer); lpTimer = null; } };
-        el.addEventListener('pointerup', stopLp);
-        el.addEventListener('pointerleave', stopLp);
-        el.addEventListener('pointercancel', stopLp);
+        const cancelLp = () => { if (lpTimer) { clearTimeout(lpTimer); lpTimer = null; } };
+        el.addEventListener('pointerup', cancelLp);
+        el.addEventListener('pointerleave', cancelLp);
+        el.addEventListener('pointercancel', cancelLp);
 
         el.onclick = () => {
           if (lpFired) return;
           if (state.selectMode) toggleSelect(el._d.mac);
-          else openDetailSheet(el._d);
+          else { vibrate(10); openDetailSheet(el._d); }
         };
 
         domRegistry.set(mac, ref);
@@ -869,7 +990,7 @@
       if (c.ico !== prof.icon) { ref.ico.textContent = prof.icon; c.ico = prof.icon; }
       if (c.name !== prof.name) { ref.name.textContent = prof.name; c.name = prof.name; }
 
-      const statusTxt = d.online ? 'Online' : (fmtLastSeen(d.last_seen) || 'Offline');
+      const statusTxt = d.online ? 'ONLINE' : (fmtLastSeen(d.last_seen) || 'OFFLINE');
       const subTxt = `${prof.vendor ? prof.vendor + ' · ' : ''}${statusTxt}`;
       if (c.subTxt !== subTxt) { ref.sub.textContent = subTxt; c.subTxt = subTxt; }
 
@@ -885,15 +1006,16 @@
       }
 
       const qosTxt = fmtQos(Number(d.qos_rate || 0));
-      const tagKey = `${isNew}|${prof.rand}|${d.band}|${grp}|${d.blocked}|${qosTxt}`;
+      const tagKey = `${isNew}|${prof.rand}|${d.band}|${grp}|${d.blocked}|${qosTxt}|${note}`;
       if (c.tagKey !== tagKey) {
         ref.tags.textContent = '';
         if (isNew) ref.tags.appendChild(makeTag('MỚI', 'new'));
         if (d.band) ref.tags.appendChild(makeTag(d.band, ''));
         if (grp) ref.tags.appendChild(makeTag(grp, 'grp'));
-        if (prof.rand) ref.tags.appendChild(makeTag('MAC riêng tư', ''));
-        if (qosTxt) ref.tags.appendChild(makeTag(`Max ${qosTxt}`, 'qos'));
-        if (d.blocked) ref.tags.appendChild(makeTag('Đang chặn', 'blk'));
+        if (prof.rand) ref.tags.appendChild(makeTag('MAC RIÊNG TƯ', ''));
+        if (qosTxt) ref.tags.appendChild(makeTag(`MAX ${qosTxt}`, 'qos'));
+        if (d.blocked) ref.tags.appendChild(makeTag('ĐANG CHẶN', 'blk'));
+        if (note) ref.tags.appendChild(makeTag(`📝 ${note}`, ''));
         ref.tags.style.display = ref.tags.children.length ? 'flex' : 'none';
         c.tagKey = tagKey;
       }
@@ -901,7 +1023,7 @@
       const blk = Boolean(d.blocked);
       if (c.blk !== blk) { ref.chk.checked = blk; c.blk = blk; }
 
-      const ipStr = d.ip || 'Chưa cấp';
+      const ipStr = d.ip || 'CHƯA CẤP IP';
       if (c.ipStr !== ipStr) { ref.ip.textContent = ipStr; c.ipStr = ipStr; }
       if (c.mac !== mac) { ref.mac.textContent = mac; c.mac = mac; }
 
@@ -920,13 +1042,14 @@
       if (c.canKick !== canKick) { ref.kick.style.display = canKick ? 'inline-block' : 'none'; c.canKick = canKick; }
 
       const isBl = Boolean(d.blacklisted);
-      if (c.bl !== isBl) { ref.bl.textContent = isBl ? 'Bỏ Blacklist' : 'Blacklist'; c.bl = isBl; }
+      if (c.bl !== isBl) { ref.bl.textContent = isBl ? 'BỎ BLACKLIST' : 'BLACKLIST'; c.bl = isBl; }
     }
 
     /* ==========================================================================
        MULTI-SELECT
        ========================================================================== */
     function enterSelectMode(mac) {
+      vibrate(30);
       state.selectMode = true;
       state.selected.clear();
       if (mac) state.selected.add(mac);
@@ -944,6 +1067,7 @@
     }
 
     function toggleSelect(mac) {
+      vibrate(10);
       if (state.selected.has(mac)) state.selected.delete(mac);
       else state.selected.add(mac);
       if (state.selected.size === 0) exitSelectMode();
@@ -954,7 +1078,7 @@
       const bar = $('bulk-bar');
       if (state.selectMode && state.selected.size > 0) {
         bar.classList.add('show');
-        $('bulk-cnt').textContent = `Đã chọn ${state.selected.size}`;
+        $('bulk-cnt').textContent = `CHỌN: ${state.selected.size}`;
       } else {
         bar.classList.remove('show');
       }
@@ -964,32 +1088,33 @@
       const macs = [...state.selected];
       if (!macs.length) return;
       exitSelectMode();
-      toast(`Đang gửi lệnh tới ${macs.length} thiết bị...`);
+      toast(`ĐANG GỬI LỆNH CHO ${macs.length} THIẾT BỊ...`);
       for (const mac of macs) {
         const dev = state.devices.find(x => x.mac === mac);
         if (!dev) continue;
         if (action === 'kick' && (!dev.online || dev.band === 'LAN')) continue;
         await postAction({ action, mac }, true);
       }
-      toast('Hoàn tất thao tác hàng loạt');
+      toast('HOÀN TẤT THAO TÁC HÀNG LOẠT');
       fetchList();
     }
 
     /* ==========================================================================
        RENDER PIPELINE
        ========================================================================== */
-    function renderGroupPills() {
-      const wrap = $('group-pills');
+    function renderGroupChips() {
+      const wrap = $('group-chips');
       const allGroups = [...new Set([...DEFAULT_GROUPS, ...state.prefs.customGroups])];
       wrap.textContent = '';
       allGroups.forEach(g => {
         const b = document.createElement('button');
         b.type = 'button';
-        b.className = `pill ${state.groupFilter === g ? 'active' : ''}`;
-        b.textContent = g;
+        b.className = `px-chip ${state.groupFilter === g ? 'active' : ''}`;
+        b.textContent = g.toUpperCase();
         b.onclick = () => {
+          vibrate();
           state.groupFilter = state.groupFilter === g ? '' : g;
-          renderGroupPills();
+          renderGroupChips();
           render();
         };
         wrap.appendChild(b);
@@ -997,21 +1122,25 @@
     }
 
     function renderSys() {
-      const bar = $('sys-bar');
+      const strip = $('sys-strip');
       if (!state.sys || typeof state.sys !== 'object') {
-        bar.style.display = 'none';
+        strip.style.display = 'none';
         return;
       }
-      bar.style.display = 'flex';
+      strip.style.display = 'grid';
       const s = state.sys;
-      $('sys-load').textContent = typeof s.load === 'number' ? s.load.toFixed(2) : '-';
-      $('sys-mem').textContent = typeof s.mem_used_pct === 'number' ? `${s.mem_used_pct}%` : '-';
+      const load = typeof s.load === 'number' ? s.load : null;
+      const mem = typeof s.mem_used_pct === 'number' ? s.mem_used_pct : null;
+      $('sys-load').textContent = load !== null ? load.toFixed(2) : '-';
+      $('bar-cpu').style.width = load !== null ? `${Math.min(100, Math.round(load * 25))}%` : '0%';
+      $('sys-mem').textContent = mem !== null ? `${mem}%` : '-';
+      $('bar-ram').style.width = mem !== null ? `${Math.min(100, mem)}%` : '0%';
       $('sys-up').textContent = fmtUptime(s.uptime);
       $('sys-cli').textContent = typeof s.clients === 'number' ? String(s.clients) : '-';
     }
 
     function renderTop3(clients) {
-      const bar = $('top3-bar');
+      const strip = $('top3-strip');
       const listEl = $('top3-list');
       const top = clients
         .filter(d => d.online && ((d.rx || 0) + (d.tx || 0)) > 0)
@@ -1019,16 +1148,16 @@
         .slice(0, 3);
 
       if (!top.length) {
-        bar.style.display = 'none';
+        strip.style.display = 'none';
         return;
       }
-      bar.style.display = 'flex';
+      strip.style.display = 'flex';
       listEl.textContent = '';
       top.forEach(d => {
         const p = resolveProfile(d);
         const btn = document.createElement('button');
         btn.type = 'button';
-        btn.className = 'top3-tag';
+        btn.className = 'top3-chip';
         const b = document.createElement('b'); b.textContent = p.name;
         const sp = document.createElement('span'); sp.textContent = fmtSpeed((d.rx || 0) + (d.tx || 0));
         btn.append(document.createTextNode(p.icon + ' '), b, sp);
@@ -1060,8 +1189,10 @@
         list = list.filter(d => {
           const p = resolveProfile(d);
           const g = (state.prefs.groups[d.mac] || '').toLowerCase();
+          const n = (state.prefs.notes[d.mac] || '').toLowerCase();
           return d.mac.toLowerCase().includes(q) || (d.ip && d.ip.includes(q)) ||
-                 p.name.toLowerCase().includes(q) || p.vendor.toLowerCase().includes(q) || g.includes(q);
+                 p.name.toLowerCase().includes(q) || p.vendor.toLowerCase().includes(q) ||
+                 g.includes(q) || n.includes(q);
         });
       }
 
@@ -1122,7 +1253,7 @@
        ========================================================================== */
     async function postAction(payload, silent = false) {
       if (state.writing) {
-        if (!silent) toast('Đang xử lý lệnh trước, vui lòng đợi...');
+        if (!silent) toast('ĐANG GỬI LỆNH KHÁC, VUI LÒNG ĐỢI...');
         return false;
       }
       state.writing = true;
@@ -1133,7 +1264,7 @@
         if (DEMO_MODE) {
           await new Promise(r => setTimeout(r, 180));
           if (payload.action === 'reboot') {
-            clearTimeout(tid); if (!silent) toast('Demo: Đã gửi lệnh khởi động lại'); return true;
+            clearTimeout(tid); if (!silent) toast('DEMO: ĐÃ GỬI LỆNH REBOOT'); return true;
           }
           const dev = state.devices.find(x => x.mac === payload.mac);
           if (dev) {
@@ -1148,7 +1279,7 @@
             state.devices.push({ mac: payload.mac, ip: '', hostname: '', name: '', vendor: '', iface: 'phy1-ap0', band: '5G', signal: 0, rx: 0, tx: 0, qos_rate: 0, online: false, blocked: false, blacklisted: true });
           }
           clearTimeout(tid);
-          if (!silent) toast('Demo: Thành công');
+          if (!silent) toast('DEMO: THÀNH CÔNG');
           render();
           return true;
         }
@@ -1162,14 +1293,14 @@
         clearTimeout(tid);
         const data = await res.json();
         if (data && data.ok) {
-          if (!silent) toast('Thành công');
+          if (!silent) toast('THÀNH CÔNG');
           return true;
         }
-        if (!silent) toast((data && data.error) || 'Router từ chối thao tác');
+        if (!silent) toast((data && data.error) || 'ROUTER TỪ CHỐI THAO TÁC');
         return false;
       } catch (e) {
         clearTimeout(tid);
-        if (!silent) toast(e.name === 'AbortError' ? 'Quá thời gian (4s)' : 'Lỗi kết nối Router');
+        if (!silent) toast(e.name === 'AbortError' ? 'QUÁ THỜI GIAN (4S)' : 'LỖI KẾT NỐI ROUTER');
         return false;
       } finally {
         state.writing = false;
@@ -1219,19 +1350,19 @@
 
     async function fetchList() {
       if (state.timer) { clearTimeout(state.timer); state.timer = null; }
-      const badge = $('sync-badge');
-      badge.className = 'status-dot syncing';
-      badge.textContent = '↻ Đang tải';
+      const pill = $('sync-pill');
+      pill.className = 'live-pill syncing';
+      pill.textContent = 'SYNC...';
 
       if (DEMO_MODE) {
         if (!state.devices.length) {
           const now = Math.floor(Date.now() / 1000);
-          state.sys = { load: 0.32, mem_used_pct: 40, uptime: 174200, clients: 4 };
+          state.sys = { load: 0.42, mem_used_pct: 38, uptime: 184200, clients: 4 };
           state.devices = [
-            { mac: 'F0:99:BF:11:22:33', ip: '192.168.2.10', hostname: 'iPhone-Pro', name: '', vendor: 'Apple', iface: 'phy1-ap0', band: '5G', signal: -48, rx: 1450000, tx: 230000, qos_rate: 0, online: true, blocked: false, blacklisted: false, day_rx: 2450000000, day_tx: 320000000 },
-            { mac: 'B4:FB:E4:44:55:66', ip: '192.168.2.15', hostname: 'Mi-TV', name: 'TV Phòng Khách', vendor: 'Xiaomi', iface: 'phy1-ap0', band: '5G', signal: -63, rx: 3850000, tx: 92000, qos_rate: 5120, online: true, blocked: false, blacklisted: false, day_rx: 8920000000, day_tx: 110000000 },
-            { mac: 'D8:3A:DD:77:88:99', ip: '192.168.2.20', hostname: 'raspberrypi', name: '', vendor: 'Raspberry Pi', iface: 'eth0.1', band: 'LAN', signal: 0, rx: 64000, tx: 21000, qos_rate: 0, online: true, blocked: false, blacklisted: false, day_rx: 512000000, day_tx: 480000000 },
-            { mac: '3E:A1:90:AA:BB:CC', ip: '192.168.2.35', hostname: 'android-8f92a1bc', name: '', vendor: 'ShouldIgnore', iface: 'phy0-ap0', band: '2.4G', signal: -79, rx: 0, tx: 0, qos_rate: 0, online: false, blocked: true, blacklisted: false, last_seen: now - 7200, day_rx: 120000000, day_tx: 15000000 }
+            { mac: 'F0:99:BF:11:22:33', ip: '192.168.2.10', hostname: 'Pixel-9-Pro', name: '', vendor: 'Apple', iface: 'phy1-ap0', band: '5G', signal: -46, rx: 1650000, tx: 290000, qos_rate: 0, online: true, blocked: false, blacklisted: false, day_rx: 2850000000, day_tx: 340000000 },
+            { mac: 'B4:FB:E4:44:55:66', ip: '192.168.2.15', hostname: 'Mi-TV', name: 'TV Phòng Khách', vendor: 'Xiaomi', iface: 'phy1-ap0', band: '5G', signal: -61, rx: 4150000, tx: 102000, qos_rate: 5120, online: true, blocked: false, blacklisted: false, day_rx: 9120000000, day_tx: 130000000 },
+            { mac: 'D8:3A:DD:77:88:99', ip: '192.168.2.20', hostname: 'raspberrypi', name: '', vendor: 'Raspberry Pi', iface: 'eth0.1', band: 'LAN', signal: 0, rx: 84000, tx: 31000, qos_rate: 0, online: true, blocked: false, blacklisted: false, day_rx: 612000000, day_tx: 490000000 },
+            { mac: '3E:A1:90:AA:BB:CC', ip: '192.168.2.35', hostname: 'android-8f92a1bc', name: '', vendor: 'ShouldIgnore', iface: 'phy0-ap0', band: '2.4G', signal: -78, rx: 0, tx: 0, qos_rate: 0, online: false, blocked: true, blacklisted: false, last_seen: now - 5400, day_rx: 120000000, day_tx: 15000000 }
           ];
         } else {
           state.devices.forEach(d => {
@@ -1242,9 +1373,9 @@
           });
         }
         processIncomingDevices(state.devices);
-        badge.className = 'status-dot';
-        badge.textContent = '● Demo';
-        $('err-box').style.display = 'none';
+        pill.className = 'live-pill';
+        pill.textContent = 'DEMO';
+        $('err-banner').style.display = 'none';
         render();
         scheduleNextPoll();
         return;
@@ -1266,29 +1397,29 @@
 
         state.errors = 0;
         state.backoff = 5000;
-        badge.className = 'status-dot';
-        badge.textContent = '● Online';
-        $('err-box').style.display = 'none';
+        pill.className = 'live-pill';
+        pill.textContent = 'ONLINE';
+        $('err-banner').style.display = 'none';
         render();
       } catch (e) {
         clearTimeout(tid);
         state.errors++;
         state.backoff = state.errors === 1 ? 5000 : state.errors === 2 ? 10000 : 30000;
-        badge.className = 'status-dot err';
-        badge.textContent = '▲ Mất kết nối';
-        $('err-msg').textContent = `Lỗi kết nối Router (tự thử lại sau ${state.backoff / 1000}s).`;
-        $('err-box').style.display = 'flex';
+        pill.className = 'live-pill err';
+        pill.textContent = 'OFFLINE';
+        $('err-msg').textContent = `MẤT KẾT NỐI ROUTER (THỬ LẠI SAU ${state.backoff / 1000}S)`;
+        $('err-banner').style.display = 'flex';
       } finally {
         scheduleNextPoll();
       }
     }
 
     /* ==========================================================================
-       DIALOGS & DETAIL SHEET (NO SCHEDULE BLOCKING)
+       MODALS & PIXEL BOTTOM SHEET
        ========================================================================== */
     let dlgCb = null;
 
-    function openModal({ title, desc, sheet = false, okText = 'Xác nhận', okClass = 'primary', showOk = true, buildBody, onOk }) {
+    function openModal({ title, desc, sheet = false, okText = 'XÁC NHẬN', okClass = 'accent', showOk = true, buildBody, onOk }) {
       const scrim = $('dlg-scrim');
       scrim.classList.toggle('sheet', sheet);
       $('dlg-title').textContent = title;
@@ -1304,9 +1435,9 @@
       }
 
       const okBtn = $('dlg-ok');
-      okBtn.style.display = showOk ? 'inline-block' : 'none';
+      okBtn.style.display = showOk ? 'inline-flex' : 'none';
       okBtn.textContent = okText;
-      okBtn.className = `btn-act ${okClass}`;
+      okBtn.className = `px-btn ${okClass}`;
       dlgCb = onOk || null;
 
       scrim.hidden = false;
@@ -1328,38 +1459,38 @@
     };
 
     function openConfirm(title, desc, cb) {
-      openModal({ title, desc, okText: 'Xác nhận', okClass: 'danger', onOk: cb });
+      openModal({ title, desc, okText: 'XÁC NHẬN', okClass: 'danger', onOk: cb });
     }
 
     function openDetailSheet(d) {
       const prof = resolveProfile(d);
       const isPinned = state.prefs.pinned.includes(d.mac);
       const curGrp = state.prefs.groups[d.mac] || '';
+      const curNote = state.prefs.notes[d.mac] || '';
       const allGroups = [...new Set([...DEFAULT_GROUPS, ...state.prefs.customGroups])];
 
       openModal({
         title: `${prof.icon} ${prof.name}`,
-        desc: `${d.mac} · ${d.online ? 'Đang hoạt động' : (fmtLastSeen(d.last_seen) || 'Ngoại tuyến')}`,
+        desc: `${d.mac} · ${d.online ? 'ĐANG HOẠT ĐỘNG' : (fmtLastSeen(d.last_seen) || 'NGOẠI TUYẾN')}`,
         sheet: true,
         showOk: false,
         buildBody: body => {
           const grid = document.createElement('div');
-          grid.className = 'kv-grid';
+          grid.className = 'kv-box';
           const items = [
-            ['Địa chỉ IP', d.ip || 'Chưa cấp'],
-            ['Cổng / Băng tần', `${d.iface || '-'} (${d.band || '-'})`],
-            ['Hãng sản xuất', prof.rand ? 'MAC riêng tư' : (prof.vendor || 'Không rõ')],
-            ['Tín hiệu Wi-Fi', d.band === 'LAN' ? 'Cáp LAN' : (d.signal ? `${d.signal} dBm` : '-')],
-            ['Tốc độ hiện tại', `↓ ${fmtSpeed(d.rx)} / ↑ ${fmtSpeed(d.tx)}`]
+            ['ĐỊA CHỈ IP', d.ip || 'CHƯA CẤP'],
+            ['CỔNG / BĂNG TẦN', `${d.iface || '-'} (${d.band || '-'})`],
+            ['NHÀ SẢN XUẤT', prof.rand ? 'MAC RIÊNG TƯ' : (prof.vendor || 'KHÔNG RÕ')],
+            ['TÍN HIỆU WI-FI', d.band === 'LAN' ? 'CÁP LAN' : (d.signal ? `${d.signal} dBm` : '-')],
+            ['TỐC ĐỘ HIỆN TẠI', `↓ ${fmtSpeed(d.rx)} / ↑ ${fmtSpeed(d.tx)}`]
           ];
           if (typeof d.day_rx === 'number' || typeof d.day_tx === 'number') {
-            items.push(['Dữ liệu hôm nay', `↓ ${fmtBytes(d.day_rx)} / ↑ ${fmtBytes(d.day_tx)}`]);
+            items.push(['DỮ LIỆU HÔM NAY', `↓ ${fmtBytes(d.day_rx)} / ↑ ${fmtBytes(d.day_tx)}`]);
           }
           items.forEach(([k, v]) => {
             const box = document.createElement('div');
-            box.className = 'kv-item';
-            const kl = document.createElement('span'); kl.className = 'kv-k'; kl.textContent = k;
-            const vl = document.createElement('span'); vl.className = 'kv-v'; vl.textContent = v;
+            const kl = document.createElement('div'); kl.className = 'kv-k'; kl.textContent = k;
+            const vl = document.createElement('div'); vl.className = 'kv-v'; vl.textContent = v;
             box.append(kl, vl);
             grid.appendChild(box);
           });
@@ -1367,18 +1498,18 @@
 
           // Group Selection
           const gLbl = document.createElement('label');
-          gLbl.className = 'm-lbl';
-          gLbl.textContent = 'Phân nhóm thiết bị';
+          gLbl.className = 'px-lbl';
+          gLbl.textContent = 'PHÂN NHÓM THIẾT BỊ';
           const gSel = document.createElement('select');
-          gSel.className = 'm-input';
-          const optNone = document.createElement('option'); optNone.value = ''; optNone.textContent = '-- Không phân nhóm --';
+          gSel.className = 'px-input';
+          const optNone = document.createElement('option'); optNone.value = ''; optNone.textContent = '-- KHÔNG PHÂN NHÓM --';
           gSel.appendChild(optNone);
           allGroups.forEach(g => {
-            const o = document.createElement('option'); o.value = g; o.textContent = g;
+            const o = document.createElement('option'); o.value = g; o.textContent = g.toUpperCase();
             if (g === curGrp) o.selected = true;
             gSel.appendChild(o);
           });
-          const optNew = document.createElement('option'); optNew.value = '__new__'; optNew.textContent = '+ Tạo nhóm mới...';
+          const optNew = document.createElement('option'); optNew.value = '__new__'; optNew.textContent = '+ TẠO NHÓM MỚI...';
           gSel.appendChild(optNew);
 
           gSel.onchange = () => {
@@ -1388,38 +1519,60 @@
                 const clean = name.trim().slice(0, 20);
                 if (!state.prefs.customGroups.includes(clean)) state.prefs.customGroups.push(clean);
                 state.prefs.groups[d.mac] = clean;
-                savePrefs(); renderGroupPills(); render(); closeDlg();
+                savePrefs(); renderGroupChips(); render(); closeDlg();
               } else {
                 gSel.value = curGrp;
               }
             } else {
               if (gSel.value) state.prefs.groups[d.mac] = gSel.value;
               else delete state.prefs.groups[d.mac];
-              savePrefs(); render(); toast('Đã cập nhật nhóm');
+              savePrefs(); render(); toast('ĐÃ CẬP NHẬT NHÓM');
             }
           };
           body.append(gLbl, gSel);
 
+          // Local Note Field
+          const nLbl = document.createElement('label');
+          nLbl.className = 'px-lbl';
+          nLbl.textContent = 'GHI CHÚ NHANH (LƯU TRÊN MÁY)';
+          const nRow = document.createElement('div');
+          nRow.style.cssText = 'display:flex;gap:6px;margin-bottom:10px';
+          const nInp = document.createElement('input');
+          nInp.className = 'px-input'; nInp.style.marginBottom = '0'; nInp.maxLength = 30;
+          nInp.placeholder = 'VD: Máy của bố, Camera cổng...';
+          nInp.value = curNote;
+          const nBtn = document.createElement('button');
+          nBtn.type = 'button'; nBtn.className = 'px-btn accent'; nBtn.style.height = '38px';
+          nBtn.textContent = 'LƯU';
+          nBtn.onclick = () => {
+            const v = nInp.value.trim();
+            if (v) state.prefs.notes[d.mac] = v;
+            else delete state.prefs.notes[d.mac];
+            savePrefs(); render(); toast('ĐÃ LƯU GHI CHÚ');
+          };
+          nRow.append(nInp, nBtn);
+          body.append(nLbl, nRow);
+
           // Quick Actions Grid
           const actGrid = document.createElement('div');
-          actGrid.className = 'sheet-grid';
+          actGrid.className = 'sheet-actions';
           const mkBtn = (txt, cls, fn) => {
             const b = document.createElement('button');
-            b.type = 'button'; b.className = `btn-block ${cls}`; b.textContent = txt;
+            b.type = 'button'; b.className = `px-btn ${cls}`; b.style.height = '38px'; b.textContent = txt;
             b.onclick = () => { closeDlg(); fn(); };
             actGrid.appendChild(b);
           };
 
-          mkBtn(isPinned ? '📌 Bỏ ghim đầu trang' : '📌 Ghim lên đầu', 'primary', () => {
+          mkBtn(isPinned ? '📌 BỎ GHIM' : '📌 GHIM ĐẦU TRANG', 'accent', () => {
             if (isPinned) state.prefs.pinned = state.prefs.pinned.filter(x => x !== d.mac);
             else state.prefs.pinned.unshift(d.mac);
-            savePrefs(); render(); toast(isPinned ? 'Đã bỏ ghim' : 'Đã ghim lên đầu');
+            savePrefs(); render(); toast(isPinned ? 'ĐÃ BỎ GHIM' : 'ĐÃ GHIM LÊN ĐẦU');
           });
-          mkBtn('✎ Đổi tên máy', '', () => openRename(d));
-          mkBtn('⏱ Giới hạn QoS', '', () => openQosModal(d));
-          if (d.ip) mkBtn('🔒 Gán IP cố định', '', () => postAction({ action: 'static_lease', mac: d.mac, ip: d.ip }));
-          mkBtn('⚡ Wake-on-LAN', '', () => postAction({ action: 'wol', mac: d.mac }));
-          if (d.online && d.band !== 'LAN') mkBtn('👢 Kick Wi-Fi', 'danger', () => postAction({ action: 'kick', mac: d.mac }).then(ok => ok && fetchList()));
+          mkBtn('✎ ĐỔI TÊN MÁY', 'soft', () => openRename(d));
+          mkBtn('⏱ GIỚI HẠN QOS', 'soft', () => openQosModal(d));
+          if (d.ip) mkBtn('🔒 GÁN IP CỐ ĐỊNH', 'soft', () => postAction({ action: 'static_lease', mac: d.mac, ip: d.ip }));
+          mkBtn('⚡ WAKE-ON-LAN', 'soft', () => postAction({ action: 'wol', mac: d.mac }));
+          if (d.online && d.band !== 'LAN') mkBtn('👢 KICK WI-FI', 'danger', () => postAction({ action: 'kick', mac: d.mac }).then(ok => ok && fetchList()));
           body.appendChild(actGrid);
         }
       });
@@ -1428,13 +1581,13 @@
     function openRename(d) {
       const prof = resolveProfile(d);
       openModal({
-        title: 'Đổi tên thiết bị',
+        title: 'ĐỔI TÊN THIẾT BỊ',
         desc: `Lưu tên trên Router cho [${d.mac}] (xóa trống để bỏ tên tự đặt):`,
-        okText: 'Lưu tên',
-        okClass: 'primary',
+        okText: 'LƯU TÊN',
+        okClass: 'accent',
         buildBody: body => {
           const inp = document.createElement('input');
-          inp.className = 'm-input'; inp.maxLength = 32; inp.id = 'inp-rename';
+          inp.className = 'px-input'; inp.maxLength = 32; inp.id = 'inp-rename';
           inp.value = (d.name || '').trim();
           inp.placeholder = prof.name;
           body.appendChild(inp);
@@ -1452,19 +1605,19 @@
     function openQosModal(d) {
       const curRate = Number(d.qos_rate || 0);
       openModal({
-        title: 'Giới hạn băng thông (QoS)',
+        title: 'GIỚI HẠN BĂNG THÔNG (QOS)',
         desc: `Tốc độ tối đa (KB/s) cho "${resolveProfile(d).name}". Nhập 0 để gỡ, tối thiểu 16 KB/s:`,
-        okText: 'Áp dụng',
-        okClass: 'primary',
+        okText: 'ÁP DỤNG',
+        okClass: 'accent',
         buildBody: body => {
           const inp = document.createElement('input');
-          inp.type = 'number'; inp.min = '0'; inp.step = '16'; inp.className = 'm-input'; inp.id = 'inp-qos';
+          inp.type = 'number'; inp.min = '0'; inp.step = '16'; inp.className = 'px-input'; inp.id = 'inp-qos';
           inp.value = curRate;
           const pRow = document.createElement('div');
           pRow.style.cssText = 'display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px';
-          [[0,'Gỡ (0)'],[512,'512 KB/s'],[1024,'1 MB/s'],[3072,'3 MB/s'],[5120,'5 MB/s']].forEach(([v, l]) => {
+          [[0,'GỠ (0)'],[512,'512 KB/S'],[1024,'1 MB/S'],[3072,'3 MB/S'],[5120,'5 MB/S']].forEach(([v, l]) => {
             const b = document.createElement('button');
-            b.type = 'button'; b.className = 'btn-act'; b.textContent = l;
+            b.type = 'button'; b.className = 'px-btn soft'; b.textContent = l;
             b.onclick = () => { inp.value = v; };
             pRow.appendChild(b);
           });
@@ -1483,20 +1636,20 @@
     function openIconPicker(mac, cur) {
       let chosen = cur;
       openModal({
-        title: 'Chọn biểu tượng',
+        title: 'CHỌN BIỂU TƯỢNG',
         desc: `Biểu tượng hiển thị cho [${mac}]:`,
-        okText: 'Lưu',
-        okClass: 'primary',
+        okText: 'LƯU',
+        okClass: 'accent',
         buildBody: body => {
           const g = document.createElement('div');
           g.className = 'icon-grid';
           ICONS.forEach(ic => {
             const b = document.createElement('button');
             b.type = 'button';
-            b.className = `icon-cell ${ic === cur ? 'sel' : ''}`;
+            b.className = `icon-opt ${ic === cur ? 'sel' : ''}`;
             b.textContent = ic;
             b.onclick = () => {
-              g.querySelectorAll('.icon-cell').forEach(x => x.classList.remove('sel'));
+              g.querySelectorAll('.icon-opt').forEach(x => x.classList.remove('sel'));
               b.classList.add('sel');
               chosen = ic;
             };
@@ -1506,20 +1659,20 @@
         },
         onOk: () => {
           state.prefs.icons[mac] = chosen;
-          savePrefs(); render(); toast(`Đã đổi biểu tượng ${chosen}`);
+          savePrefs(); render(); toast(`ĐÃ ĐỔI BIỂU TƯỢNG ${chosen}`);
         }
       });
     }
 
     function openAddMac() {
       openModal({
-        title: 'Thêm vào Blacklist',
+        title: 'THÊM VÀO BLACKLIST',
         desc: 'Nhập địa chỉ MAC cần cấm kết nối vĩnh viễn:',
-        okText: 'Chặn MAC',
+        okText: 'CHẶN MAC',
         okClass: 'danger',
         buildBody: body => {
           const inp = document.createElement('input');
-          inp.className = 'm-input'; inp.maxLength = 17; inp.id = 'inp-mac';
+          inp.className = 'px-input'; inp.maxLength = 17; inp.id = 'inp-mac';
           inp.placeholder = 'AA:BB:CC:DD:EE:FF';
           body.appendChild(inp);
           setTimeout(() => inp.focus(), 50);
@@ -1529,29 +1682,34 @@
           if (/^([0-9A-F]{2}[:-]){5}([0-9A-F]{2})$/.test(mac)) {
             postAction({ action: 'blacklist_add', mac }).then(ok => ok && fetchList());
           } else {
-            toast('Địa chỉ MAC không hợp lệ');
+            toast('ĐỊA CHỈ MAC KHÔNG HỢP LỆ');
           }
         }
       });
     }
 
-    function openSettingsModal() {
+    function openToolsModal() {
       openModal({
-        title: 'Cài đặt & Hệ thống',
-        desc: 'Sao lưu cài đặt giao diện hoặc khởi động lại Xiaomi CR6608:',
+        title: 'CÔNG CỤ & HỆ THỐNG',
+        desc: 'Quản lý dữ liệu cài đặt, chọn nhiều thiết bị hoặc khởi động lại CR6608:',
         showOk: false,
         buildBody: body => {
+          const selBtn = document.createElement('button');
+          selBtn.type = 'button'; selBtn.className = 'px-btn soft'; selBtn.style.cssText = 'width:100%;height:38px;margin-bottom:8px';
+          selBtn.textContent = '☑️ BẬT CHẾ ĐỘ CHỌN NHIỀU HÀNG LOẠT';
+          selBtn.onclick = () => { closeDlg(); enterSelectMode(null); };
+
           const expBtn = document.createElement('button');
-          expBtn.type = 'button'; expBtn.className = 'btn-block primary'; expBtn.style.width = '100%'; expBtn.style.marginBottom = '8px';
-          expBtn.textContent = '📤 Xuất cài đặt (.json)';
+          expBtn.type = 'button'; expBtn.className = 'px-btn accent'; expBtn.style.cssText = 'width:100%;height:38px;margin-bottom:8px';
+          expBtn.textContent = '📤 XUẤT CÀI ĐẶT (.JSON)';
           expBtn.onclick = () => {
             const blob = new Blob([JSON.stringify(state.prefs, null, 2)], { type: 'application/json' });
             const a = document.createElement('a');
             a.href = URL.createObjectURL(blob);
-            a.download = `cr6608-settings-${new Date().toISOString().slice(0,10)}.json`;
+            a.download = `cr6608-pixel-v5-${new Date().toISOString().slice(0,10)}.json`;
             a.click();
             URL.revokeObjectURL(a.href);
-            toast('Đã tải xuống file cấu hình JSON');
+            toast('ĐÃ XUẤT FILE CẤU HÌNH JSON');
           };
 
           const impInp = document.createElement('input');
@@ -1565,44 +1723,46 @@
                 const parsed = JSON.parse(String(reader.result));
                 if (typeof parsed !== 'object' || !parsed) throw new Error();
                 state.prefs = { ...defaultPrefs, ...parsed };
-                savePrefs(); applyTheme(); renderGroupPills(); render(); closeDlg();
-                toast('Đã khôi phục cài đặt');
+                savePrefs(); applyTheme(); renderGroupChips(); render(); closeDlg();
+                toast('ĐÃ KHÔI PHỤC CÀI ĐẶT');
               } catch (err) {
-                toast('File JSON không hợp lệ');
+                toast('FILE JSON KHÔNG HỢP LỆ');
               }
             };
             reader.readAsText(file);
           };
 
           const impBtn = document.createElement('button');
-          impBtn.type = 'button'; impBtn.className = 'btn-block'; impBtn.style.width = '100%'; impBtn.style.marginBottom = '14px';
-          impBtn.textContent = '📥 Nhập cài đặt từ file JSON';
+          impBtn.type = 'button'; impBtn.className = 'px-btn soft'; impBtn.style.cssText = 'width:100%;height:38px;margin-bottom:14px';
+          impBtn.textContent = '📥 NHẬP CÀI ĐẶT TỪ JSON';
           impBtn.onclick = () => impInp.click();
 
           const rebBtn = document.createElement('button');
-          rebBtn.type = 'button'; rebBtn.className = 'btn-block danger'; rebBtn.style.width = '100%';
-          rebBtn.textContent = '🔄 Khởi động lại Router CR6608';
+          rebBtn.type = 'button'; rebBtn.className = 'px-btn danger'; rebBtn.style.cssText = 'width:100%;height:38px';
+          rebBtn.textContent = '🔄 KHỞI ĐỘNG LẠI ROUTER CR6608';
           rebBtn.onclick = () => {
-            openConfirm('Xác nhận bước 1/2', 'Router sẽ ngắt mạng trong khoảng 1 phút. Tiếp tục?', () => {
+            openConfirm('XÁC NHẬN BƯỚC 1/2', 'Router sẽ ngắt mạng trong khoảng 1 phút. Tiếp tục?', () => {
               setTimeout(() => {
-                openConfirm('Xác nhận cuối cùng (2/2)', 'Bạn chắc chắn muốn KHỞI ĐỘNG LẠI router?', () => {
+                openConfirm('XÁC NHẬN CUỐI CÙNG (2/2)', 'Bạn chắc chắn muốn KHỞI ĐỘNG LẠI router ngay bây giờ?', () => {
                   postAction({ action: 'reboot' });
                 });
               }, 120);
             });
           };
 
-          body.append(expBtn, impInp, impBtn, rebBtn);
+          body.append(selBtn, expBtn, impInp, impBtn, rebBtn);
         }
       });
     }
 
     /* ==========================================================================
-       INIT & EVENT LISTENERS
+       INITIALIZATION
        ========================================================================== */
     (function init() {
       applyTheme();
-      renderGroupPills();
+      renderGroupChips();
+      updateClock();
+      setInterval(updateClock, 15000);
 
       if (!DEMO_MODE) {
         try {
@@ -1621,6 +1781,7 @@
       });
 
       $('btn-theme').onclick = () => {
+        vibrate();
         const curDark = document.documentElement.dataset.theme === 'dark';
         state.prefs.theme = curDark ? 'light' : 'dark';
         savePrefs();
@@ -1628,19 +1789,20 @@
       };
 
       $('btn-poll').onclick = () => {
+        vibrate();
         const cycle = [5000, 10000, 30000, 0];
         const next = cycle[(cycle.indexOf(state.prefs.pollMs) + 1) % cycle.length];
         state.prefs.pollMs = next;
         savePrefs();
         applyTheme();
         scheduleNextPoll();
-        toast(next === 0 ? 'Chế độ làm mới thủ công' : `Tự làm mới mỗi ${next / 1000}s`);
+        toast(next === 0 ? 'CHẾ ĐỘ LÀM MỚI THỦ CÔNG' : `TỰ LÀM MỚI MỖI ${next / 1000} GIÂY`);
       };
 
-      $('btn-settings').onclick = openSettingsModal;
-      $('btn-refresh').onclick = () => { toast('Đang làm mới...'); fetchList(); };
+      $('btn-tools').onclick = () => { vibrate(); openToolsModal(); };
+      $('btn-refresh').onclick = () => { vibrate(); toast('ĐANG CẬP NHẬT...'); fetchList(); };
       $('btn-retry').onclick = fetchList;
-      $('fab-add').onclick = openAddMac;
+      $('fab-add').onclick = () => { vibrate(); openAddMac(); };
 
       $('bulk-block').onclick = () => runBulkAction('block');
       $('bulk-unblock').onclick = () => runBulkAction('unblock');
@@ -1651,7 +1813,7 @@
       const searchInp = $('search');
       const clearBtn = $('search-clear');
       searchInp.oninput = e => {
-        clearBtn.style.display = e.target.value ? 'block' : 'none';
+        clearBtn.style.display = e.target.value ? 'inline-flex' : 'none';
         clearTimeout(sTimer);
         sTimer = setTimeout(() => {
           state.query = e.target.value.trim().toLowerCase();
@@ -1666,18 +1828,20 @@
       };
 
       $('filter-row').onclick = e => {
-        const c = e.target.closest('.pill[data-f]');
+        const c = e.target.closest('.px-chip[data-f]');
         if (!c) return;
-        $('filter-row').querySelectorAll('.pill[data-f]').forEach(x => x.classList.remove('active'));
+        vibrate();
+        $('filter-row').querySelectorAll('.px-chip[data-f]').forEach(x => x.classList.remove('active'));
         c.classList.add('active');
         state.filter = c.dataset.f;
         render();
       };
 
       $('sort-row').onclick = e => {
-        const c = e.target.closest('.pill[data-s]');
+        const c = e.target.closest('.px-chip[data-s]');
         if (!c) return;
-        $('sort-row').querySelectorAll('.pill[data-s]').forEach(x => x.classList.remove('active'));
+        vibrate();
+        $('sort-row').querySelectorAll('.px-chip[data-s]').forEach(x => x.classList.remove('active'));
         c.classList.add('active');
         state.sort = c.dataset.s;
         render();
@@ -1685,14 +1849,14 @@
 
       $('tab-clients').onclick = () => {
         if (state.tab === 'clients') return;
-        state.tab = 'clients';
+        vibrate(); state.tab = 'clients';
         $('tab-clients').classList.add('active');
         $('tab-blacklist').classList.remove('active');
         render();
       };
       $('tab-blacklist').onclick = () => {
         if (state.tab === 'blacklist') return;
-        state.tab = 'blacklist';
+        vibrate(); state.tab = 'blacklist';
         $('tab-blacklist').classList.add('active');
         $('tab-clients').classList.remove('active');
         render();
