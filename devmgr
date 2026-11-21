@@ -3,200 +3,313 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>CR6608 Device Manager v3.2</title>
+  <title>CR6608 Device Manager v4.0</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
     /* ==========================================================================
-       Material Design 3 (Material You) - Zero-Repaint High Performance Tokens
+       1. DESIGN TOKENS: MATERIAL 3 (DEFAULT) & iOS LIQUID GLASS
        ========================================================================== */
     :root {
       --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-      --r-xs: 4px; --r-sm: 8px; --r-md: 12px; --r-lg: 16px; --r-xl: 28px; --r-full: 9999px;
+      --r-xs: 6px; --r-sm: 10px; --r-md: 14px; --r-lg: 20px; --r-xl: 28px; --r-full: 9999px;
       --ease: cubic-bezier(0.2, 0, 0, 1);
 
+      /* Material 3 Light */
       --primary: #0061A4; --on-primary: #FFFFFF;
       --primary-container: #D1E4FF; --on-primary-container: #001D36;
       --secondary-container: #D7E3F7; --on-secondary-container: #101C2B;
       --tertiary-container: #F2DAFF; --on-tertiary-container: #251431;
       --error: #BA1A1A; --on-error: #FFFFFF;
       --error-container: #FFDAD6; --on-error-container: #410002;
+      --warning-container: #FFDEA6; --on-warning-container: #271900;
       --bg: #F8F9FF; --on-bg: #191C20;
-      --surface-variant: #DFE2EB; --on-surface-variant: #43474E;
+      --on-surface-variant: #43474E;
       --outline: #73777F; --outline-variant: #C3C7D0;
       --surf-lowest: #FFFFFF; --surf-low: #F2F3FA; --surf: #ECEEF4; --surf-high: #E6E8EE; --surf-highest: #E0E2E8;
       --success: #198754;
-      --warning-container: #FFDEA6; --on-warning-container: #271900;
+      --card-shadow: none;
+      --glass-blur: none;
     }
 
     [data-theme="dark"] {
+      /* Material 3 Dark */
       --primary: #9ECAFF; --on-primary: #003258;
       --primary-container: #00497D; --on-primary-container: #D1E4FF;
       --secondary-container: #3B4858; --on-secondary-container: #D7E3F7;
       --tertiary-container: #523F5F; --on-tertiary-container: #F2DAFF;
       --error: #FFB4AB; --on-error: #690005;
       --error-container: #93000A; --on-error-container: #FFDAD6;
+      --warning-container: #5B4300; --on-warning-container: #FFDEA6;
       --bg: #111318; --on-bg: #E2E2E9;
-      --surface-variant: #43474E; --on-surface-variant: #C3C7D0;
+      --on-surface-variant: #C3C7D0;
       --outline: #8D9199; --outline-variant: #43474E;
       --surf-lowest: #0C0E13; --surf-low: #191C20; --surf: #1D2024; --surf-high: #282A2F; --surf-highest: #33353A;
       --success: #75B798;
-      --warning-container: #5B4300; --on-warning-container: #FFDEA6;
     }
+
+    /* iOS Liquid Glass Light */
+    [data-style="glass"] {
+      --bg: linear-gradient(145deg, #E4EEFF 0%, #F4F0FF 48%, #E6F7FF 100%);
+      --surf-lowest: rgba(255, 255, 255, 0.55);
+      --surf-low: rgba(255, 255, 255, 0.68);
+      --surf: rgba(255, 255, 255, 0.78);
+      --surf-high: rgba(255, 255, 255, 0.88);
+      --surf-highest: rgba(240, 244, 255, 0.95);
+      --outline-variant: rgba(255, 255, 255, 0.85);
+      --card-shadow: 0 6px 20px rgba(15, 35, 80, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+      --glass-blur: blur(14px);
+    }
+
+    /* iOS Liquid Glass Dark */
+    [data-style="glass"][data-theme="dark"] {
+      --bg: linear-gradient(145deg, #0B1221 0%, #161229 50%, #0C1B24 100%);
+      --surf-lowest: rgba(22, 27, 40, 0.55);
+      --surf-low: rgba(28, 34, 50, 0.65);
+      --surf: rgba(35, 42, 60, 0.75);
+      --surf-high: rgba(42, 50, 72, 0.88);
+      --surf-highest: rgba(54, 64, 90, 0.95);
+      --outline-variant: rgba(255, 255, 255, 0.14);
+      --card-shadow: 0 8px 24px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+      --glass-blur: blur(14px);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+    }
+
+    html { background: #F8F9FF; min-height: 100%; }
+    [data-theme="dark"] html { background: #111318; }
 
     body {
       font-family: var(--font);
       background: var(--bg);
+      background-attachment: fixed;
       color: var(--on-bg);
       line-height: 1.4;
-      padding: 10px 14px 105px 14px;
-      max-width: 860px;
+      padding: 10px 14px 110px 14px;
+      max-width: 880px;
       margin: 0 auto;
+      min-height: 100vh;
       -webkit-font-smoothing: antialiased;
     }
 
-    /* Top App Bar */
+    /* ==========================================================================
+       2. TOP BAR, SYSTEM HEALTH, TRAFFIC & TOP 3
+       ========================================================================== */
     .top-bar {
       position: sticky; top: 0; z-index: 40;
-      background: var(--bg);
-      padding: 6px 0 10px 0;
-      display: flex; flex-direction: column; gap: 10px;
+      padding: 6px 0 8px 0;
+      display: flex; flex-direction: column; gap: 8px;
     }
-    .bar-row { display: flex; justify-content: space-between; align-items: center; }
-    .title-group { display: flex; align-items: center; gap: 8px; }
-    .app-title { font-size: 1.3rem; font-weight: 800; letter-spacing: -0.02em; }
-    .badge-v3 {
-      font-size: 0.68rem; font-weight: 800;
-      background: var(--primary-container); color: var(--on-primary-container);
-      padding: 2px 8px; border-radius: var(--r-full);
+    [data-style="m3"] .top-bar { background: var(--bg); }
+    [data-style="glass"] .top-bar {
+      background: var(--surf);
+      backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur);
+      margin: 0 -14px; padding: 8px 14px 10px 14px;
+      border-bottom: 1px solid var(--outline-variant);
     }
-    .sync-dot {
-      width: 8px; height: 8px; border-radius: 50%; background: var(--success);
-      display: inline-block; transition: transform 0.15s, background 0.15s;
-    }
-    .sync-dot.syncing { background: var(--primary); transform: scale(1.4); }
+
+    .bar-row { display: flex; justify-content: space-between; align-items: center; gap: 6px; }
+    .title-group { display: flex; align-items: center; gap: 6px; min-width: 0; }
+    .app-title { font-size: 1.22rem; font-weight: 800; letter-spacing: -0.02em; white-space: nowrap; }
+    .sync-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--success); flex-shrink: 0; }
+    .sync-dot.syncing { background: var(--primary); transform: scale(1.35); }
     .sync-dot.err { background: var(--error); }
 
-    .top-actions { display: flex; gap: 6px; }
+    .top-actions { display: flex; gap: 5px; align-items: center; flex-shrink: 0; }
     .btn-icon {
-      width: 38px; height: 38px; border-radius: var(--r-full); border: none;
+      width: 35px; height: 35px; border-radius: var(--r-full);
+      border: 1px solid var(--outline-variant);
       background: var(--surf); color: var(--on-bg);
       display: inline-flex; align-items: center; justify-content: center;
-      cursor: pointer; font-size: 1.05rem;
+      cursor: pointer; font-size: 0.95rem;
     }
     .btn-icon:active { transform: scale(0.92); background: var(--surf-highest); }
 
-    /* Tonal Traffic Overview */
-    .traffic-card {
-      background: var(--surf-low); border-radius: var(--r-lg);
-      padding: 10px 14px; border: 1px solid var(--outline-variant);
-      display: flex; justify-content: space-between; align-items: center;
+    .btn-pill {
+      height: 35px; padding: 0 10px; border-radius: var(--r-full);
+      border: 1px solid var(--outline-variant);
+      background: var(--surf); color: var(--on-bg);
+      display: inline-flex; align-items: center; gap: 4px;
+      cursor: pointer; font-size: 0.75rem; font-weight: 800; white-space: nowrap;
     }
-    .stat-box { display: flex; align-items: center; gap: 8px; }
-    .dot { width: 9px; height: 9px; border-radius: 50%; }
-    .dot.rx { background: var(--primary); }
-    .dot.tx { background: var(--success); }
-    .stat-lbl { font-size: 0.65rem; font-weight: 700; color: var(--on-surface-variant); text-transform: uppercase; }
-    .stat-val { font-size: 0.92rem; font-weight: 800; font-family: var(--mono); }
-    .stat-val.rx { color: var(--primary); }
-    .stat-val.tx { color: var(--success); }
+    .btn-pill:active { transform: scale(0.94); }
 
-    /* Search & Filter Chips */
+    /* System Health Panel (Collapsible) */
+    .sys-panel {
+      background: var(--surf-low); border-radius: var(--r-md);
+      border: 1px solid var(--outline-variant); box-shadow: var(--card-shadow);
+      overflow: hidden;
+    }
+    .sys-head {
+      padding: 7px 12px; display: flex; justify-content: space-between; align-items: center;
+      cursor: pointer; font-size: 0.74rem; font-weight: 700; color: var(--on-surface-variant);
+      user-select: none;
+    }
+    .sys-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px;
+      padding: 0 12px 9px 12px; border-top: 1px dashed var(--outline-variant); padding-top: 7px;
+    }
+    .sys-panel.collapsed .sys-grid { display: none; }
+    .sys-item { display: flex; flex-direction: column; }
+    .sys-k { font-size: 0.6rem; font-weight: 700; color: var(--on-surface-variant); text-transform: uppercase; }
+    .sys-v { font-family: var(--mono); font-size: 0.8rem; font-weight: 800; }
+
+    /* Traffic & Top 3 Strip */
+    .overview-box {
+      background: var(--surf-low); border-radius: var(--r-lg);
+      padding: 9px 12px; border: 1px solid var(--outline-variant);
+      box-shadow: var(--card-shadow);
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    .traffic-row { display: flex; justify-content: space-between; align-items: center; }
+    .stat-box { display: flex; align-items: center; gap: 7px; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; }
+    .dot.rx { background: var(--primary); } .dot.tx { background: var(--success); }
+    .stat-lbl { font-size: 0.62rem; font-weight: 700; color: var(--on-surface-variant); text-transform: uppercase; }
+    .stat-val { font-size: 0.88rem; font-weight: 800; font-family: var(--mono); }
+    .stat-val.rx { color: var(--primary); } .stat-val.tx { color: var(--success); }
+
+    .top3-row {
+      display: flex; align-items: center; gap: 6px; overflow-x: auto; scrollbar-width: none;
+      padding-top: 6px; border-top: 1px solid var(--outline-variant); font-size: 0.7rem;
+    }
+    .top3-row::-webkit-scrollbar { display: none; }
+    .top3-lbl { font-weight: 800; color: var(--on-surface-variant); white-space: nowrap; }
+    .top3-pill {
+      display: inline-flex; align-items: center; gap: 4px;
+      background: var(--surf); border: 1px solid var(--outline-variant);
+      padding: 2px 8px; border-radius: var(--r-full); white-space: nowrap; cursor: pointer;
+    }
+    .top3-pill b { font-weight: 700; max-width: 90px; overflow: hidden; text-overflow: ellipsis; }
+    .top3-pill span { font-family: var(--mono); color: var(--primary); font-weight: 800; }
+
+    /* ==========================================================================
+       3. SEARCH, FILTER CHIPS & SORT BAR
+       ========================================================================== */
     .search-box {
-      background: var(--surf-high); border-radius: var(--r-full); height: 44px;
-      display: flex; align-items: center; padding: 0 14px; margin-bottom: 10px;
+      background: var(--surf-high); border-radius: var(--r-full); height: 42px;
+      display: flex; align-items: center; padding: 0 14px; margin: 10px 0 8px 0;
+      border: 1px solid var(--outline-variant);
     }
     .search-box input {
       border: none; background: transparent; outline: none; width: 100%;
-      margin-left: 8px; font-size: 0.9rem; color: var(--on-bg);
+      margin-left: 8px; font-size: 0.88rem; color: var(--on-bg);
     }
     .chips-row {
-      display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; margin-bottom: 12px;
+      display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; margin-bottom: 6px; align-items: center;
     }
     .chips-row::-webkit-scrollbar { display: none; }
     .chip {
-      height: 32px; padding: 0 12px; border-radius: var(--r-sm);
-      display: inline-flex; align-items: center; font-size: 0.78rem; font-weight: 600;
+      height: 30px; padding: 0 11px; border-radius: var(--r-sm);
+      display: inline-flex; align-items: center; gap: 4px; font-size: 0.75rem; font-weight: 600;
       cursor: pointer; white-space: nowrap; border: 1px solid var(--outline-variant);
-      background: var(--bg); color: var(--on-surface-variant); user-select: none;
+      background: var(--surf-lowest); color: var(--on-surface-variant); user-select: none;
     }
     .chip.active {
       background: var(--secondary-container); color: var(--on-secondary-container);
-      border-color: transparent; font-weight: 700;
+      border-color: transparent; font-weight: 800;
     }
+    .chip.sort-chip.active {
+      background: var(--primary-container); color: var(--on-primary-container);
+    }
+    .chip-sep { width: 1px; height: 18px; background: var(--outline-variant); flex-shrink: 0; margin: 0 2px; }
 
-    /* Device Grid - Hardware Accelerated Layout Containment */
-    .grid {
-      display: grid; grid-template-columns: 1fr; gap: 10px;
-    }
-    @media (min-width: 640px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+    /* ==========================================================================
+       4. DEVICE CARDS, SPARKLINE & MULTI-SELECT
+       ========================================================================== */
+    .grid { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 6px; }
+    @media (min-width: 660px) { .grid { grid-template-columns: repeat(2, 1fr); } }
 
     .card {
-      background: var(--surf-low); border-radius: var(--r-lg); padding: 14px;
+      background: var(--surf-low); border-radius: var(--r-lg); padding: 13px;
       border: 1px solid var(--outline-variant);
-      display: flex; flex-direction: column; gap: 10px;
-      contain: content;
+      box-shadow: var(--card-shadow);
+      display: flex; flex-direction: column; gap: 9px;
+      contain: content; cursor: pointer; position: relative;
+      user-select: none;
     }
-    .card.offline { opacity: 0.55; background: var(--surf-lowest); }
+    .card.offline { opacity: 0.65; background: var(--surf-lowest); }
+    .card.pinned { border-color: var(--primary); }
+    .card.selected { outline: 2px solid var(--primary); background: var(--primary-container); }
 
     .card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
     .profile { display: flex; align-items: center; gap: 10px; min-width: 0; flex: 1; }
+
+    .sel-chk {
+      width: 22px; height: 22px; border-radius: 6px; border: 2px solid var(--primary);
+      display: none; align-items: center; justify-content: center; font-size: 0.85rem;
+      font-weight: 900; flex-shrink: 0; background: var(--surf-lowest); color: var(--primary);
+    }
+    .select-mode .sel-chk { display: flex; }
+    .card.selected .sel-chk { background: var(--primary); color: var(--on-primary); }
+
     .icon-btn {
-      width: 44px; height: 44px; border-radius: var(--r-md);
+      width: 42px; height: 42px; border-radius: var(--r-md);
       background: var(--primary-container); color: var(--on-primary-container);
       display: flex; align-items: center; justify-content: center;
-      font-size: 1.4rem; border: none; cursor: pointer; flex-shrink: 0; position: relative;
+      font-size: 1.35rem; border: none; cursor: pointer; flex-shrink: 0; position: relative;
     }
     .icon-btn:active { transform: scale(0.92); }
-    .icon-badge {
-      position: absolute; bottom: -2px; right: -2px; font-size: 0.55rem;
-      background: var(--surf-highest); border-radius: 50%; width: 15px; height: 15px;
-      display: flex; align-items: center; justify-content: center;
-      border: 1px solid var(--outline-variant);
+    .pin-mark {
+      position: absolute; top: -4px; left: -4px; font-size: 0.65rem;
+      background: var(--primary); color: var(--on-primary); border-radius: 50%;
+      width: 16px; height: 16px; display: none; align-items: center; justify-content: center;
     }
+    .card.pinned .pin-mark { display: flex; }
 
-    .names { display: flex; flex-direction: column; min-width: 0; cursor: pointer; }
+    .names { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+    .name-row { display: flex; align-items: center; gap: 4px; min-width: 0; }
     .name-main {
-      font-size: 0.96rem; font-weight: 700; white-space: nowrap;
-      overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 4px;
+      font-size: 0.94rem; font-weight: 800; white-space: nowrap;
+      overflow: hidden; text-overflow: ellipsis;
+    }
+    .btn-edit-name {
+      border: none; background: transparent; color: var(--on-surface-variant);
+      font-size: 0.78rem; padding: 2px 5px; cursor: pointer; opacity: 0.7; flex-shrink: 0;
     }
     .name-sub {
-      font-size: 0.72rem; color: var(--on-surface-variant);
+      font-size: 0.71rem; color: var(--on-surface-variant);
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
 
-    /* MD3 Switch */
-    .switch-wrap { display: flex; flex-direction: column; align-items: center; gap: 2px; }
-    .switch { position: relative; display: inline-block; width: 46px; height: 28px; }
+    /* Switch */
+    .switch-wrap { display: flex; flex-direction: column; align-items: center; gap: 2px; flex-shrink: 0; }
+    .switch { position: relative; display: inline-block; width: 44px; height: 26px; }
     .switch input { opacity: 0; width: 0; height: 0; }
     .track {
       position: absolute; inset: 0; background: var(--surf-highest);
       border: 2px solid var(--outline); border-radius: var(--r-full); cursor: pointer;
     }
     .track::before {
-      content: ""; position: absolute; height: 14px; width: 14px; left: 5px; bottom: 5px;
+      content: ""; position: absolute; height: 14px; width: 14px; left: 4px; bottom: 4px;
       background: var(--outline); border-radius: 50%; transition: transform 0.15s var(--ease);
     }
     .switch input:checked + .track { background: var(--error); border-color: var(--error); }
     .switch input:checked + .track::before {
-      transform: translateX(18px); width: 20px; height: 20px; bottom: 2px; left: 3px;
+      transform: translateX(18px); width: 18px; height: 18px; bottom: 2px; left: 3px;
       background: var(--on-error);
     }
 
-    /* Badges & RSSI */
-    .tags { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 2px; }
+    /* Tags & RSSI */
+    .tags { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 3px; }
     .tag {
-      font-size: 0.62rem; font-weight: 700; padding: 1px 6px;
+      font-size: 0.6rem; font-weight: 800; padding: 1px 6px;
       border-radius: var(--r-xs); text-transform: uppercase;
     }
     .t-rand { background: var(--tertiary-container); color: var(--on-tertiary-container); }
     .t-band { background: var(--surf-highest); color: var(--on-surface-variant); }
+    .t-grp { background: var(--secondary-container); color: var(--on-secondary-container); }
     .t-blk { background: var(--error-container); color: var(--on-error-container); }
-    .t-new { background: var(--error); color: var(--on-error); }
     .t-qos { background: var(--warning-container); color: var(--on-warning-container); }
+    .t-sch { background: var(--primary-container); color: var(--on-primary-container); }
 
-    .rssi { display: inline-flex; align-items: flex-end; gap: 2px; height: 11px; margin-left: 4px; }
+    @keyframes blink3 { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
+    .t-new { background: var(--error); color: var(--on-error); animation: blink3 0.7s ease-in-out 3; }
+
+    .rssi { display: inline-flex; align-items: flex-end; gap: 2px; height: 10px; margin-left: 4px; }
     .rssi i { width: 3px; background: var(--outline-variant); border-radius: 1px; font-style: normal; }
     .rssi i:nth-child(1) { height: 25%; } .rssi i:nth-child(2) { height: 50%; }
     .rssi i:nth-child(3) { height: 75%; } .rssi i:nth-child(4) { height: 100%; }
@@ -204,41 +317,53 @@
     .rssi[data-l="2"] i:nth-child(-n+2) { background: #FF9800; }
     .rssi[data-l="3"] i:nth-child(-n+3), .rssi[data-l="4"] i { background: var(--success); }
 
-    /* Matrix */
+    /* Info & Sparkline Row */
     .matrix {
-      background: var(--surf); border-radius: var(--r-md); padding: 7px 10px;
-      display: grid; grid-template-columns: 1fr 1fr; gap: 4px 10px; font-size: 0.72rem;
+      background: var(--surf); border-radius: var(--r-md); padding: 6px 10px;
+      display: grid; grid-template-columns: 1.1fr 1fr 68px; gap: 6px; align-items: center;
+      font-size: 0.71rem;
     }
-    .m-col { display: flex; flex-direction: column; cursor: pointer; }
-    .m-col:active { opacity: 0.6; }
-    .m-k { font-size: 0.6rem; font-weight: 700; color: var(--on-surface-variant); }
-    .m-v { font-family: var(--mono); font-weight: 700; overflow: hidden; text-overflow: ellipsis; }
+    .m-col { display: flex; flex-direction: column; min-width: 0; }
+    .m-k { font-size: 0.58rem; font-weight: 700; color: var(--on-surface-variant); }
+    .m-v { font-family: var(--mono); font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .spark-svg { width: 68px; height: 24px; display: block; overflow: visible; }
+    .spark-line { fill: none; stroke: var(--primary); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 
-    /* Bottom Row */
-    .card-bot { display: flex; justify-content: space-between; align-items: center; gap: 6px; flex-wrap: wrap; }
-    .spd { display: flex; gap: 8px; font-family: var(--mono); font-size: 0.74rem; font-weight: 800; }
+    /* Card Bottom */
+    .card-bot { display: flex; justify-content: space-between; align-items: center; gap: 6px; }
+    .spd { display: flex; gap: 7px; font-family: var(--mono); font-size: 0.72rem; font-weight: 800; }
     .spd-d { color: var(--primary); } .spd-u { color: var(--success); }
-    .btns { display: flex; gap: 4px; flex-wrap: wrap; justify-content: flex-end; margin-left: auto; }
+    .btns { display: flex; gap: 4px; flex-wrap: wrap; justify-content: flex-end; }
     .btn-sm {
-      border: none; background: var(--surf-high); color: var(--on-bg);
-      padding: 5px 8px; border-radius: var(--r-sm); font-size: 0.7rem; font-weight: 700; cursor: pointer;
+      border: 1px solid var(--outline-variant); background: var(--surf-high); color: var(--on-bg);
+      padding: 4px 8px; border-radius: var(--r-sm); font-size: 0.69rem; font-weight: 700; cursor: pointer;
     }
-    .btn-sm:active { background: var(--surf-highest); }
-    .btn-sm.tonal { background: var(--secondary-container); color: var(--on-secondary-container); }
-    .btn-sm.danger { background: var(--error-container); color: var(--on-error-container); }
+    .btn-sm:active { transform: scale(0.94); }
+    .btn-sm.tonal { background: var(--secondary-container); color: var(--on-secondary-container); border-color: transparent; }
+    .btn-sm.danger { background: var(--error-container); color: var(--on-error-container); border-color: transparent; }
 
-    /* Static Placeholder (No infinite animation) */
-    .skeleton {
-      height: 152px; border-radius: var(--r-lg); background: var(--surf-low);
-      border: 1px solid var(--outline-variant); opacity: 0.5;
+    /* ==========================================================================
+       5. BULK ACTION BAR, FAB & BOTTOM NAV
+       ========================================================================== */
+    .bulk-bar {
+      position: fixed; bottom: 72px; left: 12px; right: 12px; max-width: 856px; margin: 0 auto;
+      background: var(--primary); color: var(--on-primary);
+      border-radius: var(--r-lg); padding: 10px 14px;
+      display: none; justify-content: space-between; align-items: center; gap: 8px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.28); z-index: 55;
+    }
+    .bulk-bar.show { display: flex; }
+    .bulk-btns { display: flex; gap: 6px; flex-wrap: wrap; }
+    .bulk-btn {
+      border: none; background: rgba(255,255,255,0.2); color: inherit;
+      padding: 6px 10px; border-radius: var(--r-sm); font-size: 0.74rem; font-weight: 800; cursor: pointer;
     }
 
-    /* FAB & Bottom Nav */
     .fab {
-      position: fixed; right: 16px; bottom: 80px; height: 52px; padding: 0 18px;
+      position: fixed; right: 16px; bottom: 78px; height: 50px; padding: 0 16px;
       border-radius: var(--r-lg); background: var(--primary-container); color: var(--on-primary-container);
-      border: none; box-shadow: 0 4px 10px rgba(0,0,0,0.18);
-      display: flex; align-items: center; gap: 8px; font-size: 0.86rem; font-weight: 800;
+      border: 1px solid var(--outline-variant); box-shadow: 0 4px 12px rgba(0,0,0,0.18);
+      display: flex; align-items: center; gap: 6px; font-size: 0.84rem; font-weight: 800;
       cursor: pointer; z-index: 45;
     }
     .fab:active { transform: scale(0.94); }
@@ -247,47 +372,81 @@
       position: fixed; bottom: 0; left: 0; right: 0; height: 64px;
       background: var(--surf); border-top: 1px solid var(--outline-variant);
       display: flex; justify-content: space-around; align-items: center;
-      z-index: 50; max-width: 860px; margin: 0 auto;
+      z-index: 50; max-width: 880px; margin: 0 auto;
     }
+    [data-style="glass"] .nav-bar { backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur); }
     .nav-btn {
-      display: flex; flex-direction: column; align-items: center; gap: 3px;
+      display: flex; flex-direction: column; align-items: center; gap: 2px;
       cursor: pointer; background: transparent; border: none; color: var(--on-surface-variant);
     }
     .nav-pill {
-      width: 54px; height: 28px; border-radius: var(--r-full);
-      display: flex; align-items: center; justify-content: center; font-size: 1.1rem;
+      width: 52px; height: 28px; border-radius: var(--r-full);
+      display: flex; align-items: center; justify-content: center; font-size: 1.05rem;
     }
-    .nav-lbl { font-size: 0.7rem; font-weight: 700; }
+    .nav-lbl { font-size: 0.69rem; font-weight: 700; }
     .nav-btn.active .nav-pill { background: var(--secondary-container); color: var(--on-secondary-container); }
     .nav-btn.active .nav-lbl { color: var(--on-bg); font-weight: 800; }
 
-    /* Dialog & Snackbar */
+    /* ==========================================================================
+       6. BOTTOM SHEET & MODAL DIALOGS
+       ========================================================================== */
     .scrim {
-      position: fixed; inset: 0; background: rgba(0,0,0,0.45);
-      display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 100;
+      position: fixed; inset: 0; background: rgba(0,0,0,0.48);
+      display: flex; align-items: center; justify-content: center; padding: 14px; z-index: 100;
     }
+    .scrim.sheet-mode { align-items: flex-end; padding: 0; }
     .scrim.hidden { display: none; }
+
     .dialog {
       background: var(--surf-high); border-radius: var(--r-xl); padding: 20px;
-      width: 100%; max-width: 420px; border: 1px solid var(--outline-variant);
+      width: 100%; max-width: 440px; border: 1px solid var(--outline-variant);
+      max-height: 88vh; overflow-y: auto;
     }
-    .dlg-title { font-size: 1.15rem; font-weight: 800; margin-bottom: 6px; }
-    .dlg-desc { font-size: 0.84rem; color: var(--on-surface-variant); margin-bottom: 14px; }
-    .input-m3 {
-      width: 100%; padding: 10px 12px; border-radius: var(--r-xs);
-      border: 1px solid var(--outline); background: var(--bg); color: var(--on-bg);
-      font-size: 0.92rem; outline: none; margin-bottom: 10px;
+    .scrim.sheet-mode .dialog {
+      max-width: 880px; border-radius: 24px 24px 0 0; padding: 16px 18px 28px 18px;
+      border-bottom: none;
     }
-    .preset-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+    .sheet-handle {
+      width: 38px; height: 4px; border-radius: 2px; background: var(--outline);
+      margin: 0 auto 12px auto; opacity: 0.5;
+    }
+
+    .dlg-title { font-size: 1.1rem; font-weight: 800; margin-bottom: 4px; }
+    .dlg-desc { font-size: 0.82rem; color: var(--on-surface-variant); margin-bottom: 12px; }
+    .input-m3, select.input-m3 {
+      width: 100%; padding: 10px 12px; border-radius: var(--r-sm);
+      border: 1px solid var(--outline); background: var(--surf-lowest); color: var(--on-bg);
+      font-size: 0.9rem; outline: none; margin-bottom: 10px;
+    }
+    .field-lbl { font-size: 0.72rem; font-weight: 800; color: var(--on-surface-variant); margin-bottom: 4px; display: block; }
     .dlg-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; }
-    .icon-grid {
-      display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px;
-      max-height: 200px; overflow-y: auto; margin-bottom: 10px;
+
+    .detail-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+      background: var(--surf); padding: 10px; border-radius: var(--r-md); margin-bottom: 12px;
     }
-    .icon-opt {
-      height: 42px; border-radius: var(--r-md); border: 1px solid var(--outline-variant);
-      background: var(--bg); font-size: 1.3rem; cursor: pointer;
+    .d-item { display: flex; flex-direction: column; }
+    .d-k { font-size: 0.62rem; font-weight: 700; color: var(--on-surface-variant); text-transform: uppercase; }
+    .d-v { font-family: var(--mono); font-size: 0.8rem; font-weight: 700; word-break: break-all; }
+
+    .days-row { display: flex; gap: 4px; margin-bottom: 10px; }
+    .day-btn {
+      flex: 1; height: 34px; border-radius: var(--r-sm); border: 1px solid var(--outline-variant);
+      background: var(--surf-lowest); color: var(--on-bg); font-size: 0.74rem; font-weight: 800; cursor: pointer;
     }
+    .day-btn.active { background: var(--primary); color: var(--on-primary); border-color: var(--primary); }
+
+    .sheet-actions { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 10px; }
+    .sheet-btn {
+      padding: 10px; border-radius: var(--r-md); border: 1px solid var(--outline-variant);
+      background: var(--surf); color: var(--on-bg); font-size: 0.8rem; font-weight: 800;
+      cursor: pointer; text-align: center;
+    }
+    .sheet-btn.primary { background: var(--primary-container); color: var(--on-primary-container); border-color: transparent; }
+    .sheet-btn.danger { background: var(--error-container); color: var(--on-error-container); border-color: transparent; }
+
+    .icon-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; max-height: 200px; overflow-y: auto; margin-bottom: 10px; }
+    .icon-opt { height: 42px; border-radius: var(--r-md); border: 1px solid var(--outline-variant); background: var(--surf-lowest); font-size: 1.3rem; cursor: pointer; }
     .icon-opt.sel { background: var(--primary-container); border-color: var(--primary); }
 
     #toast-box {
@@ -296,47 +455,69 @@
       z-index: 120; pointer-events: none;
     }
     .toast {
-      padding: 8px 16px; border-radius: var(--r-xs); font-size: 0.82rem; font-weight: 700;
-      background: var(--on-bg); color: var(--bg); box-shadow: 0 3px 8px rgba(0,0,0,0.25);
+      padding: 8px 16px; border-radius: var(--r-full); font-size: 0.8rem; font-weight: 700;
+      background: var(--on-bg); color: var(--bg); box-shadow: 0 4px 12px rgba(0,0,0,0.28);
     }
   </style>
 </head>
-<body>
+<body data-style="m3">
 
   <header class="top-bar">
     <div class="bar-row">
       <div class="title-group">
-        <h1 class="app-title">Thiết bị mạng</h1>
-        <span class="badge-v3">v3.2</span>
-        <span class="sync-dot" id="sync-dot" title="Trạng thái kết nối Router"></span>
+        <h1 class="app-title">CR6608</h1>
+        <span class="sync-dot" id="sync-dot" title="Trạng thái kết nối"></span>
       </div>
       <div class="top-actions">
-        <button class="btn-icon" id="btn-backup" title="Sao lưu / Khôi phục">💾</button>
-        <button class="btn-icon" id="btn-theme" title="Đổi Sáng/Tối">🌓</button>
+        <button class="btn-pill" id="btn-style" title="Đổi giao diện Material 3 / Liquid Glass">✨ M3</button>
+        <button class="btn-pill" id="btn-poll" title="Chu kỳ làm mới">⏱ 5s</button>
+        <button class="btn-icon" id="btn-theme" title="Sáng / Tối">🌓</button>
+        <button class="btn-icon" id="btn-settings" title="Cài đặt & Hệ thống">⚙️</button>
         <button class="btn-icon" id="btn-refresh" title="Làm mới ngay">↻</button>
       </div>
     </div>
 
-    <div class="traffic-card">
-      <div class="stat-box">
-        <div class="dot rx"></div>
-        <div>
-          <div class="stat-lbl">Tải xuống</div>
-          <div class="stat-val rx" id="tot-rx">0.0 KB/s</div>
+    <!-- System Health Panel (Hidden automatically if API omits "sys") -->
+    <div class="sys-panel collapsed" id="sys-panel" style="display:none">
+      <div class="sys-head" id="sys-toggle">
+        <span>📊 Tình trạng Router CR6608</span>
+        <span id="sys-summary">Chi tiết ▾</span>
+      </div>
+      <div class="sys-grid">
+        <div class="sys-item"><span class="sys-k">CPU Load</span><span class="sys-v" id="sys-load">-</span></div>
+        <div class="sys-item"><span class="sys-k">RAM dùng</span><span class="sys-v" id="sys-mem">-</span></div>
+        <div class="sys-item"><span class="sys-k">Uptime</span><span class="sys-v" id="sys-up">-</span></div>
+        <div class="sys-item"><span class="sys-k">Clients</span><span class="sys-v" id="sys-cli">-</span></div>
+      </div>
+    </div>
+
+    <!-- Traffic & Top 3 Bandwidth -->
+    <div class="overview-box">
+      <div class="traffic-row">
+        <div class="stat-box">
+          <div class="dot rx"></div>
+          <div>
+            <div class="stat-lbl">Tải xuống</div>
+            <div class="stat-val rx" id="tot-rx">0 B/s</div>
+          </div>
+        </div>
+        <div class="stat-box">
+          <div class="dot tx"></div>
+          <div>
+            <div class="stat-lbl">Tải lên</div>
+            <div class="stat-val tx" id="tot-tx">0 B/s</div>
+          </div>
+        </div>
+        <div class="stat-box" style="text-align:right">
+          <div>
+            <div class="stat-lbl">Online</div>
+            <div class="stat-val" id="tot-cnt">0 / 0</div>
+          </div>
         </div>
       </div>
-      <div class="stat-box">
-        <div class="dot tx"></div>
-        <div>
-          <div class="stat-lbl">Tải lên</div>
-          <div class="stat-val tx" id="tot-tx">0.0 KB/s</div>
-        </div>
-      </div>
-      <div class="stat-box" style="text-align:right">
-        <div>
-          <div class="stat-lbl">Online</div>
-          <div class="stat-val" id="tot-cnt">0 / 0</div>
-        </div>
+      <div class="top3-row" id="top3-row" style="display:none">
+        <span class="top3-lbl">🔥 Top 3:</span>
+        <div id="top3-list" style="display:flex;gap:6px"></div>
       </div>
     </div>
   </header>
@@ -344,30 +525,48 @@
   <section>
     <div class="search-box">
       <span>🔍</span>
-      <input type="search" id="search" placeholder="Tìm nhanh tên, IP, MAC, hãng..." autocomplete="off">
+      <input type="search" id="search" placeholder="Tìm tên, IP, MAC, hãng, nhóm..." autocomplete="off">
     </div>
-    <div class="chips-row" id="chips">
+
+    <!-- Filter Chips -->
+    <div class="chips-row" id="filter-chips">
       <div class="chip active" data-f="all">Tất cả</div>
-      <div class="chip" data-f="5g">🚀 5GHz</div>
-      <div class="chip" data-f="2g">📶 2.4GHz</div>
-      <div class="chip" data-f="lan">🔌 LAN</div>
-      <div class="chip" data-f="blocked">🚫 Bị chặn</div>
-      <div class="chip" data-f="qos">⏱️ Giới hạn QoS</div>
-      <div class="chip" data-f="speed">⚡ Tốc độ cao</div>
-      <div class="chip" data-f="weak">📉 Sóng yếu</div>
+      <div class="chip" data-f="5g">5GHz</div>
+      <div class="chip" data-f="2g">2.4GHz</div>
+      <div class="chip" data-f="lan">LAN</div>
+      <div class="chip" data-f="blocked">Đang chặn</div>
+      <div class="chip" data-f="weak">Sóng yếu</div>
+      <span class="chip-sep"></span>
+      <div id="group-chips" style="display:inline-flex;gap:6px"></div>
+    </div>
+
+    <!-- Sort Chips -->
+    <div class="chips-row" id="sort-chips">
+      <span style="font-size:0.7rem;font-weight:800;color:var(--on-surface-variant);margin-right:2px">Sắp xếp:</span>
+      <div class="chip sort-chip active" data-s="default">Mặc định</div>
+      <div class="chip sort-chip" data-s="speed">⚡ Tốc độ</div>
+      <div class="chip sort-chip" data-s="name">🔤 Tên</div>
+      <div class="chip sort-chip" data-s="newest">🆕 Mới nhất</div>
     </div>
   </section>
 
   <main>
-    <div id="list" class="grid">
-      <div class="skeleton"></div>
-      <div class="skeleton"></div>
-      <div class="skeleton"></div>
-    </div>
-    <div id="empty" style="display:none; text-align:center; padding:40px 16px; color:var(--on-surface-variant); font-size:0.88rem;">
+    <div id="list" class="grid"></div>
+    <div id="empty" style="display:none; text-align:center; padding:42px 16px; color:var(--on-surface-variant); font-size:0.88rem;">
       Không có thiết bị nào phù hợp.
     </div>
   </main>
+
+  <!-- Bulk Action Bar -->
+  <div class="bulk-bar" id="bulk-bar">
+    <span style="font-size:0.82rem;font-weight:800" id="bulk-cnt">Đã chọn 0</span>
+    <div class="bulk-btns">
+      <button class="bulk-btn" id="bulk-block">Chặn</button>
+      <button class="bulk-btn" id="bulk-unblock">Bỏ chặn</button>
+      <button class="bulk-btn" id="bulk-kick">Kick</button>
+      <button class="bulk-btn" id="bulk-exit">✕</button>
+    </div>
+  </div>
 
   <button class="fab" id="fab-add"><span>➕</span><span>Chặn MAC</span></button>
 
@@ -382,13 +581,15 @@
     </button>
   </nav>
 
+  <!-- Universal Dialog / Bottom Sheet -->
   <div class="scrim hidden" id="dlg-scrim">
-    <div class="dialog">
+    <div class="dialog" id="dlg-box">
+      <div class="sheet-handle" id="sheet-handle" style="display:none"></div>
       <h3 class="dlg-title" id="dlg-title"></h3>
       <p class="dlg-desc" id="dlg-desc"></p>
       <div id="dlg-body" style="display:none"></div>
-      <div class="dlg-actions">
-        <button class="btn-sm" id="dlg-cancel">Hủy</button>
+      <div class="dlg-actions" id="dlg-actions">
+        <button class="btn-sm" id="dlg-cancel">Đóng</button>
         <button class="btn-sm danger" id="dlg-ok">Xác nhận</button>
       </div>
     </div>
@@ -398,43 +599,97 @@
 
   <script>
     /**
-     * CR6608 Device Manager v3.2
-     * Fixes: Fresh card data closures, DOM sorting, accurate "MỚI" tag, private MAC brand handling, 4s timeout & 5s->10s->30s backoff.
+     * Xiaomi CR6608 Device Manager v4.0
+     * Single-file Vanilla JS | Material 3 + iOS Liquid Glass | Diff DOM | Zero External Deps
      */
-    const DEMO_MODE = true;
+    const DEMO_MODE = false;
     const API = '/cgi-bin/devmgr';
-    const CACHE_KEY = 'cr6608_v3_cache';
+    const STORAGE_KEY = 'cr6608_v4_prefs';
+    const KNOWN_KEY = 'cr6608_v4_known';
 
     const ICONS = ['📱','💻','🖥️','📺','📟','🎮','💡','📷','🤖','🔊','⌚','🔌','🖨️','📡','🚗','🔒','❄️','🧹','📻','🚪','🛎️','🌐','📦','🏷️'];
+    const DEFAULT_GROUPS = ['Gia đình', 'Khách', 'IoT'];
+    const DAY_NAMES = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
 
+    // OUI Vendor Lookup (ONLY used for non-randomized MACs)
     const OUI_MAP = new Map([
-      ['F0:99:BF','Apple iPhone'],['AC:BC:32','Apple'],['F4:F5:DB','Apple'],['DC:A9:04','Apple iPad'],
-      ['B4:FB:E4','Xiaomi'],['7C:49:EB','Xiaomi'],['64:90:C1','Xiaomi'],['28:6C:07','Xiaomi Router'],
-      ['50:EC:50','Samsung Galaxy'],['BC:24:11','Samsung TV'],['34:C9:F0','Samsung'],
-      ['84:F3:EB','Espressif IoT'],['EC:FA:BC','Espressif'],['A4:CF:12','Espressif ESP'],
+      ['F0:99:BF','Apple'],['AC:BC:32','Apple'],['F4:F5:DB','Apple'],['DC:A9:04','Apple'],
+      ['B4:FB:E4','Xiaomi'],['7C:49:EB','Xiaomi'],['64:90:C1','Xiaomi'],['28:6C:07','Xiaomi'],
+      ['50:EC:50','Samsung'],['BC:24:11','Samsung'],['34:C9:F0','Samsung'],
+      ['84:F3:EB','Espressif'],['EC:FA:BC','Espressif'],['A4:CF:12','Espressif'],
       ['D8:3A:DD','Raspberry Pi'],['B8:27:EB','Raspberry Pi'],['E4:5F:01','Raspberry Pi'],
-      ['00:1A:7D','PlayStation'],['FC:0F:E6','Sony'],['70:66:55','TP-Link'],
+      ['00:1A:7D','Sony'],['FC:0F:E6','Sony'],['70:66:55','TP-Link'],
       ['38:F8:89','Huawei'],['70:54:F5','Huawei']
     ]);
 
     const domRegistry = new Map();
+    const speedHistory = new Map(); // mac -> Array of total bytes/sec (max 30)
+
+    const defaultPrefs = {
+      theme: 'auto',      // auto | light | dark
+      style: 'm3',        // m3 | glass
+      pollMs: 5000,       // 5000 | 10000 | 30000 | 0 (manual)
+      icons: {},          // mac -> emoji
+      pinned: [],         // [mac]
+      groups: {},         // mac -> groupName
+      customGroups: []    // [groupName]
+    };
 
     const state = {
+      prefs: loadPrefs(),
       devices: [],
+      sys: null,
       tab: 'clients',
       filter: 'all',
+      groupFilter: '',
+      sort: 'default',
       query: '',
       writing: false,
       timer: null,
-      delay: 5000,
+      backoff: 5000,
       errors: 0,
-      icons: JSON.parse(localStorage.getItem('cr6608_custom_icons') || '{}'),
-      known: new Set(JSON.parse(localStorage.getItem('cr6608_known_macs') || '[]')),
-      sessionNew: new Set()
+      known: null,        // null until initialized from localStorage
+      sessionNew: new Set(),
+      firstOrder: new Map(),
+      selectMode: false,
+      selected: new Set()
     };
 
     const $ = id => document.getElementById(id);
-    const vibrate = () => navigator.vibrate && navigator.vibrate(20);
+    const vibrate = (ms = 18) => navigator.vibrate && navigator.vibrate(ms);
+
+    function loadPrefs() {
+      try {
+        const raw = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+        return {
+          theme: raw.theme || 'auto',
+          style: raw.style || 'm3',
+          pollMs: typeof raw.pollMs === 'number' ? raw.pollMs : 5000,
+          icons: raw.icons || {},
+          pinned: Array.isArray(raw.pinned) ? raw.pinned : [],
+          groups: raw.groups || {},
+          customGroups: Array.isArray(raw.customGroups) ? raw.customGroups : []
+        };
+      } catch (e) {
+        return { ...defaultPrefs };
+      }
+    }
+
+    function savePrefs() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state.prefs));
+    }
+
+    function applyAppearance() {
+      const sysDark = matchMedia('(prefers-color-scheme: dark)').matches;
+      const activeTheme = state.prefs.theme === 'auto' ? (sysDark ? 'dark' : 'light') : state.prefs.theme;
+      document.documentElement.dataset.theme = activeTheme;
+      document.documentElement.dataset.style = state.prefs.style;
+      document.body.dataset.style = state.prefs.style;
+
+      $('btn-style').textContent = state.prefs.style === 'glass' ? '🫧 Glass' : '✨ M3';
+      const pSec = state.prefs.pollMs === 0 ? 'Tay' : (state.prefs.pollMs / 1000) + 's';
+      $('btn-poll').textContent = `⏱ ${pSec}`;
+    }
 
     function toast(msg) {
       const box = $('toast-box');
@@ -442,7 +697,7 @@
       el.className = 'toast';
       el.textContent = msg;
       box.appendChild(el);
-      setTimeout(() => el.remove(), 2200);
+      setTimeout(() => el.remove(), 2400);
     }
 
     function copyText(txt, lbl) {
@@ -464,59 +719,118 @@
       return (b / 1048576).toFixed(2) + ' MB/s';
     }
 
+    function fmtBytes(b) {
+      if (!b || b <= 0) return '0 B';
+      if (b < 1024) return b + ' B';
+      if (b < 1048576) return (b / 1024).toFixed(1) + ' KB';
+      if (b < 1073741824) return (b / 1048576).toFixed(2) + ' MB';
+      return (b / 1073741824).toFixed(2) + ' GB';
+    }
+
+    function fmtUptime(sec) {
+      if (!sec || sec <= 0) return '-';
+      const d = Math.floor(sec / 86400);
+      const h = Math.floor((sec % 86400) / 3600);
+      const m = Math.floor((sec % 3600) / 60);
+      return d > 0 ? `${d}d ${h}h` : `${h}h ${m}m`;
+    }
+
+    function fmtLastSeen(unixSec) {
+      if (!unixSec || unixSec <= 0) return '';
+      const diff = Math.max(1, Math.floor(Date.now() / 1000) - unixSec);
+      if (diff < 60) return 'Thấy lần cuối vừa xong';
+      if (diff < 3600) return `Thấy lần cuối ${Math.floor(diff / 60)} phút trước`;
+      if (diff < 86400) return `Thấy lần cuối ${Math.floor(diff / 3600)} giờ trước`;
+      return `Thấy lần cuối ${Math.floor(diff / 86400)} ngày trước`;
+    }
+
     function fmtQos(kbps) {
       if (!kbps || kbps <= 0) return '';
-      if (kbps >= 1024) return (kbps / 1024).toFixed(1).replace(/\.0$/, '') + ' MB/s';
-      return kbps + ' KB/s';
+      return kbps >= 1024 ? (kbps / 1024).toFixed(1).replace(/\.0$/, '') + ' MB/s' : kbps + ' KB/s';
+    }
+
+    // Check Locally Administered Bit (0x02 of first byte)
+    function isRandomMac(mac) {
+      const b = parseInt((mac || '').slice(0, 2), 16);
+      return !isNaN(b) && Boolean(b & 0x02);
+    }
+
+    function isGarbageHostname(h) {
+      if (!h) return true;
+      const s = h.trim();
+      return !s || s === '*' || s === '?' || s === 'localhost' || /^android-[0-9a-f]{6,}$/i.test(s);
     }
 
     function resolveProfile(d) {
       const mac = (d.mac || '').toUpperCase();
-      const firstByte = parseInt(mac.slice(0, 2), 16);
-      const isRand = !isNaN(firstByte) && Boolean(firstByte & 0x02);
+      const rand = isRandomMac(mac);
       const last4 = mac.replace(/[:-]/g, '').slice(-4);
 
-      // Không đoán hãng qua OUI nếu là MAC ngẫu nhiên (bit thứ 2 byte đầu = 1)
-      let brand = isRand ? '' : (d.vendor || OUI_MAP.get(mac.slice(0, 8)) || '');
+      // Strictly do NOT look up OUI vendor for randomized MACs
+      let vendor = rand ? '' : ((d.vendor || '').trim() || OUI_MAP.get(mac.slice(0, 8)) || '');
 
       let name = (d.name || '').trim();
       if (!name) {
-        let host = (d.hostname || '').trim();
-        if (host === '*' || host === '?' || /^android-[0-9a-f]{8,}$/i.test(host)) host = '';
+        const host = isGarbageHostname(d.hostname) ? '' : d.hostname.trim();
         if (host) {
           name = host;
-          if (!brand && !isRand) {
-            if (/iphone/i.test(host)) brand = 'Apple iPhone';
-            else if (/ipad/i.test(host)) brand = 'Apple iPad';
-            else if (/galaxy/i.test(host)) brand = 'Samsung Galaxy';
-          }
-        } else if (brand) {
-          name = `${brand} · ${last4}`;
+        } else if (vendor) {
+          name = `${vendor} · ${last4}`;
+        } else if (rand) {
+          name = `Thiết bị riêng tư · ${last4}`;
         } else {
-          name = isRand ? `Thiết bị riêng tư · ${last4}` : `Thiết bị ${last4 || 'Mạng'}`;
+          name = 'Không rõ';
         }
       }
 
-      let icon = state.icons[mac];
+      let icon = state.prefs.icons[mac];
       if (!icon) {
+        const hint = (name + ' ' + vendor).toLowerCase();
         if (d.band === 'LAN') icon = '🖥️';
-        else if (/tv|tivi/i.test(name + brand)) icon = '📺';
-        else if (/iot|esp|vacuum|cam|light|plug/i.test(name + brand)) icon = '💡';
-        else if (/ipad|tab/i.test(name)) icon = '📟';
-        else if (/macbook|laptop|pc|desktop/i.test(name)) icon = '💻';
+        else if (/tv|tivi|bravia/.test(hint)) icon = '📺';
+        else if (/esp|iot|cam|light|plug|vacuum/.test(hint)) icon = '💡';
+        else if (/ipad|tab/.test(hint)) icon = '📟';
+        else if (/macbook|laptop|pc|desktop|thinkpad/.test(hint)) icon = '💻';
         else icon = '📱';
       }
 
-      return { name, brand: brand || (isRand ? 'MAC riêng tư' : 'Chuẩn mạng'), icon, isRand };
+      return { name, vendor, icon, rand };
     }
 
+    function buildSparkPoints(mac) {
+      const arr = speedHistory.get(mac);
+      if (!arr || arr.length < 2) return '';
+      const max = Math.max(1024, ...arr);
+      const w = 68, h = 22;
+      const step = w / (arr.length - 1);
+      return arr.map((v, i) => {
+        const x = (i * step).toFixed(1);
+        const y = (h - (v / max) * (h - 3) - 1.5).toFixed(1);
+        return `${x},${y}`;
+      }).join(' ');
+    }
+
+    function createTag(text, cls) {
+      const sp = document.createElement('span');
+      sp.className = `tag ${cls}`;
+      sp.textContent = text;
+      return sp;
+    }
+
+    /* ==========================================================================
+       DOM DIFFING ENGINE (O(1) Registry + Safe textContent Binding)
+       ========================================================================== */
     function syncCard(container, d) {
       const mac = d.mac;
       const prof = resolveProfile(d);
       const offline = !d.online;
       const isNew = state.sessionNew.has(mac);
+      const isPinned = state.prefs.pinned.includes(mac);
+      const isSel = state.selected.has(mac);
+      const grp = state.prefs.groups[mac] || '';
+
       let rssiLvl = 0;
-      if (d.band !== 'LAN' && d.signal) {
+      if (d.band !== 'LAN' && typeof d.signal === 'number' && d.signal < 0) {
         rssiLvl = d.signal >= -55 ? 4 : d.signal >= -67 ? 3 : d.signal >= -78 ? 2 : 1;
       }
 
@@ -528,140 +842,203 @@
         el.innerHTML = `
           <div class="card-top">
             <div class="profile">
-              <button class="icon-btn" title="Đổi icon"><span class="v-ico"></span><span class="icon-badge">✎</span></button>
-              <div class="names" title="Đổi tên">
-                <div class="name-main"><span class="v-name"></span><span style="font-size:0.7rem;opacity:0.45">✎</span></div>
-                <div class="name-sub v-sub"></div>
+              <div class="sel-chk">✓</div>
+              <button type="button" class="icon-btn" title="Đổi biểu tượng">
+                <span class="v-ico"></span>
+                <span class="pin-mark">📌</span>
+              </button>
+              <div class="names">
+                <div class="name-row">
+                  <span class="name-main v-name"></span>
+                  <button type="button" class="btn-edit-name" title="Đổi tên">✎</button>
+                </div>
+                <div class="name-sub">
+                  <span class="v-sub"></span>
+                  <span class="rssi v-rssi"><i></i><i></i><i></i><i></i></span>
+                </div>
                 <div class="tags v-tags"></div>
               </div>
             </div>
             <div class="switch-wrap">
               <label class="switch"><input type="checkbox" class="v-chk"><span class="track"></span></label>
-              <span style="font-size:0.58rem;color:var(--on-surface-variant);font-weight:800">CHẶN</span>
+              <span style="font-size:0.56rem;color:var(--on-surface-variant);font-weight:800">CHẶN</span>
             </div>
           </div>
           <div class="matrix">
             <div class="m-col c-ip"><span class="m-k">IP / CỔNG 📋</span><span class="m-v v-ip"></span></div>
-            <div class="m-col c-mac"><span class="m-k">MAC ADDR 📋</span><span class="m-v v-mac"></span></div>
+            <div class="m-col c-mac"><span class="m-k">MAC 📋</span><span class="m-v v-mac"></span></div>
+            <svg class="spark-svg" viewBox="0 0 68 24" preserveAspectRatio="none"><polyline class="spark-line v-spark" points=""></polyline></svg>
           </div>
           <div class="card-bot">
             <div class="spd"><span class="spd-d">↓ <span class="v-rx"></span></span><span class="spd-u">↑ <span class="v-tx"></span></span></div>
             <div class="btns">
-              <button class="btn-sm tonal b-qos" title="Giới hạn tốc độ">QoS</button>
-              <button class="btn-sm b-static" style="display:none" title="Cố định IP DHCP">Gán IP</button>
-              <button class="btn-sm b-wol" title="Đánh thức LAN">WOL</button>
-              <button class="btn-sm b-kick" style="display:none">Kick</button>
-              <button class="btn-sm danger b-bl">Blacklist</button>
+              <button type="button" class="btn-sm tonal b-qos">QoS</button>
+              <button type="button" class="btn-sm b-static">Gán IP</button>
+              <button type="button" class="btn-sm b-wol">WOL</button>
+              <button type="button" class="btn-sm b-kick">Kick</button>
+              <button type="button" class="btn-sm danger b-bl">Blacklist</button>
             </div>
           </div>
         `;
 
         ref = {
           el,
-          data: d,
           ico: el.querySelector('.v-ico'),
           name: el.querySelector('.v-name'),
           sub: el.querySelector('.v-sub'),
+          rssi: el.querySelector('.v-rssi'),
           tags: el.querySelector('.v-tags'),
           chk: el.querySelector('.v-chk'),
           ip: el.querySelector('.v-ip'),
           mac: el.querySelector('.v-mac'),
+          spark: el.querySelector('.v-spark'),
           rx: el.querySelector('.v-rx'),
           tx: el.querySelector('.v-tx'),
-          qos: el.querySelector('.b-qos'),
           stat: el.querySelector('.b-static'),
           kick: el.querySelector('.b-kick'),
           bl: el.querySelector('.b-bl'),
           cache: {}
         };
 
-        // Luôn đọc từ ref.data & ref.cache mới nhất thay vì closure cũ
-        el.querySelector('.icon-btn').onclick = () => {
+        // Always read latest data from el._d to avoid stale closures
+        el.querySelector('.icon-btn').onclick = e => {
+          e.stopPropagation();
           vibrate();
-          openIconPicker(ref.data.mac, ref.cache.ico);
+          openIconPicker(el._d.mac, ref.cache.ico);
         };
-        el.querySelector('.names').onclick = () => {
-          vibrate();
-          openRename(ref.data.mac, ref.data.name || '', ref.cache.name);
-        };
-        el.querySelector('.c-ip').onclick = () => {
-          if (ref.data.ip) copyText(ref.data.ip, 'IP');
-        };
-        el.querySelector('.c-mac').onclick = () => copyText(ref.data.mac, 'MAC');
 
+        el.querySelector('.btn-edit-name').onclick = e => {
+          e.stopPropagation();
+          vibrate();
+          openRename(el._d);
+        };
+
+        el.querySelector('.c-ip').onclick = e => {
+          e.stopPropagation();
+          if (el._d.ip) copyText(el._d.ip, 'IP');
+        };
+
+        el.querySelector('.c-mac').onclick = e => {
+          e.stopPropagation();
+          copyText(el._d.mac, 'MAC');
+        };
+
+        el.querySelector('.switch-wrap').onclick = e => e.stopPropagation();
         ref.chk.onchange = e => {
           vibrate();
-          const curMac = ref.data.mac;
-          postAction({ action: e.target.checked ? 'block' : 'unblock', mac: curMac })
+          const cur = el._d;
+          postAction({ action: e.target.checked ? 'block' : 'unblock', mac: cur.mac })
             .then(ok => { if (!ok) e.target.checked = !e.target.checked; else fetchList(); });
         };
 
-        ref.qos.onclick = () => {
+        el.querySelector('.b-qos').onclick = e => {
+          e.stopPropagation();
           vibrate();
-          openQosModal(ref.data.mac, ref.cache.name, Number(ref.data.qos_rate || 0));
+          openQosModal(el._d);
         };
 
-        ref.stat.onclick = () => {
-          const curIp = ref.data.ip;
-          const curMac = ref.data.mac;
-          if (!curIp) return;
-          openConfirm('Cố định IP (Static DHCP)', `Khóa cứng IP ${curIp} cho "${ref.cache.name}"?`, () =>
-            postAction({ action: 'static_lease', mac: curMac, ip: curIp })
+        ref.stat.onclick = e => {
+          e.stopPropagation();
+          const cur = el._d;
+          if (!cur.ip) return;
+          openConfirm('Cố định IP (Static DHCP)', `Khóa cứng IP ${cur.ip} cho "${resolveProfile(cur).name}"?`, () =>
+            postAction({ action: 'static_lease', mac: cur.mac, ip: cur.ip })
           );
         };
 
-        el.querySelector('.b-wol').onclick = () => {
-          const curMac = ref.data.mac;
-          openConfirm('Đánh thức LAN (WOL)', `Gửi Magic Packet tới [${curMac}]?`, () =>
-            postAction({ action: 'wol', mac: curMac })
+        el.querySelector('.b-wol').onclick = e => {
+          e.stopPropagation();
+          const cur = el._d;
+          openConfirm('Đánh thức máy (WOL)', `Gửi gói Magic Packet tới [${cur.mac}]?`, () =>
+            postAction({ action: 'wol', mac: cur.mac })
           );
         };
 
-        ref.kick.onclick = () => {
-          const curMac = ref.data.mac;
-          openConfirm('Kick Wi-Fi', `Ngắt kết nối ngay của "${ref.cache.name}"?`, () =>
-            postAction({ action: 'kick', mac: curMac }).then(ok => ok && fetchList())
+        ref.kick.onclick = e => {
+          e.stopPropagation();
+          const cur = el._d;
+          openConfirm('Kick khỏi Wi-Fi', `Ngắt kết nối ngay của "${resolveProfile(cur).name}"?`, () =>
+            postAction({ action: 'kick', mac: cur.mac }).then(ok => ok && fetchList())
           );
         };
 
-        ref.bl.onclick = () => {
-          const curMac = ref.data.mac;
-          const isBl = Boolean(ref.data.blacklisted);
-          openConfirm(isBl ? 'Bỏ Blacklist' : 'Thêm Blacklist', `${isBl ? 'Cho phép' : 'Cấm vĩnh viễn'} "${ref.cache.name}"?`, () =>
-            postAction({ action: isBl ? 'blacklist_remove' : 'blacklist_add', mac: curMac }).then(ok => ok && fetchList())
+        ref.bl.onclick = e => {
+          e.stopPropagation();
+          const cur = el._d;
+          const isBl = Boolean(cur.blacklisted);
+          openConfirm(isBl ? 'Bỏ Blacklist' : 'Thêm Blacklist', `${isBl ? 'Cho phép' : 'Cấm vĩnh viễn'} "${resolveProfile(cur).name}"?`, () =>
+            postAction({ action: isBl ? 'blacklist_remove' : 'blacklist_add', mac: cur.mac }).then(ok => ok && fetchList())
           );
+        };
+
+        // Long press for Multi-Select + Tap for Detail Bottom Sheet
+        let lpTimer = null;
+        let lpTriggered = false;
+        el.addEventListener('pointerdown', e => {
+          if (e.target.closest('button, label, input')) return;
+          lpTriggered = false;
+          lpTimer = setTimeout(() => {
+            lpTriggered = true;
+            enterSelectMode(el._d.mac);
+          }, 480);
+        });
+        const cancelLp = () => { if (lpTimer) { clearTimeout(lpTimer); lpTimer = null; } };
+        el.addEventListener('pointerup', cancelLp);
+        el.addEventListener('pointerleave', cancelLp);
+        el.addEventListener('pointercancel', cancelLp);
+
+        el.onclick = e => {
+          if (lpTriggered) return;
+          if (state.selectMode) {
+            toggleSelect(el._d.mac);
+          } else {
+            vibrate(12);
+            openDetailSheet(el._d);
+          }
         };
 
         domRegistry.set(mac, ref);
         container.appendChild(el);
       }
 
-      // Cập nhật tham chiếu dữ liệu mới nhất mỗi chu kỳ
-      ref.data = d;
+      // Bind fresh data reference
+      ref.el._d = d;
       const c = ref.cache;
-      const qosRate = Number(d.qos_rate || 0);
 
       if (c.offline !== offline) { ref.el.classList.toggle('offline', offline); c.offline = offline; }
+      if (c.pinned !== isPinned) { ref.el.classList.toggle('pinned', isPinned); c.pinned = isPinned; }
+      if (c.sel !== isSel) { ref.el.classList.toggle('selected', isSel); c.sel = isSel; }
+
       if (c.ico !== prof.icon) { ref.ico.textContent = prof.icon; c.ico = prof.icon; }
       if (c.name !== prof.name) { ref.name.textContent = prof.name; c.name = prof.name; }
 
-      const subKey = `${prof.brand}|${d.online}|${rssiLvl}|${d.signal || ''}`;
-      if (c.subKey !== subKey) {
-        const bars = rssiLvl > 0 ? `<span class="rssi" data-l="${rssiLvl}" title="${d.signal} dBm"><i></i><i></i><i></i><i></i></span>` : '';
-        ref.sub.innerHTML = `${prof.brand} · ${d.online ? 'Online' : 'Offline'}${bars}`;
-        c.subKey = subKey;
+      const statusTxt = d.online ? 'Online' : (fmtLastSeen(d.last_seen) || 'Offline');
+      const subTxt = `${prof.vendor ? prof.vendor + ' · ' : ''}${statusTxt}`;
+      if (c.subTxt !== subTxt) { ref.sub.textContent = subTxt; c.subTxt = subTxt; }
+
+      if (c.rssiLvl !== rssiLvl) {
+        if (rssiLvl > 0) {
+          ref.rssi.style.display = 'inline-flex';
+          ref.rssi.dataset.l = String(rssiLvl);
+          ref.rssi.title = `${d.signal} dBm`;
+        } else {
+          ref.rssi.style.display = 'none';
+        }
+        c.rssiLvl = rssiLvl;
       }
 
-      const qosTxt = fmtQos(qosRate);
-      const tagKey = `${isNew}|${prof.isRand}|${d.band}|${d.blocked}|${qosTxt}`;
+      const qosTxt = fmtQos(Number(d.qos_rate || 0));
+      const hasSched = Boolean(d.sched && Array.isArray(d.sched.days) && d.sched.days.length);
+      const tagKey = `${isNew}|${prof.rand}|${d.band}|${grp}|${d.blocked}|${qosTxt}|${hasSched}`;
       if (c.tagKey !== tagKey) {
-        let h = '';
-        if (isNew) h += '<span class="tag t-new">MỚI</span>';
-        if (prof.isRand) h += '<span class="tag t-rand">MAC riêng tư</span>';
-        if (d.band) h += `<span class="tag t-band">${d.band}</span>`;
-        if (qosTxt) h += `<span class="tag t-qos">Max ${qosTxt}</span>`;
-        if (d.blocked) h += '<span class="tag t-blk">Bị chặn</span>';
-        ref.tags.innerHTML = h;
+        ref.tags.textContent = '';
+        if (isNew) ref.tags.appendChild(createTag('MỚI', 't-new'));
+        if (prof.rand) ref.tags.appendChild(createTag('MAC riêng tư', 't-rand'));
+        if (d.band) ref.tags.appendChild(createTag(d.band, 't-band'));
+        if (grp) ref.tags.appendChild(createTag(grp, 't-grp'));
+        if (qosTxt) ref.tags.appendChild(createTag(`Max ${qosTxt}`, 't-qos'));
+        if (hasSched) ref.tags.appendChild(createTag(`⏰ ${d.sched.from}-${d.sched.to}`, 't-sch'));
+        if (d.blocked) ref.tags.appendChild(createTag('Bị chặn', 't-blk'));
         c.tagKey = tagKey;
       }
 
@@ -672,6 +1049,10 @@
       if (c.ipStr !== ipStr) { ref.ip.textContent = ipStr; c.ipStr = ipStr; }
       if (c.mac !== mac) { ref.mac.textContent = mac; c.mac = mac; }
 
+      // Sparkline only rendered for visible cards in DOM
+      const pts = buildSparkPoints(mac);
+      if (c.pts !== pts) { ref.spark.setAttribute('points', pts); c.pts = pts; }
+
       const rxStr = fmtSpeed(d.rx);
       if (c.rxStr !== rxStr) { ref.rx.textContent = rxStr; c.rxStr = rxStr; }
       const txStr = fmtSpeed(d.tx);
@@ -680,38 +1061,184 @@
       const canStatic = Boolean(d.ip && !d.blacklisted);
       if (c.canStatic !== canStatic) { ref.stat.style.display = canStatic ? 'inline-block' : 'none'; c.canStatic = canStatic; }
 
-      const canKick = d.online && d.band !== 'LAN' && !d.blacklisted;
+      const canKick = Boolean(d.online && d.band !== 'LAN' && !d.blacklisted);
       if (c.canKick !== canKick) { ref.kick.style.display = canKick ? 'inline-block' : 'none'; c.canKick = canKick; }
 
       const isBl = Boolean(d.blacklisted);
       if (c.bl !== isBl) { ref.bl.textContent = isBl ? 'Bỏ Blacklist' : 'Blacklist'; c.bl = isBl; }
     }
 
+    /* ==========================================================================
+       MULTI-SELECT MODE
+       ========================================================================== */
+    function enterSelectMode(mac) {
+      vibrate(35);
+      state.selectMode = true;
+      state.selected.clear();
+      if (mac) state.selected.add(mac);
+      document.body.classList.add('select-mode');
+      updateBulkBar();
+      render();
+    }
+
+    function exitSelectMode() {
+      state.selectMode = false;
+      state.selected.clear();
+      document.body.classList.remove('select-mode');
+      $('bulk-bar').classList.remove('show');
+      render();
+    }
+
+    function toggleSelect(mac) {
+      vibrate(12);
+      if (state.selected.has(mac)) state.selected.delete(mac);
+      else state.selected.add(mac);
+      if (state.selected.size === 0) exitSelectMode();
+      else { updateBulkBar(); render(); }
+    }
+
+    function updateBulkBar() {
+      const bar = $('bulk-bar');
+      if (state.selectMode && state.selected.size > 0) {
+        bar.classList.add('show');
+        $('bulk-cnt').textContent = `Đã chọn ${state.selected.size}`;
+      } else {
+        bar.classList.remove('show');
+      }
+    }
+
+    async function runBulkAction(action) {
+      const macs = [...state.selected];
+      if (!macs.length) return;
+      exitSelectMode();
+      toast(`Đang gửi lệnh ${action} cho ${macs.length} thiết bị...`);
+      for (const mac of macs) {
+        const dev = state.devices.find(x => x.mac === mac);
+        if (!dev) continue;
+        if (action === 'kick' && (!dev.online || dev.band === 'LAN')) continue;
+        await postAction({ action, mac }, true);
+      }
+      toast('Hoàn tất thao tác hàng loạt');
+      fetchList();
+    }
+
+    /* ==========================================================================
+       FILTER, SORT & MAIN RENDER PIPELINE
+       ========================================================================== */
+    function renderGroupChips() {
+      const wrap = $('group-chips');
+      const allGroups = [...new Set([...DEFAULT_GROUPS, ...state.prefs.customGroups])];
+      wrap.textContent = '';
+      allGroups.forEach(g => {
+        const c = document.createElement('div');
+        c.className = `chip ${state.groupFilter === g ? 'active' : ''}`;
+        c.textContent = g;
+        c.onclick = () => {
+          vibrate();
+          state.groupFilter = state.groupFilter === g ? '' : g;
+          renderGroupChips();
+          render();
+        };
+        wrap.appendChild(c);
+      });
+    }
+
+    function renderSysPanel() {
+      const panel = $('sys-panel');
+      if (!state.sys || typeof state.sys !== 'object') {
+        panel.style.display = 'none';
+        return;
+      }
+      panel.style.display = 'block';
+      const s = state.sys;
+      $('sys-load').textContent = typeof s.load === 'number' ? s.load.toFixed(2) : '-';
+      $('sys-mem').textContent = typeof s.mem_used_pct === 'number' ? `${s.mem_used_pct}%` : '-';
+      $('sys-up').textContent = fmtUptime(s.uptime);
+      $('sys-cli').textContent = typeof s.clients === 'number' ? String(s.clients) : '-';
+    }
+
+    function renderTop3(clients) {
+      const row = $('top3-row');
+      const listEl = $('top3-list');
+      const active = clients
+        .filter(d => d.online && ((d.rx || 0) + (d.tx || 0)) > 0)
+        .sort((a, b) => ((b.rx || 0) + (b.tx || 0)) - ((a.rx || 0) + (a.tx || 0)))
+        .slice(0, 3);
+
+      if (!active.length) {
+        row.style.display = 'none';
+        return;
+      }
+      row.style.display = 'flex';
+      listEl.textContent = '';
+      active.forEach(d => {
+        const p = resolveProfile(d);
+        const pill = document.createElement('div');
+        pill.className = 'top3-pill';
+        const ico = document.createTextNode(p.icon + ' ');
+        const b = document.createElement('b');
+        b.textContent = p.name;
+        const sp = document.createElement('span');
+        sp.textContent = fmtSpeed((d.rx || 0) + (d.tx || 0));
+        pill.append(ico, b, sp);
+        pill.onclick = () => openDetailSheet(d);
+        listEl.appendChild(pill);
+      });
+    }
+
     function render() {
+      renderSysPanel();
       const container = $('list');
-      container.querySelectorAll('.skeleton').forEach(s => s.remove());
 
-      let list = state.devices.filter(d => state.tab === 'blacklist' ? d.blacklisted : (!d.blacklisted && (d.online || d.blocked)));
+      // Rule 13: Offline & unblocked devices hidden from Clients tab
+      let list = state.devices.filter(d =>
+        state.tab === 'blacklist' ? Boolean(d.blacklisted) : (!d.blacklisted && (d.online || d.blocked))
+      );
 
+      // Filters
       if (state.filter === '5g') list = list.filter(d => (d.band || '').includes('5G'));
       else if (state.filter === '2g') list = list.filter(d => (d.band || '').includes('2'));
       else if (state.filter === 'lan') list = list.filter(d => d.band === 'LAN');
       else if (state.filter === 'blocked') list = list.filter(d => d.blocked);
-      else if (state.filter === 'qos') list = list.filter(d => Number(d.qos_rate || 0) > 0);
-      else if (state.filter === 'weak') list = [...list]
-        .filter(d => d.online && d.band !== 'LAN' && d.signal && d.signal < -72)
-        .sort((a, b) => (a.signal || 0) - (b.signal || 0));
-      else if (state.filter === 'speed') list = [...list]
-        .sort((a, b) => ((b.rx || 0) + (b.tx || 0)) - ((a.rx || 0) + (a.tx || 0)));
+      else if (state.filter === 'weak') list = list.filter(d => d.online && d.band !== 'LAN' && d.signal && d.signal < -72);
+
+      if (state.groupFilter) {
+        list = list.filter(d => (state.prefs.groups[d.mac] || '') === state.groupFilter);
+      }
 
       if (state.query) {
         const q = state.query;
         list = list.filter(d => {
           const p = resolveProfile(d);
-          return d.mac.toLowerCase().includes(q) || (d.ip && d.ip.includes(q)) || p.name.toLowerCase().includes(q) || p.brand.toLowerCase().includes(q);
+          const g = (state.prefs.groups[d.mac] || '').toLowerCase();
+          return d.mac.toLowerCase().includes(q) || (d.ip && d.ip.includes(q)) ||
+                 p.name.toLowerCase().includes(q) || p.vendor.toLowerCase().includes(q) || g.includes(q);
         });
       }
 
+      // Sorting (Pinned always first, then selected sort criterion)
+      const pinSet = new Set(state.prefs.pinned);
+      list.sort((a, b) => {
+        const pa = pinSet.has(a.mac) ? 1 : 0;
+        const pb = pinSet.has(b.mac) ? 1 : 0;
+        if (pa !== pb) return pb - pa;
+
+        if (state.sort === 'speed') {
+          return ((b.rx || 0) + (b.tx || 0)) - ((a.rx || 0) + (a.tx || 0));
+        }
+        if (state.sort === 'name') {
+          return resolveProfile(a).name.localeCompare(resolveProfile(b).name, 'vi');
+        }
+        if (state.sort === 'newest') {
+          const na = state.sessionNew.has(a.mac) ? 1 : 0;
+          const nb = state.sessionNew.has(b.mac) ? 1 : 0;
+          if (na !== nb) return nb - na;
+          return (state.firstOrder.get(b.mac) || 0) - (state.firstOrder.get(a.mac) || 0);
+        }
+        return (state.firstOrder.get(a.mac) || 0) - (state.firstOrder.get(b.mac) || 0);
+      });
+
+      // Remove cards no longer in filtered view
       const activeSet = new Set(list.map(d => d.mac));
       for (const [mac, ref] of domRegistry.entries()) {
         if (!activeSet.has(mac)) {
@@ -720,7 +1247,7 @@
         }
       }
 
-      // Đồng bộ nội dung từng card và bảo toàn đúng thứ tự DOM khi sắp xếp
+      // Update nodes & reorder in DOM ONLY when position changed
       list.forEach((d, idx) => {
         syncCard(container, d);
         const ref = domRegistry.get(d.mac);
@@ -731,13 +1258,14 @@
 
       $('empty').style.display = list.length === 0 ? 'block' : 'none';
 
+      // Header Counters & Top 3
       const clients = state.devices.filter(d => !d.blacklisted && (d.online || d.blocked));
       let onlineCnt = 0, rxSum = 0, txSum = 0;
-      for (let i = 0; i < clients.length; i++) {
-        if (clients[i].online) {
+      for (const c of clients) {
+        if (c.online) {
           onlineCnt++;
-          rxSum += (clients[i].rx || 0);
-          txSum += (clients[i].tx || 0);
+          rxSum += (c.rx || 0);
+          txSum += (c.tx || 0);
         }
       }
       $('cnt-cli').textContent = clients.length;
@@ -745,16 +1273,27 @@
       $('tot-cnt').textContent = `${onlineCnt} / ${clients.length}`;
       $('tot-rx').textContent = fmtSpeed(rxSum);
       $('tot-tx').textContent = fmtSpeed(txSum);
+      renderTop3(clients);
     }
 
-    async function postAction(payload) {
-      if (state.writing) { toast('Đang xử lý...'); return false; }
+    /* ==========================================================================
+       API COMMUNICATION (MUTEX LOCK, TIMEOUT 4S, EXPONENTIAL BACKOFF)
+       ========================================================================== */
+    async function postAction(payload, silent = false) {
+      if (state.writing) {
+        if (!silent) toast('Đang gửi lệnh khác, vui lòng đợi...');
+        return false;
+      }
       state.writing = true;
       const ctrl = new AbortController();
       const tid = setTimeout(() => ctrl.abort(), 4000);
+
       try {
         if (DEMO_MODE) {
-          await new Promise(r => setTimeout(r, 250));
+          await new Promise(r => setTimeout(r, 220));
+          if (payload.action === 'reboot') {
+            clearTimeout(tid); if (!silent) toast('Demo: Đã gửi lệnh khởi động lại'); return true;
+          }
           const dev = state.devices.find(x => x.mac === payload.mac);
           if (dev) {
             if (payload.action === 'block') dev.blocked = true;
@@ -764,11 +1303,17 @@
             if (payload.action === 'blacklist_add') dev.blacklisted = true;
             if (payload.action === 'blacklist_remove') dev.blacklisted = false;
             if (payload.action === 'kick') dev.online = false;
+            if (payload.action === 'schedule_set') dev.sched = { days: payload.days, from: payload.from, to: payload.to };
+            if (payload.action === 'schedule_clear') dev.sched = null;
           } else if (payload.action === 'blacklist_add') {
-            state.devices.push({ mac: payload.mac, ip: '', hostname: '', name: '', vendor: '', iface: 'wlan0', band: '5G', signal: 0, rx: 0, tx: 0, qos_rate: 0, online: false, blocked: false, blacklisted: true });
+            state.devices.push({ mac: payload.mac, ip: '', hostname: '', name: '', vendor: '', iface: 'phy1-ap0', band: '5G', signal: 0, rx: 0, tx: 0, qos_rate: 0, online: false, blocked: false, blacklisted: true });
           }
-          clearTimeout(tid); vibrate(); toast('Demo: Thành công'); render(); return true;
+          clearTimeout(tid);
+          if (!silent) { vibrate(); toast('Demo: Thành công'); }
+          render();
+          return true;
         }
+
         const res = await fetch(API, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -777,31 +1322,63 @@
         });
         clearTimeout(tid);
         const data = await res.json();
-        if (data.ok) { vibrate(); toast('Thành công'); return true; }
-        toast(data.error || 'Router từ chối lệnh');
+        if (data && data.ok) {
+          if (!silent) { vibrate(); toast('Thành công'); }
+          return true;
+        }
+        if (!silent) toast((data && data.error) || 'Router từ chối thao tác');
         return false;
       } catch (e) {
         clearTimeout(tid);
-        toast(e.name === 'AbortError' ? 'Quá thời gian (4s)' : 'Lỗi kết nối');
+        if (!silent) toast(e.name === 'AbortError' ? 'Quá thời gian (4s)' : 'Lỗi kết nối Router');
         return false;
       } finally {
         state.writing = false;
       }
     }
 
-    function markKnownDevices(devices) {
-      let updated = false;
+    function processIncomingDevices(devices) {
+      // Load known MACs lazily on first run; if null (first ever visit), do NOT flag all as NEW
+      if (state.known === null) {
+        const stored = localStorage.getItem(KNOWN_KEY);
+        if (stored === null) {
+          state.known = new Set(devices.map(d => d.mac));
+          localStorage.setItem(KNOWN_KEY, JSON.stringify([...state.known]));
+        } else {
+          try { state.known = new Set(JSON.parse(stored)); } catch (e) { state.known = new Set(); }
+        }
+      }
+
+      let knownChanged = false;
       devices.forEach(d => {
-        if (d.mac && !state.known.has(d.mac)) {
-          // Đánh dấu MỚI trong phiên hiện tại trước khi ghi vào danh sách đã biết
+        if (!d.mac) return;
+        if (!state.firstOrder.has(d.mac)) {
+          state.firstOrder.set(d.mac, state.firstOrder.size);
+        }
+        // Calculate NEW BEFORE adding to known set
+        if (!state.known.has(d.mac)) {
           state.sessionNew.add(d.mac);
           state.known.add(d.mac);
-          updated = true;
+          knownChanged = true;
         }
+        // Record speed history (max 30 points)
+        const hist = speedHistory.get(d.mac) || [];
+        hist.push(d.online ? ((d.rx || 0) + (d.tx || 0)) : 0);
+        if (hist.length > 30) hist.shift();
+        speedHistory.set(d.mac, hist);
       });
-      if (updated) {
-        localStorage.setItem('cr6608_known_macs', JSON.stringify([...state.known]));
+
+      if (knownChanged) {
+        localStorage.setItem(KNOWN_KEY, JSON.stringify([...state.known]));
       }
+    }
+
+    function scheduleNextPoll() {
+      if (state.timer) { clearTimeout(state.timer); state.timer = null; }
+      if (document.visibilityState !== 'visible') return;
+      if (state.prefs.pollMs === 0 && state.errors === 0) return; // Manual mode unless recovering from error
+      const wait = state.errors > 0 ? state.backoff : state.prefs.pollMs;
+      if (wait > 0) state.timer = setTimeout(fetchList, wait);
     }
 
     async function fetchList() {
@@ -811,17 +1388,26 @@
 
       if (DEMO_MODE) {
         if (!state.devices.length) {
+          const now = Math.floor(Date.now() / 1000);
+          state.sys = { load: 0.35, mem_used_pct: 41, uptime: 174200, clients: 4 };
           state.devices = [
-            { mac: 'F0:99:BF:11:22:33', ip: '192.168.2.101', hostname: 'iPhone-Pro', name: '', vendor: 'Apple', iface: 'wlan1', band: '5G', signal: -48, rx: 1450000, tx: 230000, qos_rate: 0, online: true, blocked: false, blacklisted: false },
-            { mac: 'B4:FB:E4:44:55:66', ip: '192.168.2.105', hostname: 'Mi-TV-4K', name: 'TV Phòng Khách', vendor: 'Xiaomi', iface: 'wlan1', band: '5G', signal: -64, rx: 4200000, tx: 85000, qos_rate: 5120, online: true, blocked: false, blacklisted: false },
-            { mac: 'D8:3A:DD:77:88:99', ip: '192.168.2.110', hostname: 'raspberrypi', name: '', vendor: 'Raspberry Pi', iface: 'eth0.1', band: 'LAN', signal: 0, rx: 52000, tx: 18000, qos_rate: 0, online: true, blocked: false, blacklisted: false },
-            { mac: '3E:A1:90:AA:BB:CC', ip: '192.168.2.120', hostname: '*', name: '', vendor: 'FakeVendor', iface: 'wlan0', band: '2.4G', signal: -79, rx: 0, tx: 0, qos_rate: 0, online: true, blocked: true, blacklisted: false }
+            { mac: 'F0:99:BF:11:22:33', ip: '192.168.2.10', hostname: 'iPhone-Pro', name: '', vendor: 'Apple', iface: 'phy1-ap0', band: '5G', signal: -48, rx: 1450000, tx: 230000, qos_rate: 0, online: true, blocked: false, blacklisted: false, day_rx: 2450000000, day_tx: 320000000, sched: { days: [1,2,3,4,5], from: '23:00', to: '06:30' } },
+            { mac: 'B4:FB:E4:44:55:66', ip: '192.168.2.15', hostname: 'Mi-TV', name: 'TV Phòng Khách', vendor: 'Xiaomi', iface: 'phy1-ap0', band: '5G', signal: -63, rx: 3850000, tx: 92000, qos_rate: 5120, online: true, blocked: false, blacklisted: false, day_rx: 8920000000, day_tx: 110000000, sched: null },
+            { mac: 'D8:3A:DD:77:88:99', ip: '192.168.2.20', hostname: 'raspberrypi', name: '', vendor: 'Raspberry Pi', iface: 'eth0.1', band: 'LAN', signal: 0, rx: 64000, tx: 21000, qos_rate: 0, online: true, blocked: false, blacklisted: false, day_rx: 512000000, day_tx: 480000000, sched: null },
+            { mac: '3E:A1:90:AA:BB:CC', ip: '192.168.2.35', hostname: 'android-8f92a1bc', name: '', vendor: 'ShouldIgnore', iface: 'phy0-ap0', band: '2.4G', signal: -79, rx: 0, tx: 0, qos_rate: 0, online: false, blocked: true, blacklisted: false, last_seen: now - 7200, day_rx: 120000000, day_tx: 15000000, sched: null }
           ];
-          markKnownDevices(state.devices);
+        } else {
+          state.devices.forEach(d => {
+            if (d.online) {
+              d.rx = Math.max(0, Math.round(d.rx * (0.75 + Math.random() * 0.5)));
+              d.tx = Math.max(0, Math.round(d.tx * (0.75 + Math.random() * 0.5)));
+            }
+          });
         }
+        processIncomingDevices(state.devices);
         dot.className = 'sync-dot';
         render();
-        state.timer = setTimeout(fetchList, 5000);
+        scheduleNextPoll();
         return;
       }
 
@@ -831,193 +1417,493 @@
       try {
         const res = await fetch(`${API}?action=list`, { signal: ctrl.signal, cache: 'no-store' });
         clearTimeout(tid);
-        if (!res.ok) throw new Error();
+        if (!res.ok) throw new Error('HTTP ' + res.status);
         const json = await res.json();
-        state.devices = json.devices || [];
-
-        localStorage.setItem(CACHE_KEY, JSON.stringify(state.devices));
-        markKnownDevices(state.devices);
+        state.sys = json.sys || null;
+        state.devices = Array.isArray(json.devices) ? json.devices : [];
+        processIncomingDevices(state.devices);
 
         state.errors = 0;
-        state.delay = 5000;
+        state.backoff = 5000;
         dot.className = 'sync-dot';
         render();
       } catch (e) {
         clearTimeout(tid);
         state.errors++;
-        // Backoff: 5s -> 10s -> 30s
-        state.delay = state.errors === 1 ? 10000 : 30000;
+        state.backoff = state.errors === 1 ? 5000 : state.errors === 2 ? 10000 : 30000;
         dot.className = 'sync-dot err';
       } finally {
-        if (document.visibilityState === 'visible') {
-          state.timer = setTimeout(fetchList, state.delay);
-        }
+        scheduleNextPoll();
       }
     }
 
-    // Dialog Handlers
+    /* ==========================================================================
+       DIALOGS & BOTTOM SHEET CONTROLLERS
+       ========================================================================== */
     let dlgCb = null;
-    const closeDlg = () => { $('dlg-scrim').classList.add('hidden'); $('dlg-body').innerHTML = ''; $('dlg-body').style.display = 'none'; dlgCb = null; };
-    $('dlg-cancel').onclick = closeDlg;
-    $('dlg-ok').onclick = () => { if (dlgCb) dlgCb(); closeDlg(); };
 
-    function openConfirm(title, desc, cb) {
+    function openModal({ title, desc, sheet = false, okText = 'Xác nhận', okClass = 'danger', showOk = true, buildBody, onOk }) {
+      const scrim = $('dlg-scrim');
+      scrim.classList.toggle('sheet-mode', sheet);
+      $('sheet-handle').style.display = sheet ? 'block' : 'none';
       $('dlg-title').textContent = title;
-      $('dlg-desc').textContent = desc;
-      $('dlg-body').style.display = 'none';
-      dlgCb = cb;
-      $('dlg-scrim').classList.remove('hidden');
+      $('dlg-desc').textContent = desc || '';
+
+      const body = $('dlg-body');
+      body.textContent = '';
+      if (buildBody) {
+        body.style.display = 'block';
+        buildBody(body);
+      } else {
+        body.style.display = 'none';
+      }
+
+      const okBtn = $('dlg-ok');
+      okBtn.style.display = showOk ? 'inline-block' : 'none';
+      okBtn.textContent = okText;
+      okBtn.className = `btn-sm ${okClass}`;
+      dlgCb = onOk || null;
+
+      scrim.classList.remove('hidden');
     }
 
-    function openQosModal(mac, name, curRate) {
-      $('dlg-title').textContent = 'Giới hạn tốc độ (QoS)';
-      $('dlg-desc').textContent = `Đặt hạn mức (KB/s) cho "${name}". Nhập 0 để gỡ, tối thiểu 16 KB/s:`;
-      const body = $('dlg-body');
-      body.style.display = 'block';
-      body.innerHTML = '';
+    function closeDlg() {
+      $('dlg-scrim').classList.add('hidden');
+      $('dlg-body').textContent = '';
+      dlgCb = null;
+    }
 
-      const presets = [
-        { l: 'Gỡ (0)', v: 0 },
-        { l: '512 KB/s', v: 512 },
-        { l: '1 MB/s', v: 1024 },
-        { l: '3 MB/s', v: 3072 },
-        { l: '5 MB/s', v: 5120 }
-      ];
-      const pRow = document.createElement('div');
-      pRow.className = 'preset-row';
-      const inp = document.createElement('input');
-      inp.className = 'input-m3'; inp.type = 'number'; inp.min = '0'; inp.step = '16';
-      inp.value = curRate || 0;
-      inp.placeholder = 'Tốc độ tối đa (KB/s)...';
+    $('dlg-cancel').onclick = closeDlg;
+    $('dlg-scrim').onclick = e => { if (e.target === $('dlg-scrim')) closeDlg(); };
+    $('dlg-ok').onclick = () => {
+      const cb = dlgCb;
+      closeDlg();
+      if (cb) cb();
+    };
 
-      presets.forEach(p => {
-        const b = document.createElement('button');
-        b.className = 'btn-sm tonal';
-        b.textContent = p.l;
-        b.onclick = () => { inp.value = p.v; };
-        pRow.appendChild(b);
-      });
+    function openConfirm(title, desc, cb) {
+      openModal({ title, desc, okText: 'Xác nhận', okClass: 'danger', onOk: cb });
+    }
 
-      body.appendChild(pRow);
-      body.appendChild(inp);
+    function openDetailSheet(d) {
+      const prof = resolveProfile(d);
+      const isPinned = state.prefs.pinned.includes(d.mac);
+      const curGrp = state.prefs.groups[d.mac] || '';
+      const allGroups = [...new Set([...DEFAULT_GROUPS, ...state.prefs.customGroups])];
 
-      dlgCb = () => {
-        const raw = parseInt(inp.value || '0', 10);
-        const rate = raw <= 0 ? 0 : Math.max(16, raw);
-        if (rate !== curRate) {
-          postAction({ action: 'qos_limit', mac, rate }).then(ok => ok && fetchList());
+      openModal({
+        title: `${prof.icon} ${prof.name}`,
+        desc: `${d.mac} · ${d.online ? 'Đang kết nối' : (fmtLastSeen(d.last_seen) || 'Ngoại tuyến')}`,
+        sheet: true,
+        showOk: false,
+        buildBody: body => {
+          // 1. Technical Matrix
+          const grid = document.createElement('div');
+          grid.className = 'detail-grid';
+          const items = [
+            ['Địa chỉ IP', d.ip || 'Chưa cấp'],
+            ['Interface / Băng tần', `${d.iface || '-'} (${d.band || '-'})`],
+            ['Nhà sản xuất', prof.rand ? 'MAC riêng tư' : (prof.vendor || 'Không rõ')],
+            ['Tín hiệu Wi-Fi', d.band === 'LAN' ? 'Cáp LAN' : (d.signal ? `${d.signal} dBm` : '-')],
+            ['Tốc độ hiện tại', `↓ ${fmtSpeed(d.rx)} / ↑ ${fmtSpeed(d.tx)}`]
+          ];
+          if (typeof d.day_rx === 'number' || typeof d.day_tx === 'number') {
+            items.push(['Lưu lượng hôm nay', `↓ ${fmtBytes(d.day_rx)} / ↑ ${fmtBytes(d.day_tx)}`]);
+          }
+          items.forEach(([k, v]) => {
+            const box = document.createElement('div');
+            box.className = 'd-item';
+            const kl = document.createElement('span'); kl.className = 'd-k'; kl.textContent = k;
+            const vl = document.createElement('span'); vl.className = 'd-v'; vl.textContent = v;
+            box.append(kl, vl);
+            grid.appendChild(box);
+          });
+          body.appendChild(grid);
+
+          // 2. Group Assignment (Local)
+          const gLbl = document.createElement('label');
+          gLbl.className = 'field-lbl';
+          gLbl.textContent = 'Nhóm thiết bị (Lưu trên máy)';
+          const gSel = document.createElement('select');
+          gSel.className = 'input-m3';
+          const optNone = document.createElement('option'); optNone.value = ''; optNone.textContent = '-- Không phân nhóm --';
+          gSel.appendChild(optNone);
+          allGroups.forEach(g => {
+            const o = document.createElement('option'); o.value = g; o.textContent = g;
+            if (g === curGrp) o.selected = true;
+            gSel.appendChild(o);
+          });
+          const optNew = document.createElement('option'); optNew.value = '__new__'; optNew.textContent = '+ Tạo nhóm mới...';
+          gSel.appendChild(optNew);
+
+          gSel.onchange = () => {
+            if (gSel.value === '__new__') {
+              const name = prompt('Nhập tên nhóm mới:');
+              if (name && name.trim()) {
+                const clean = name.trim().slice(0, 20);
+                if (!state.prefs.customGroups.includes(clean)) state.prefs.customGroups.push(clean);
+                state.prefs.groups[d.mac] = clean;
+                savePrefs(); renderGroupChips(); render(); closeDlg();
+              } else {
+                gSel.value = curGrp;
+              }
+            } else {
+              if (gSel.value) state.prefs.groups[d.mac] = gSel.value;
+              else delete state.prefs.groups[d.mac];
+              savePrefs(); render(); toast('Đã cập nhật nhóm');
+            }
+          };
+          body.append(gLbl, gSel);
+
+          // 3. Schedule Blocking (Group B Backend Feature)
+          const sLbl = document.createElement('label');
+          sLbl.className = 'field-lbl';
+          sLbl.textContent = '⏰ Hẹn giờ chặn Internet tự động';
+          body.appendChild(sLbl);
+
+          const selDays = new Set(d.sched && Array.isArray(d.sched.days) ? d.sched.days : [1,2,3,4,5]);
+          const dRow = document.createElement('div');
+          dRow.className = 'days-row';
+          DAY_NAMES.forEach((dn, idx) => {
+            const b = document.createElement('button');
+            b.type = 'button';
+            b.className = `day-btn ${selDays.has(idx) ? 'active' : ''}`;
+            b.textContent = dn;
+            b.onclick = () => {
+              if (selDays.has(idx)) selDays.delete(idx); else selDays.add(idx);
+              b.classList.toggle('active', selDays.has(idx));
+            };
+            dRow.appendChild(b);
+          });
+          body.appendChild(dRow);
+
+          const tRow = document.createElement('div');
+          tRow.style.cssText = 'display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px';
+          const inpFrom = document.createElement('input');
+          inpFrom.type = 'time'; inpFrom.className = 'input-m3'; inpFrom.style.marginBottom = '0';
+          inpFrom.value = (d.sched && d.sched.from) || '22:00';
+          const inpTo = document.createElement('input');
+          inpTo.type = 'time'; inpTo.className = 'input-m3'; inpTo.style.marginBottom = '0';
+          inpTo.value = (d.sched && d.sched.to) || '06:00';
+          tRow.append(inpFrom, inpTo);
+          body.appendChild(tRow);
+
+          const schBtns = document.createElement('div');
+          schBtns.style.cssText = 'display:flex;gap:6px;margin-bottom:12px';
+          const btnSaveSch = document.createElement('button');
+          btnSaveSch.type = 'button'; btnSaveSch.className = 'btn-sm tonal'; btnSaveSch.style.flex = '1';
+          btnSaveSch.textContent = 'Lưu lịch chặn';
+          btnSaveSch.onclick = () => {
+            const days = [...selDays].sort((a, b) => a - b);
+            if (!days.length) return toast('Chọn ít nhất 1 ngày');
+            postAction({ action: 'schedule_set', mac: d.mac, days, from: inpFrom.value, to: inpTo.value })
+              .then(ok => { if (ok) { closeDlg(); fetchList(); } });
+          };
+          schBtns.appendChild(btnSaveSch);
+
+          if (d.sched && d.sched.days && d.sched.days.length) {
+            const btnClrSch = document.createElement('button');
+            btnClrSch.type = 'button'; btnClrSch.className = 'btn-sm danger';
+            btnClrSch.textContent = 'Xóa lịch';
+            btnClrSch.onclick = () => {
+              postAction({ action: 'schedule_clear', mac: d.mac })
+                .then(ok => { if (ok) { closeDlg(); fetchList(); } });
+            };
+            schBtns.appendChild(btnClrSch);
+          }
+          body.appendChild(schBtns);
+
+          // 4. Quick Action Grid
+          const actGrid = document.createElement('div');
+          actGrid.className = 'sheet-actions';
+
+          const mkBtn = (txt, cls, fn) => {
+            const b = document.createElement('button');
+            b.type = 'button'; b.className = `sheet-btn ${cls}`; b.textContent = txt;
+            b.onclick = () => { closeDlg(); fn(); };
+            actGrid.appendChild(b);
+          };
+
+          mkBtn(isPinned ? '📌 Bỏ ghim đầu trang' : '📌 Ghim lên đầu', 'primary', () => {
+            if (isPinned) state.prefs.pinned = state.prefs.pinned.filter(x => x !== d.mac);
+            else state.prefs.pinned.unshift(d.mac);
+            savePrefs(); render(); toast(isPinned ? 'Đã bỏ ghim' : 'Đã ghim lên đầu');
+          });
+          mkBtn('✎ Đổi tên', '', () => openRename(d));
+          mkBtn('⏱ Giới hạn QoS', '', () => openQosModal(d));
+          if (d.ip) mkBtn('🔒 Gán IP cố định', '', () => postAction({ action: 'static_lease', mac: d.mac, ip: d.ip }));
+          mkBtn('⚡ Wake-on-LAN', '', () => postAction({ action: 'wol', mac: d.mac }));
+          if (d.online && d.band !== 'LAN') mkBtn('👢 Kick Wi-Fi', 'danger', () => postAction({ action: 'kick', mac: d.mac }).then(ok => ok && fetchList()));
+          body.appendChild(actGrid);
         }
-      };
-      $('dlg-scrim').classList.remove('hidden');
+      });
+    }
+
+    function openRename(d) {
+      const prof = resolveProfile(d);
+      openModal({
+        title: 'Đổi tên thiết bị',
+        desc: `Lưu tên trên Router cho [${d.mac}] (để trống để xóa tên tự đặt):`,
+        okText: 'Lưu tên',
+        okClass: 'tonal',
+        buildBody: body => {
+          const inp = document.createElement('input');
+          inp.className = 'input-m3'; inp.maxLength = 32; inp.id = 'inp-rename';
+          inp.value = (d.name || '').trim();
+          inp.placeholder = prof.name;
+          body.appendChild(inp);
+          setTimeout(() => inp.focus(), 50);
+        },
+        onOk: () => {
+          const val = $('inp-rename').value.trim();
+          if (val !== (d.name || '').trim()) {
+            postAction({ action: 'rename', mac: d.mac, name: val }).then(ok => ok && fetchList());
+          }
+        }
+      });
+    }
+
+    function openQosModal(d) {
+      const curRate = Number(d.qos_rate || 0);
+      openModal({
+        title: 'Giới hạn băng thông (QoS)',
+        desc: `Đặt tốc độ tối đa (KB/s) cho "${resolveProfile(d).name}". Nhập 0 để gỡ, tối thiểu 16 KB/s:`,
+        okText: 'Áp dụng',
+        okClass: 'tonal',
+        buildBody: body => {
+          const inp = document.createElement('input');
+          inp.type = 'number'; inp.min = '0'; inp.step = '16'; inp.className = 'input-m3'; inp.id = 'inp-qos';
+          inp.value = curRate;
+          const pRow = document.createElement('div');
+          pRow.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px';
+          [[0,'Gỡ (0)'],[512,'512 KB/s'],[1024,'1 MB/s'],[3072,'3 MB/s'],[5120,'5 MB/s']].forEach(([v, l]) => {
+            const b = document.createElement('button');
+            b.type = 'button'; b.className = 'btn-sm tonal'; b.textContent = l;
+            b.onclick = () => { inp.value = v; };
+            pRow.appendChild(b);
+          });
+          body.append(pRow, inp);
+        },
+        onOk: () => {
+          const raw = parseInt($('inp-qos').value || '0', 10);
+          const rate = raw <= 0 ? 0 : Math.max(16, raw);
+          if (rate !== curRate) {
+            postAction({ action: 'qos_limit', mac: d.mac, rate }).then(ok => ok && fetchList());
+          }
+        }
+      });
     }
 
     function openIconPicker(mac, cur) {
-      $('dlg-title').textContent = 'Đổi biểu tượng';
-      $('dlg-desc').textContent = `Chọn icon cho [${mac}]:`;
-      const body = $('dlg-body');
-      body.style.display = 'block';
-      let sel = cur;
-      const g = document.createElement('div');
-      g.className = 'icon-grid';
-      ICONS.forEach(ic => {
-        const b = document.createElement('button');
-        b.className = `icon-opt ${ic === cur ? 'sel' : ''}`;
-        b.textContent = ic;
-        b.onclick = () => { g.querySelectorAll('.icon-opt').forEach(x => x.classList.remove('sel')); b.classList.add('sel'); sel = ic; };
-        g.appendChild(b);
+      let chosen = cur;
+      openModal({
+        title: 'Chọn biểu tượng',
+        desc: `Biểu tượng hiển thị cho [${mac}]:`,
+        okText: 'Lưu',
+        okClass: 'tonal',
+        buildBody: body => {
+          const g = document.createElement('div');
+          g.className = 'icon-grid';
+          ICONS.forEach(ic => {
+            const b = document.createElement('button');
+            b.type = 'button';
+            b.className = `icon-opt ${ic === cur ? 'sel' : ''}`;
+            b.textContent = ic;
+            b.onclick = () => {
+              g.querySelectorAll('.icon-opt').forEach(x => x.classList.remove('sel'));
+              b.classList.add('sel');
+              chosen = ic;
+            };
+            g.appendChild(b);
+          });
+          body.appendChild(g);
+        },
+        onOk: () => {
+          state.prefs.icons[mac] = chosen;
+          savePrefs();
+          render();
+          toast(`Đã đổi biểu tượng ${chosen}`);
+        }
       });
-      body.innerHTML = ''; body.appendChild(g);
-      dlgCb = () => { state.icons[mac] = sel; localStorage.setItem('cr6608_custom_icons', JSON.stringify(state.icons)); render(); toast(`Đã đổi icon ${sel}`); };
-      $('dlg-scrim').classList.remove('hidden');
-    }
-
-    function openRename(mac, savedName, displayName) {
-      $('dlg-title').textContent = 'Đổi tên thiết bị';
-      $('dlg-desc').textContent = `Lưu tên mới lên Router cho [${mac}]:`;
-      const body = $('dlg-body');
-      body.style.display = 'block';
-      const inp = document.createElement('input');
-      inp.className = 'input-m3'; inp.maxLength = 32;
-      inp.value = savedName || (displayName.includes('·') ? '' : displayName);
-      inp.placeholder = 'Để trống để dùng tên tự động...';
-      body.innerHTML = ''; body.appendChild(inp);
-      dlgCb = () => {
-        const v = inp.value.trim();
-        if (v !== savedName) postAction({ action: 'rename', mac, name: v }).then(ok => ok && fetchList());
-      };
-      $('dlg-scrim').classList.remove('hidden');
-      setTimeout(() => inp.focus(), 60);
     }
 
     function openAddMac() {
-      $('dlg-title').textContent = 'Chặn MAC thủ công';
-      $('dlg-desc').textContent = 'Nhập địa chỉ MAC cần cấm truy cập Wi-Fi:';
-      const body = $('dlg-body');
-      body.style.display = 'block';
-      const inp = document.createElement('input');
-      inp.className = 'input-m3'; inp.maxLength = 17; inp.placeholder = 'AA:BB:CC:DD:EE:FF';
-      body.innerHTML = ''; body.appendChild(inp);
-      dlgCb = () => {
-        const v = inp.value.trim().toUpperCase();
-        if (/^([0-9A-F]{2}[:-]){5}([0-9A-F]{2})$/.test(v)) postAction({ action: 'blacklist_add', mac: v }).then(ok => ok && fetchList());
-        else toast('MAC không hợp lệ');
-      };
-      $('dlg-scrim').classList.remove('hidden');
-      setTimeout(() => inp.focus(), 60);
+      openModal({
+        title: 'Thêm vào Blacklist',
+        desc: 'Nhập địa chỉ MAC cần cấm kết nối vĩnh viễn:',
+        okText: 'Chặn MAC',
+        okClass: 'danger',
+        buildBody: body => {
+          const inp = document.createElement('input');
+          inp.className = 'input-m3'; inp.maxLength = 17; inp.id = 'inp-mac';
+          inp.placeholder = 'AA:BB:CC:DD:EE:FF';
+          body.appendChild(inp);
+          setTimeout(() => inp.focus(), 50);
+        },
+        onOk: () => {
+          const mac = $('inp-mac').value.trim().toUpperCase();
+          if (/^([0-9A-F]{2}[:-]){5}([0-9A-F]{2})$/.test(mac)) {
+            postAction({ action: 'blacklist_add', mac }).then(ok => ok && fetchList());
+          } else {
+            toast('Địa chỉ MAC không hợp lệ');
+          }
+        }
+      });
     }
 
-    function openBackup() {
-      $('dlg-title').textContent = 'Sao lưu & Khôi phục';
-      $('dlg-desc').textContent = 'Sao chép hoặc dán mã JSON bên dưới để khôi phục icon:';
-      const body = $('dlg-body');
-      body.style.display = 'block';
-      const ta = document.createElement('textarea');
-      ta.className = 'input-m3'; ta.style.height = '80px';
-      ta.value = JSON.stringify(state.icons);
-      const btn = document.createElement('button');
-      btn.className = 'btn-sm'; btn.textContent = '📥 Nạp dữ liệu';
-      btn.onclick = () => {
-        try {
-          state.icons = JSON.parse(ta.value.trim());
-          localStorage.setItem('cr6608_custom_icons', JSON.stringify(state.icons));
-          render(); toast('Đã khôi phục icon'); closeDlg();
-        } catch (e) { toast('Lỗi cú pháp JSON'); }
-      };
-      body.innerHTML = ''; body.appendChild(ta); body.appendChild(btn);
-      dlgCb = null;
-      $('dlg-scrim').classList.remove('hidden');
+    function openSettingsModal() {
+      openModal({
+        title: 'Cài đặt & Quản trị Router',
+        desc: 'Sao lưu toàn bộ cấu hình giao diện ra file JSON hoặc khởi động lại CR6608:',
+        showOk: false,
+        buildBody: body => {
+          const expBtn = document.createElement('button');
+          expBtn.type = 'button'; expBtn.className = 'sheet-btn primary'; expBtn.style.width = '100%'; expBtn.style.marginBottom = '8px';
+          expBtn.textContent = '📤 Xuất toàn bộ cài đặt (.json)';
+          expBtn.onclick = () => {
+            const blob = new Blob([JSON.stringify(state.prefs, null, 2)], { type: 'application/json' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `cr6608-settings-${new Date().toISOString().slice(0,10)}.json`;
+            a.click();
+            URL.revokeObjectURL(a.href);
+            toast('Đã tải xuống file cấu hình JSON');
+          };
+
+          const impInp = document.createElement('input');
+          impInp.type = 'file'; impInp.accept = '.json,application/json'; impInp.style.display = 'none';
+          impInp.onchange = e => {
+            const file = e.target.files && e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = () => {
+              try {
+                const parsed = JSON.parse(String(reader.result));
+                if (typeof parsed !== 'object' || !parsed) throw new Error();
+                state.prefs = { ...defaultPrefs, ...parsed };
+                savePrefs();
+                applyAppearance();
+                renderGroupChips();
+                render();
+                closeDlg();
+                toast('Đã khôi phục toàn bộ cài đặt');
+              } catch (err) {
+                toast('File JSON không hợp lệ');
+              }
+            };
+            reader.readAsText(file);
+          };
+
+          const impBtn = document.createElement('button');
+          impBtn.type = 'button'; impBtn.className = 'sheet-btn'; impBtn.style.width = '100%'; impBtn.style.marginBottom = '14px';
+          impBtn.textContent = '📥 Nhập cài đặt từ file JSON';
+          impBtn.onclick = () => impInp.click();
+
+          // Two-step Reboot Confirmation
+          const rebBtn = document.createElement('button');
+          rebBtn.type = 'button'; rebBtn.className = 'sheet-btn danger'; rebBtn.style.width = '100%';
+          rebBtn.textContent = '🔄 Khởi động lại Router CR6608';
+          rebBtn.onclick = () => {
+            openConfirm('Xác nhận bước 1/2', 'Router sẽ ngắt toàn bộ Wi-Fi và mạng trong khoảng 1 phút. Tiếp tục?', () => {
+              setTimeout(() => {
+                openConfirm('Xác nhận cuối cùng (2/2)', 'Bạn chắc chắn muốn KHỞI ĐỘNG LẠI router ngay bây giờ?', () => {
+                  postAction({ action: 'reboot' });
+                });
+              }, 120);
+            });
+          };
+
+          body.append(expBtn, impInp, impBtn, rebBtn);
+        }
+      });
     }
 
+    /* ==========================================================================
+       INITIALIZATION & EVENT LISTENERS
+       ========================================================================== */
     (function init() {
-      const savedTheme = localStorage.getItem('cr6608_m3_theme') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-      document.documentElement.dataset.theme = savedTheme;
+      applyAppearance();
+      renderGroupChips();
+
+      matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+        if (state.prefs.theme === 'auto') applyAppearance();
+      });
+
+      $('btn-style').onclick = () => {
+        vibrate();
+        state.prefs.style = state.prefs.style === 'm3' ? 'glass' : 'm3';
+        savePrefs();
+        applyAppearance();
+      };
 
       $('btn-theme').onclick = () => {
         vibrate();
-        const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
-        document.documentElement.dataset.theme = next;
-        localStorage.setItem('cr6608_m3_theme', next);
+        const curDark = document.documentElement.dataset.theme === 'dark';
+        state.prefs.theme = curDark ? 'light' : 'dark';
+        savePrefs();
+        applyAppearance();
       };
-      $('btn-refresh').onclick = () => { vibrate(); toast('Đang làm mới...'); fetchList(); };
-      $('btn-backup').onclick = () => { vibrate(); openBackup(); };
+
+      $('btn-poll').onclick = () => {
+        vibrate();
+        const cycle = [5000, 10000, 30000, 0];
+        const next = cycle[(cycle.indexOf(state.prefs.pollMs) + 1) % cycle.length];
+        state.prefs.pollMs = next;
+        savePrefs();
+        applyAppearance();
+        scheduleNextPoll();
+        toast(next === 0 ? 'Chế độ làm mới thủ công' : `Tự làm mới mỗi ${next / 1000} giây`);
+      };
+
+      $('btn-settings').onclick = () => { vibrate(); openSettingsModal(); };
+      $('btn-refresh').onclick = () => { vibrate(); toast('Đang cập nhật...'); fetchList(); };
       $('fab-add').onclick = () => { vibrate(); openAddMac(); };
 
-      let sTimer;
-      $('search').oninput = e => {
-        clearTimeout(sTimer);
-        sTimer = setTimeout(() => { state.query = e.target.value.trim().toLowerCase(); render(); }, 120);
+      $('sys-toggle').onclick = () => {
+        const p = $('sys-panel');
+        p.classList.toggle('collapsed');
+        $('sys-summary').textContent = p.classList.contains('collapsed') ? 'Chi tiết ▾' : 'Thu gọn ▴';
       };
 
-      $('chips').onclick = e => {
-        const c = e.target.closest('.chip');
+      // Bulk actions
+      $('bulk-block').onclick = () => runBulkAction('block');
+      $('bulk-unblock').onclick = () => runBulkAction('unblock');
+      $('bulk-kick').onclick = () => runBulkAction('kick');
+      $('bulk-exit').onclick = exitSelectMode;
+
+      // Search debounce
+      let sTimer = null;
+      $('search').oninput = e => {
+        clearTimeout(sTimer);
+        sTimer = setTimeout(() => {
+          state.query = e.target.value.trim().toLowerCase();
+          render();
+        }, 120);
+      };
+
+      // Filter chips
+      $('filter-chips').onclick = e => {
+        const c = e.target.closest('.chip[data-f]');
         if (!c) return;
         vibrate();
-        $('chips').querySelectorAll('.chip').forEach(x => x.classList.remove('active'));
+        $('filter-chips').querySelectorAll('.chip[data-f]').forEach(x => x.classList.remove('active'));
         c.classList.add('active');
         state.filter = c.dataset.f;
         render();
       };
 
+      // Sort chips
+      $('sort-chips').onclick = e => {
+        const c = e.target.closest('.chip[data-s]');
+        if (!c) return;
+        vibrate();
+        $('sort-chips').querySelectorAll('.chip[data-s]').forEach(x => x.classList.remove('active'));
+        c.classList.add('active');
+        state.sort = c.dataset.s;
+        render();
+      };
+
+      // Bottom navigation
       $('tab-clients').onclick = () => {
         if (state.tab === 'clients') return;
         vibrate(); state.tab = 'clients';
@@ -1031,15 +1917,11 @@
         render();
       };
 
+      // Pause polling when backgrounded
       document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'visible') fetchList();
         else if (state.timer) { clearTimeout(state.timer); state.timer = null; }
       });
-
-      const cached = localStorage.getItem(CACHE_KEY);
-      if (cached) {
-        try { state.devices = JSON.parse(cached); render(); } catch (e) {}
-      }
 
       fetchList();
     })();
