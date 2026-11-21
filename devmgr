@@ -1590,7 +1590,7 @@
       const prof = resolveProfile(d);
       openModal({
         title: '📢 GỬI THÔNG BÁO TỚI ĐT',
-        desc: `Hiển thị bảng nhắc nhở trên trình duyệt của "${prof.name}" (${d.ip}) mà KHÔNG ngắt mạng:`,
+        desc: `Chuyển hướng HTTP (port 80) của "${prof.name}" (${d.ip}) về trang thông báo trong 30s (không ngắt Internet):`,
         okText: 'GỬI NGAY',
         okClass: 'accent',
         buildBody: body => {
@@ -1615,7 +1615,12 @@
           inp.placeholder = 'Nhập nội dung thông báo...';
           inp.value = presets[0];
 
-          body.append(pWrap, inp);
+          const hint = document.createElement('div');
+          hint.className = 'px-font';
+          hint.style.cssText = 'font-size:10.5px;color:var(--text-dim);margin-bottom:4px';
+          hint.textContent = `Trang đích: http://${location.hostname || '192.168.2.1'}/notice.html`;
+
+          body.append(pWrap, inp, hint);
           setTimeout(() => inp.focus(), 50);
         },
         onOk: () => {
