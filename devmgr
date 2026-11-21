@@ -1626,7 +1626,8 @@
         onOk: () => {
           const msg = $('inp-notify').value.trim();
           if (!msg) return toast('VUI LÒNG NHẬP NỘI DUNG');
-          postAction({ action: 'notify', mac: d.mac, ip: d.ip, message: msg });
+          const safeMac = /^([0-9A-F]{2}:){5}[0-9A-F]{2}$/i.test(d.mac || '') ? d.mac.toUpperCase() : '00:00:00:00:00:00';
+          postAction({ action: 'notify', mac: safeMac, ip: d.ip, message: msg });
         }
       });
     }
