@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="theme-color" content="#F3F5EC" id="meta-theme">
-  <title>CR6608 · PIXEL DEVMGR v5.0</title>
+  <title>CR6608 · PIXEL DEVMGR v5.1</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
@@ -374,6 +374,7 @@
     }
     .act-btn:active { transform: translate(1px, 1px); box-shadow: none; }
     .act-btn.info { background: var(--info-soft); color: var(--info); }
+    .act-btn.warn { background: var(--warn-soft); color: var(--warn); }
     .act-btn.danger { background: var(--danger-soft); color: var(--danger); }
 
     /* ==========================================================================
@@ -887,6 +888,7 @@
           </div>
           <div class="c-foot">
             <div class="foot-l">
+              <button type="button" class="act-btn warn b-msg" title="Gửi thông báo tới trình duyệt máy này">📢 Báo</button>
               <button type="button" class="act-btn info b-qos">QoS</button>
               <button type="button" class="act-btn b-static">Gán IP</button>
               <button type="button" class="act-btn b-wol">WOL</button>
@@ -909,6 +911,7 @@
           spark: el.querySelector('.v-spark'),
           rx: el.querySelector('.v-rx'),
           tx: el.querySelector('.v-tx'),
+          msg: el.querySelector('.b-msg'),
           stat: el.querySelector('.b-static'),
           kick: el.querySelector('.b-kick'),
           bl: el.querySelector('.b-bl'),
@@ -928,6 +931,7 @@
             .then(ok => { if (!ok) e.target.checked = !e.target.checked; else fetchList(); });
         };
 
+        ref.msg.onclick = e => { e.stopPropagation(); vibrate(); openNotifyModal(el._d); };
         el.querySelector('.b-qos').onclick = e => { e.stopPropagation(); vibrate(); openQosModal(el._d); };
         ref.stat.onclick = e => {
           e.stopPropagation();
@@ -1034,6 +1038,9 @@
       if (c.rxStr !== rxStr) { ref.rx.textContent = rxStr; c.rxStr = rxStr; }
       const txStr = fmtSpeed(d.tx);
       if (c.txStr !== txStr) { ref.tx.textContent = txStr; c.txStr = txStr; }
+
+      const canMsg = Boolean(d.online && d.ip && !d.blacklisted);
+      if (c.canMsg !== canMsg) { ref.msg.style.display = canMsg ? 'inline-block' : 'none'; c.canMsg = canMsg; }
 
       const canStatic = Boolean(d.ip && !d.blacklisted);
       if (c.canStatic !== canStatic) { ref.stat.style.display = canStatic ? 'inline-block' : 'none'; c.canStatic = canStatic; }
@@ -1568,12 +1575,53 @@
             else state.prefs.pinned.unshift(d.mac);
             savePrefs(); render(); toast(isPinned ? 'ĐÃ BỎ GHIM' : 'ĐÃ GHIM LÊN ĐẦU');
           });
+          if (d.online && d.ip) mkBtn('📢 GỬI THÔNG BÁO', 'warn', () => openNotifyModal(d));
           mkBtn('✎ ĐỔI TÊN MÁY', 'soft', () => openRename(d));
           mkBtn('⏱ GIỚI HẠN QOS', 'soft', () => openQosModal(d));
           if (d.ip) mkBtn('🔒 GÁN IP CỐ ĐỊNH', 'soft', () => postAction({ action: 'static_lease', mac: d.mac, ip: d.ip }));
           mkBtn('⚡ WAKE-ON-LAN', 'soft', () => postAction({ action: 'wol', mac: d.mac }));
           if (d.online && d.band !== 'LAN') mkBtn('👢 KICK WI-FI', 'danger', () => postAction({ action: 'kick', mac: d.mac }).then(ok => ok && fetchList()));
           body.appendChild(actGrid);
+        }
+      });
+    }
+
+    function openNotifyModal(d) {
+      const prof = resolveProfile(d);
+      openModal({
+        title: '📢 GỬI THÔNG BÁO TỚI ĐT',
+        desc: `Hiển thị bảng nhắc nhở trên trình duyệt của "${prof.name}" (${d.ip}) mà KHÔNG ngắt mạng:`,
+        okText: 'GỬI NGAY',
+        okClass: 'accent',
+        buildBody: body => {
+          const presets = [
+            '⏰ Đến giờ nghỉ ngơi rồi!',
+            '🍽️ Xuống ăn cơm thôi!',
+            '📶 Wi-Fi sắp bảo trì 5 phút',
+            '📞 Bố/Mẹ đang gọi điện thoại!'
+          ];
+          const pWrap = document.createElement('div');
+          pWrap.style.cssText = 'display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px';
+          presets.forEach(txt => {
+            const b = document.createElement('button');
+            b.type = 'button'; b.className = 'px-btn soft'; b.style.fontSize = '10px';
+            b.textContent = txt;
+            b.onclick = () => { inp.value = txt; };
+            pWrap.appendChild(b);
+          });
+
+          const inp = document.createElement('input');
+          inp.className = 'px-input'; inp.maxLength = 120; inp.id = 'inp-notify';
+          inp.placeholder = 'Nhập nội dung thông báo...';
+          inp.value = presets[0];
+
+          body.append(pWrap, inp);
+          setTimeout(() => inp.focus(), 50);
+        },
+        onOk: () => {
+          const msg = $('inp-notify').value.trim();
+          if (!msg) return toast('VUI LÒNG NHẬP NỘI DUNG');
+          postAction({ action: 'notify', mac: d.mac, ip: d.ip, message: msg });
         }
       });
     }
