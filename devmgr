@@ -1461,8 +1461,8 @@
     document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('dlg-scrim').hidden) closeDlg(); });
     $('dlg-ok').onclick = () => {
       const cb = dlgCb;
-      closeDlg();
       if (cb) cb();
+      closeDlg();
     };
 
     function openConfirm(title, desc, cb) {
