@@ -1617,10 +1617,18 @@
 
           const hint = document.createElement('div');
           hint.className = 'px-font';
-          hint.style.cssText = 'font-size:10.5px;color:var(--text-dim);margin-bottom:4px';
-          hint.textContent = `Trang đích: http://${location.hostname || '192.168.2.1'}/notice.html`;
+          hint.style.cssText = 'font-size:10.5px;color:var(--text-dim);margin-bottom:6px';
+          const noticeUrl = `http://${location.hostname || '192.168.2.1'}/notice.html`;
+          hint.textContent = `Lưu ý: Chỉ chuyển hướng cổng HTTP (80) để không mất mạng. Link xem: ${noticeUrl}`;
 
-          body.append(pWrap, inp, hint);
+          const copyBtn = document.createElement('button');
+          copyBtn.type = 'button';
+          copyBtn.className = 'px-btn soft';
+          copyBtn.style.cssText = 'font-size:10px;height:28px';
+          copyBtn.textContent = '📋 CHÉP LINK THÔNG BÁO';
+          copyBtn.onclick = () => copyText(noticeUrl, 'LINK');
+
+          body.append(pWrap, inp, hint, copyBtn);
           setTimeout(() => inp.focus(), 50);
         },
         onOk: () => {
