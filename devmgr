@@ -3,115 +3,588 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="theme-color" content="#0D0E0D" id="meta-theme">
-  <title>CR6608 · PIXEL DEVMGR</title>
+  <meta name="theme-color" content="#0B0C0B" id="meta-theme">
+  <title>CR6608 Device Manager</title>
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    /* ==========================================================================
+       1. FONT & RESET
+       ========================================================================== */
+    @font-face {
+      font-family: "Pixel5x7";
+      src: url('/pixel-5x7.woff2') format('woff2');
+      font-weight: normal;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    :root {
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      --font-px: "Pixel5x7", ui-monospace, monospace;
+
+      --r-xs: 6px; --r-sm: 10px; --r-md: 14px; --r-lg: 20px; --r-xl: 28px; --r-full: 9999px;
+
+      /* Material 3 Light */
+      --primary: #0061A4; --on-primary: #FFFFFF;
+      --primary-container: #D1E4FF; --on-primary-container: #001D36;
+      --secondary-container: #D7E3F7; --on-secondary-container: #101C2B;
+      --tertiary-container: #F2DAFF; --on-tertiary-container: #251431;
+      --error: #BA1A1A; --on-error: #FFFFFF;
+      --error-container: #FFDAD6; --on-error-container: #410002;
+      --warning-container: #FFDEA6; --on-warning-container: #271900;
+      --bg: #F8F9FF; --on-bg: #191C20;
+      --on-surface-variant: #43474E;
+      --outline: #73777F; --outline-variant: #C3C7D0;
+      --surf-lowest: #FFFFFF; --surf-low: #F2F3FA; --surf: #ECEEF4; --surf-high: #E6E8EE; --surf-highest: #E0E2E8;
+      --success: #198754;
+      --card-shadow: none;
+      --glass-blur: none;
+    }
+
+    [data-theme="dark"] {
+      /* Material 3 Dark */
+      --primary: #9ECAFF; --on-primary: #003258;
+      --primary-container: #00497D; --on-primary-container: #D1E4FF;
+      --secondary-container: #3B4858; --on-secondary-container: #D7E3F7;
+      --tertiary-container: #523F5F; --on-tertiary-container: #F2DAFF;
+      --error: #FFB4AB; --on-error: #690005;
+      --error-container: #93000A; --on-error-container: #FFDAD6;
+      --warning-container: #5B4300; --on-warning-container: #FFDEA6;
+      --bg: #111318; --on-bg: #E2E2E9;
+      --on-surface-variant: #C3C7D0;
+      --outline: #8D9199; --outline-variant: #43474E;
+      --surf-lowest: #0C0E13; --surf-low: #191C20; --surf: #1D2024; --surf-high: #282A2F; --surf-highest: #33353A;
+      --success: #75B798;
+    }
+
+    /* iOS Liquid Glass Light */
+    [data-style="glass"] {
+      --bg: linear-gradient(145deg, #E4EEFF 0%, #F4F0FF 48%, #E6F7FF 100%);
+      --surf-lowest: rgba(255, 255, 255, 0.55);
+      --surf-low: rgba(255, 255, 255, 0.68);
+      --surf: rgba(255, 255, 255, 0.78);
+      --surf-high: rgba(255, 255, 255, 0.88);
+      --surf-highest: rgba(240, 244, 255, 0.95);
+      --outline-variant: rgba(255, 255, 255, 0.85);
+      --card-shadow: 0 6px 20px rgba(15, 35, 80, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+      --glass-blur: blur(14px);
+    }
+
+    /* iOS Liquid Glass Dark */
+    [data-style="glass"][data-theme="dark"] {
+      --bg: linear-gradient(145deg, #0B1221 0%, #161229 50%, #0C1B24 100%);
+      --surf-lowest: rgba(22, 27, 40, 0.55);
+      --surf-low: rgba(28, 34, 50, 0.65);
+      --surf: rgba(35, 42, 60, 0.75);
+      --surf-high: rgba(42, 50, 72, 0.88);
+      --surf-highest: rgba(54, 64, 90, 0.95);
+      --outline-variant: rgba(255, 255, 255, 0.14);
+      --card-shadow: 0 8px 24px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+      --glass-blur: blur(14px);
+    }
 
     /* ==========================================================================
-       TRENDORIN / LUCI-THEME-PIXEL MONOCHROME DESIGN SYSTEM
-       - Near-black & light-grey monochrome screen palette
-       - Red reserved strictly for errors & destructive actions
-       - Notched pixel frames, dotted rules, CRT scanlines, stepped motion
+       2. LUCI-THEME-PIXEL MONOCHROME TOKENS (DEFAULT STYLE)
+       - Sampled from Trendorin/luci-theme-pixel:
+         Light screen: #E2E3E0 canvas, #EFEFED surface, #141514 ink
+         Dark screen:  #0B0C0B canvas, #141614 surface, #D8DAD6 ink
+         Screen wells (graphs/telemetry): always dark (#0B0C0B / #D8DAD6)
+         Red: strictly #C62828 / #E53935 for errors & destructive actions
        ========================================================================== */
-    :root {
-      --font-px: ui-monospace, "Cascadia Mono", "Consolas", "Courier New", monospace;
-      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    [data-style="pixel"] {
+      --bg: #E2E3E0;
+      --surf-lowest: #EFEFED;
+      --surf-low: #EFEFED;
+      --surf: #E6E7E4;
+      --surf-high: #D6D8D4;
+      --surf-highest: #C7C9C5;
+      --on-bg: #141514;
+      --on-surface-variant: #4B4D4B;
+      --outline: #141514;
+      --outline-variant: #7E807D;
 
-      /* Light Monochrome Screen Palette */
-      --bg: #E6E7E5;
-      --surf: #F3F4F2;
-      --surf-2: #DCDEDB;
-      --surf-3: #CECFCC;
-      --text: #121312;
-      --text-dim: #4E504E;
-      --border: #121312;
-      --border-soft: #8D908D;
+      --primary: #141514;
+      --on-primary: #EFEFED;
+      --primary-container: #141514;
+      --on-primary-container: #EFEFED;
+      --secondary-container: #141514;
+      --on-secondary-container: #EFEFED;
+      --tertiary-container: #D6D8D4;
+      --on-tertiary-container: #141514;
+      --warning-container: #D6D8D4;
+      --on-warning-container: #141514;
+      --success: #141514;
 
-      --accent: #121312;
-      --accent-fg: #F3F4F2;
-      --accent-soft: #D3D5D2;
-      --accent-soft-fg: #121312;
+      --error: #C62828;
+      --on-error: #FFFFFF;
+      --error-container: #C62828;
+      --on-error-container: #FFFFFF;
 
-      /* Red strictly for errors and destructive buttons */
-      --danger: #C62828;
-      --danger-fg: #FFFFFF;
-      --danger-soft: #F4D6D6;
+      --screen-bg: #0B0C0B;
+      --screen-fg: #D8DAD6;
+      --screen-dim: #7C7E7B;
+      --scanline: rgba(20, 21, 20, 0.04);
 
-      --scanline: rgba(18, 19, 18, 0.035);
-      --px-shadow: 3px 3px 0px #121312;
-      --px-shadow-sm: 2px 2px 0px #121312;
-
-      /* Notched 4px pixel corner clip-path */
-      --notch: polygon(
+      /* Stepped 4-corner pixel notch */
+      --px-notch: polygon(
         0 4px, 4px 4px, 4px 0,
         calc(100% - 4px) 0, calc(100% - 4px) 4px, 100% 4px,
         100% calc(100% - 4px), calc(100% - 4px) calc(100% - 4px), calc(100% - 4px) 100%,
         4px 100%, 4px calc(100% - 4px), 0 calc(100% - 4px)
       );
+      --px-notch-sm: polygon(
+        0 2px, 2px 2px, 2px 0,
+        calc(100% - 2px) 0, calc(100% - 2px) 2px, 100% 2px,
+        100% calc(100% - 2px), calc(100% - 2px) calc(100% - 2px), calc(100% - 2px) 100%,
+        2px 100%, 2px calc(100% - 2px), 0 calc(100% - 2px)
+      );
     }
 
-    [data-theme="dark"] {
-      /* Dark Monochrome Phosphor Screen Palette */
-      --bg: #0C0D0C;
-      --surf: #151615;
-      --surf-2: #1E201E;
-      --surf-3: #282B28;
-      --text: #E5E7E4;
-      --text-dim: #8E918D;
-      --border: #C4C7C3;
-      --border-soft: #434643;
+    [data-style="pixel"][data-theme="dark"] {
+      --bg: #0B0C0B;
+      --surf-lowest: #111311;
+      --surf-low: #141614;
+      --surf: #191B19;
+      --surf-high: #222522;
+      --surf-highest: #2C302C;
+      --on-bg: #D8DAD6;
+      --on-surface-variant: #888B87;
+      --outline: #D8DAD6;
+      --outline-variant: #4B4E4B;
 
-      --accent: #E5E7E4;
-      --accent-fg: #0C0D0C;
-      --accent-soft: #2A2D2A;
-      --accent-soft-fg: #E5E7E4;
+      --primary: #D8DAD6;
+      --on-primary: #0B0C0B;
+      --primary-container: #D8DAD6;
+      --on-primary-container: #0B0C0B;
+      --secondary-container: #D8DAD6;
+      --on-secondary-container: #0B0C0B;
+      --tertiary-container: #222522;
+      --on-tertiary-container: #D8DAD6;
+      --warning-container: #222522;
+      --on-warning-container: #D8DAD6;
+      --success: #D8DAD6;
 
-      --danger: #E53935;
-      --danger-fg: #FFFFFF;
-      --danger-soft: #3B1616;
+      --error: #E53935;
+      --on-error: #FFFFFF;
+      --error-container: #E53935;
+      --on-error-container: #FFFFFF;
 
-      --scanline: rgba(255, 255, 255, 0.03);
-      --px-shadow: 3px 3px 0px #000000;
-      --px-shadow-sm: 2px 2px 0px #000000;
+      --screen-bg: #060706;
+      --screen-fg: #E4E6E2;
+      --screen-dim: #7C7E7B;
+      --scanline: rgba(255, 255, 255, 0.035);
     }
 
-    @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
-      body::after { display: none !important; }
-    }
-
-    @keyframes crtFlicker {
-      0% { opacity: 0.35; }
-      50% { opacity: 0.85; }
+    /* ==========================================================================
+       3. FINITE STEPPED ANIMATIONS (PIXEL MODE) & REDUCED MOTION
+       ========================================================================== */
+    @keyframes pxBootFlicker {
+      0% { opacity: 0.25; }
+      33% { opacity: 0.9; }
+      66% { opacity: 0.55; }
       100% { opacity: 1; }
     }
 
-    @keyframes blinkCursor {
+    @keyframes pxCursorBlink6 {
       0%, 49% { opacity: 1; }
       50%, 100% { opacity: 0; }
     }
 
-    @keyframes walkBlock {
+    @keyframes pxBlockWalk {
       0% { transform: translateX(0); }
       33% { transform: translateX(6px); }
       66% { transform: translateX(12px); }
       100% { transform: translateX(0); }
     }
 
-    body {
-      font-family: var(--font-ui);
-      background-color: var(--bg);
-      color: var(--text);
-      line-height: 1.4;
-      font-size: 14px;
-      padding-bottom: calc(80px + env(safe-area-inset-bottom));
-      min-height: 100vh;
-      animation: crtFlicker 0.18s steps(3) 1;
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation: none !important;
+        transition: none !important;
+      }
+      body::after { display: none !important; }
     }
 
-    /* Subtle CRT Scanlines Overlay */
-    body::after {
+    /* ==========================================================================
+       4. BASE LAYOUT (MATERIAL 3 & GLASS SHARED)
+       ========================================================================== */
+    body {
+      font-family: var(--font-sans);
+      background: var(--bg);
+      background-attachment: fixed;
+      color: var(--on-bg);
+      line-height: 1.4;
+      padding: 10px 14px 105px 14px;
+      max-width: 900px;
+      margin: 0 auto;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .top-bar {
+      position: sticky; top: 0; z-index: 40;
+      padding: 6px 0 8px 0;
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    [data-style="m3"] .top-bar { background: var(--bg); }
+    [data-style="glass"] .top-bar {
+      background: var(--surf);
+      backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur);
+      margin: 0 -14px; padding: 8px 14px 10px 14px;
+      border-bottom: 1px solid var(--outline-variant);
+    }
+
+    .bar-row { display: flex; justify-content: space-between; align-items: center; gap: 6px; }
+    .title-group { display: flex; align-items: center; gap: 6px; min-width: 0; }
+    .app-title { font-size: 1.2rem; font-weight: 800; letter-spacing: -0.02em; white-space: nowrap; }
+    .px-subtitle { display: none; }
+
+    .sync-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--success); flex-shrink: 0; }
+    .sync-dot.syncing { background: var(--primary); }
+    .sync-dot.err { background: var(--error); }
+    .px-walker { display: none; }
+
+    .top-actions { display: flex; gap: 5px; align-items: center; flex-shrink: 0; }
+    .btn-icon {
+      width: 34px; height: 34px; border-radius: var(--r-full);
+      border: 1px solid var(--outline-variant);
+      background: var(--surf); color: var(--on-bg);
+      display: inline-flex; align-items: center; justify-content: center;
+      cursor: pointer; font-size: 0.92rem;
+    }
+    .btn-pill {
+      height: 34px; padding: 0 9px; border-radius: var(--r-full);
+      border: 1px solid var(--outline-variant);
+      background: var(--surf); color: var(--on-bg);
+      display: inline-flex; align-items: center; gap: 4px;
+      cursor: pointer; font-size: 0.74rem; font-weight: 800; white-space: nowrap;
+    }
+
+    .err-banner {
+      background: var(--error-container); color: var(--on-error-container);
+      border: 1px solid var(--error); border-radius: var(--r-md);
+      padding: 8px 12px; display: none; justify-content: space-between; align-items: center; gap: 8px;
+      font-size: 0.78rem; font-weight: 700;
+    }
+
+    /* System Health Panel */
+    .sys-panel {
+      background: var(--surf-low); border-radius: var(--r-md);
+      border: 1px solid var(--outline-variant); box-shadow: var(--card-shadow);
+      overflow: hidden;
+    }
+    .sys-head {
+      padding: 7px 12px; display: flex; justify-content: space-between; align-items: center;
+      cursor: pointer; font-size: 0.74rem; font-weight: 700; color: var(--on-surface-variant);
+      user-select: none;
+    }
+    .sys-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px;
+      padding: 7px 12px 9px 12px; border-top: 1px dashed var(--outline-variant);
+    }
+    .sys-panel.collapsed .sys-grid { display: none; }
+    .sys-item { display: flex; flex-direction: column; gap: 2px; }
+    .sys-k { font-size: 0.6rem; font-weight: 700; color: var(--on-surface-variant); text-transform: uppercase; }
+    .sys-v { font-family: var(--font-mono); font-size: 0.8rem; font-weight: 800; }
+    .seg-bar { display: none; }
+
+    /* Traffic & Top 3 Strip */
+    .overview-box {
+      background: var(--surf-low); border-radius: var(--r-lg);
+      padding: 9px 12px; border: 1px solid var(--outline-variant);
+      box-shadow: var(--card-shadow);
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    .traffic-row { display: flex; justify-content: space-between; align-items: center; }
+    .stat-box { display: flex; align-items: center; gap: 7px; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; }
+    .dot.rx { background: var(--primary); } .dot.tx { background: var(--success); }
+    .stat-lbl { font-size: 0.62rem; font-weight: 700; color: var(--on-surface-variant); text-transform: uppercase; }
+    .stat-val { font-size: 0.88rem; font-weight: 800; font-family: var(--font-mono); }
+    .stat-val.rx { color: var(--primary); } .stat-val.tx { color: var(--success); }
+
+    .top3-row {
+      display: flex; align-items: center; gap: 6px; overflow-x: auto; scrollbar-width: none;
+      padding-top: 6px; border-top: 1px solid var(--outline-variant); font-size: 0.7rem;
+    }
+    .top3-row::-webkit-scrollbar { display: none; }
+    .top3-lbl { font-weight: 800; color: var(--on-surface-variant); white-space: nowrap; }
+    .top3-pill {
+      display: inline-flex; align-items: center; gap: 4px;
+      background: var(--surf); border: 1px solid var(--outline-variant);
+      padding: 2px 8px; border-radius: var(--r-full); white-space: nowrap; cursor: pointer;
+    }
+    .top3-pill b { font-weight: 700; max-width: 90px; overflow: hidden; text-overflow: ellipsis; }
+    .top3-pill span { font-family: var(--font-mono); color: var(--primary); font-weight: 800; }
+
+    /* Search & Chips */
+    .search-box {
+      background: var(--surf-high); border-radius: var(--r-full); height: 40px;
+      display: flex; align-items: center; padding: 0 14px; margin: 10px 0 8px 0;
+      border: 1px solid var(--outline-variant);
+    }
+    .search-box input {
+      border: none; background: transparent; outline: none; width: 100%;
+      margin-left: 8px; font-size: 0.86rem; color: var(--on-bg);
+    }
+    .chips-row {
+      display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; margin-bottom: 6px; align-items: center;
+    }
+    .chips-row::-webkit-scrollbar { display: none; }
+    .chip {
+      height: 30px; padding: 0 11px; border-radius: var(--r-sm);
+      display: inline-flex; align-items: center; gap: 4px; font-size: 0.74rem; font-weight: 600;
+      cursor: pointer; white-space: nowrap; border: 1px solid var(--outline-variant);
+      background: var(--surf-lowest); color: var(--on-surface-variant); user-select: none;
+    }
+    .chip.active {
+      background: var(--secondary-container); color: var(--on-secondary-container);
+      border-color: transparent; font-weight: 800;
+    }
+    .chip.sort-chip.active { background: var(--primary-container); color: var(--on-primary-container); }
+    .chip-sep { width: 1px; height: 18px; background: var(--outline-variant); flex-shrink: 0; margin: 0 2px; }
+
+    /* Cards & Sparkline */
+    .grid { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 6px; }
+    @media (min-width: 660px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+
+    .card {
+      background: var(--surf-low); border-radius: var(--r-lg); padding: 12px;
+      border: 1px solid var(--outline-variant); box-shadow: var(--card-shadow);
+      display: flex; flex-direction: column; gap: 8px;
+      contain: content; cursor: pointer; position: relative; user-select: none;
+    }
+    .card.offline { opacity: 0.65; background: var(--surf-lowest); }
+    .card.pinned { border-color: var(--primary); }
+    .card.selected { outline: 2px solid var(--primary); background: var(--primary-container); }
+
+    .card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+    .profile { display: flex; align-items: center; gap: 10px; min-width: 0; flex: 1; }
+
+    .sel-chk {
+      width: 22px; height: 22px; border-radius: 6px; border: 2px solid var(--primary);
+      display: none; align-items: center; justify-content: center; font-size: 0.85rem;
+      font-weight: 900; flex-shrink: 0; background: var(--surf-lowest); color: var(--primary);
+    }
+    .select-mode .sel-chk { display: flex; }
+    .card.selected .sel-chk { background: var(--primary); color: var(--on-primary); }
+
+    .icon-btn {
+      width: 40px; height: 40px; border-radius: var(--r-md);
+      background: var(--primary-container); color: var(--on-primary-container);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.3rem; border: none; cursor: pointer; flex-shrink: 0; position: relative;
+    }
+    .pin-mark {
+      position: absolute; top: -4px; left: -4px; font-size: 0.65rem;
+      background: var(--primary); color: var(--on-primary); border-radius: 50%;
+      width: 16px; height: 16px; display: none; align-items: center; justify-content: center;
+    }
+    .card.pinned .pin-mark { display: flex; }
+
+    .names { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+    .name-row { display: flex; align-items: center; gap: 4px; min-width: 0; }
+    .name-main { font-size: 0.94rem; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .btn-edit-name { border: none; background: transparent; color: var(--on-surface-variant); font-size: 0.78rem; padding: 2px 5px; cursor: pointer; opacity: 0.75; }
+    .name-sub { font-size: 0.71rem; color: var(--on-surface-variant); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    /* Switch */
+    .switch-wrap { display: flex; flex-direction: column; align-items: center; gap: 2px; flex-shrink: 0; }
+    .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .track {
+      position: absolute; inset: 0; background: var(--surf-highest);
+      border: 2px solid var(--outline); border-radius: var(--r-full); cursor: pointer;
+    }
+    .track::before {
+      content: ""; position: absolute; height: 14px; width: 14px; left: 3px; bottom: 3px;
+      background: var(--outline); border-radius: 50%; transition: transform 0.14s ease;
+    }
+    .switch input:checked + .track { background: var(--error); border-color: var(--error); }
+    .switch input:checked + .track::before { transform: translateX(20px); background: var(--on-error); }
+    .sw-lbl { font-size: 0.56rem; color: var(--on-surface-variant); font-weight: 800; }
+
+    /* Tags & Segmented RSSI */
+    .tags { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 3px; }
+    .tag { font-size: 0.6rem; font-weight: 800; padding: 1px 6px; border-radius: var(--r-xs); text-transform: uppercase; }
+    .t-rand { background: var(--tertiary-container); color: var(--on-tertiary-container); }
+    .t-band { background: var(--surf-highest); color: var(--on-surface-variant); }
+    .t-grp { background: var(--secondary-container); color: var(--on-secondary-container); }
+    .t-blk { background: var(--error-container); color: var(--on-error-container); }
+    .t-qos { background: var(--warning-container); color: var(--on-warning-container); }
+    .t-new { background: var(--error); color: var(--on-error); }
+
+    .rssi { display: inline-flex; align-items: flex-end; gap: 2px; height: 10px; margin-left: 4px; }
+    .rssi i { width: 3px; background: var(--outline-variant); border-radius: 1px; font-style: normal; }
+    .rssi i:nth-child(1) { height: 25%; } .rssi i:nth-child(2) { height: 50%; }
+    .rssi i:nth-child(3) { height: 75%; } .rssi i:nth-child(4) { height: 100%; }
+    .rssi[data-l="1"] i:nth-child(1) { background: var(--error); }
+    .rssi[data-l="2"] i:nth-child(-n+2) { background: #FF9800; }
+    .rssi[data-l="3"] i:nth-child(-n+3), .rssi[data-l="4"] i { background: var(--success); }
+
+    /* Info & Sparkline Matrix */
+    .matrix {
+      background: var(--surf); border-radius: var(--r-md); padding: 6px 10px;
+      display: grid; grid-template-columns: 1.1fr 1fr 68px; gap: 6px; align-items: center;
+      font-size: 0.71rem;
+    }
+    .m-col { display: flex; flex-direction: column; min-width: 0; }
+    .m-k { font-size: 0.58rem; font-weight: 700; color: var(--on-surface-variant); }
+    .m-v { font-family: var(--font-mono); font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .spark-svg { width: 68px; height: 24px; display: block; overflow: visible; }
+    .spark-line { fill: none; stroke: var(--primary); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+    /* Card Bottom */
+    .card-bot { display: flex; justify-content: space-between; align-items: center; gap: 6px; }
+    .spd { display: flex; gap: 7px; font-family: var(--font-mono); font-size: 0.72rem; font-weight: 800; }
+    .spd-d { color: var(--primary); } .spd-u { color: var(--success); }
+    .btns { display: flex; gap: 4px; flex-wrap: wrap; justify-content: flex-end; }
+    .btn-sm {
+      border: 1px solid var(--outline-variant); background: var(--surf-high); color: var(--on-bg);
+      padding: 4px 8px; border-radius: var(--r-sm); font-size: 0.69rem; font-weight: 700; cursor: pointer;
+    }
+    .btn-sm.tonal { background: var(--secondary-container); color: var(--on-secondary-container); border-color: transparent; }
+    .btn-sm.danger { background: var(--error-container); color: var(--on-error-container); border-color: transparent; }
+
+    /* Bulk, FAB & Bottom Nav */
+    .bulk-bar {
+      position: fixed; bottom: 72px; left: 12px; right: 12px; max-width: 876px; margin: 0 auto;
+      background: var(--primary); color: var(--on-primary);
+      border-radius: var(--r-lg); padding: 10px 14px;
+      display: none; justify-content: space-between; align-items: center; gap: 8px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.28); z-index: 55;
+    }
+    .bulk-bar.show { display: flex; }
+    .bulk-btns { display: flex; gap: 6px; flex-wrap: wrap; }
+    .bulk-btn {
+      border: none; background: rgba(255,255,255,0.2); color: inherit;
+      padding: 6px 10px; border-radius: var(--r-sm); font-size: 0.74rem; font-weight: 800; cursor: pointer;
+    }
+
+    .fab {
+      position: fixed; right: 16px; bottom: 76px; height: 48px; padding: 0 15px;
+      border-radius: var(--r-lg); background: var(--primary-container); color: var(--on-primary-container);
+      border: 1px solid var(--outline-variant); box-shadow: 0 4px 12px rgba(0,0,0,0.18);
+      display: flex; align-items: center; gap: 6px; font-size: 0.82rem; font-weight: 800;
+      cursor: pointer; z-index: 45;
+    }
+
+    .nav-bar {
+      position: fixed; bottom: 0; left: 0; right: 0; height: 62px;
+      background: var(--surf); border-top: 1px solid var(--outline-variant);
+      display: flex; justify-content: space-around; align-items: center;
+      z-index: 50; max-width: 900px; margin: 0 auto;
+    }
+    [data-style="glass"] .nav-bar { backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur); }
+    .nav-btn {
+      display: flex; flex-direction: column; align-items: center; gap: 2px;
+      cursor: pointer; background: transparent; border: none; color: var(--on-surface-variant);
+    }
+    .nav-pill {
+      width: 50px; height: 26px; border-radius: var(--r-full);
+      display: flex; align-items: center; justify-content: center; font-size: 1rem;
+    }
+    .nav-lbl { font-size: 0.69rem; font-weight: 700; }
+    .nav-btn.active .nav-pill { background: var(--secondary-container); color: var(--on-secondary-container); }
+    .nav-btn.active .nav-lbl { color: var(--on-bg); font-weight: 800; }
+
+    /* Modals & Sheet */
+    .scrim {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.52);
+      display: flex; align-items: center; justify-content: center; padding: 14px; z-index: 100;
+    }
+    .scrim.sheet-mode { align-items: flex-end; padding: 0; }
+    .scrim.hidden { display: none; }
+
+    .dialog {
+      background: var(--surf-high); border-radius: var(--r-xl); padding: 18px;
+      width: 100%; max-width: 440px; border: 1px solid var(--outline-variant);
+      max-height: 88vh; overflow-y: auto;
+    }
+    .scrim.sheet-mode .dialog {
+      max-width: 900px; border-radius: 24px 24px 0 0; padding: 14px 18px 26px 18px;
+      border-bottom: none;
+    }
+    .dlg-titlebar { display: none; }
+    .sheet-handle { width: 38px; height: 4px; border-radius: 2px; background: var(--outline); margin: 0 auto 10px auto; opacity: 0.5; }
+    .dlg-title { font-size: 1.08rem; font-weight: 800; margin-bottom: 4px; }
+    .dlg-desc { font-size: 0.82rem; color: var(--on-surface-variant); margin-bottom: 12px; }
+    .input-m3, select.input-m3 {
+      width: 100%; padding: 9px 11px; border-radius: var(--r-sm);
+      border: 1px solid var(--outline); background: var(--surf-lowest); color: var(--on-bg);
+      font-size: 0.88rem; outline: none; margin-bottom: 10px;
+    }
+    .field-lbl { font-size: 0.72rem; font-weight: 800; color: var(--on-surface-variant); margin-bottom: 4px; display: block; }
+    .dlg-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; }
+
+    .detail-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+      background: var(--surf); padding: 10px; border-radius: var(--r-md); margin-bottom: 12px;
+    }
+    .d-item { display: flex; flex-direction: column; }
+    .d-k { font-size: 0.62rem; font-weight: 700; color: var(--on-surface-variant); text-transform: uppercase; }
+    .d-v { font-family: var(--font-mono); font-size: 0.8rem; font-weight: 700; word-break: break-all; }
+
+    .sheet-actions { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 10px; }
+    .sheet-btn {
+      padding: 10px; border-radius: var(--r-md); border: 1px solid var(--outline-variant);
+      background: var(--surf); color: var(--on-bg); font-size: 0.8rem; font-weight: 800;
+      cursor: pointer; text-align: center;
+    }
+    .sheet-btn.primary { background: var(--primary-container); color: var(--on-primary-container); border-color: transparent; }
+    .sheet-btn.danger { background: var(--error-container); color: var(--on-error-container); border-color: transparent; }
+
+    .icon-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; max-height: 200px; overflow-y: auto; margin-bottom: 10px; }
+    .icon-opt { height: 42px; border-radius: var(--r-md); border: 1px solid var(--outline-variant); background: var(--surf-lowest); font-size: 1.3rem; cursor: pointer; }
+    .icon-opt.sel { background: var(--primary-container); border-color: var(--primary); }
+
+    #toast-box {
+      position: fixed; bottom: 74px; left: 16px; right: 16px;
+      display: flex; flex-direction: column; align-items: center; gap: 6px;
+      z-index: 120; pointer-events: none;
+    }
+    .toast {
+      padding: 8px 16px; border-radius: var(--r-full); font-size: 0.8rem; font-weight: 700;
+      background: var(--on-bg); color: var(--bg); box-shadow: 0 4px 12px rgba(0,0,0,0.28);
+    }
+
+    /* Idle Sleep Overlay (30s) */
+    .idle-screen {
+      position: fixed; inset: 0; z-index: 200; background: var(--bg);
+      display: flex; align-items: center; justify-content: center; padding: 20px; text-align: center;
+    }
+    .idle-screen[hidden] { display: none; }
+    .idle-box {
+      background: var(--surf); border: 1px solid var(--outline-variant); border-radius: var(--r-lg);
+      padding: 24px; max-width: 340px; width: 100%;
+    }
+
+    /* ==========================================================================
+       5. LUCI-THEME-PIXEL SPECIFIC OVERRIDES
+       - Pixel5x7 font at strict 10px / 20px / 30px multiples
+       - No synthetic bold/italic, -webkit-font-smoothing: none, pixelated
+       - 4-corner stepped clip-path notches, dotted dividers, 1-bit striped dialogs
+       - Fixed CRT scanline overlay (no blur / heavy filters)
+       ========================================================================== */
+    [data-style="pixel"] body {
+      font-family: var(--font-px);
+      font-size: 10px;
+      line-height: 1.5;
+      -webkit-font-smoothing: none;
+      font-synthesis: none;
+      image-rendering: pixelated;
+      animation: pxBootFlicker 0.22s steps(3) 1;
+    }
+
+    /* CRT Scanlines (Fixed, pointer-events: none, no blur) */
+    [data-style="pixel"] body::after {
       content: "";
       position: fixed;
       inset: 0;
@@ -126,612 +599,561 @@
       );
     }
 
-    .px-font {
+    [data-style="pixel"] *,
+    [data-style="pixel"] *::before,
+    [data-style="pixel"] *::after {
+      font-weight: normal !important;
+      font-style: normal !important;
+      border-radius: 0 !important;
+      box-shadow: none !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+    }
+
+    [data-style="pixel"] input,
+    [data-style="pixel"] select,
+    [data-style="pixel"] button {
       font-family: var(--font-px);
-      letter-spacing: -0.02em;
-      font-variant-numeric: tabular-nums;
+      font-size: 10px;
     }
 
-    .container {
-      max-width: 980px;
-      margin: 0 auto;
-      padding: 0 12px;
-    }
-
-    /* Notched Pixel Frame Utility */
-    .px-frame {
-      background: var(--surf);
-      border: 2px solid var(--border);
-      box-shadow: var(--px-shadow);
-      position: relative;
-    }
-    .px-frame::before {
-      content: "";
-      position: absolute;
-      inset: 2px;
-      border: 1px dotted var(--border-soft);
-      pointer-events: none;
-    }
-
-    /* ==========================================================================
-       1. MONOCHROME PIXEL TOP BAR
-       ========================================================================== */
-    .top-bar {
-      position: sticky; top: 0; z-index: 40;
+    /* Top Bar in Pixel Style */
+    [data-style="pixel"] .top-bar {
       background: var(--bg);
-      border-bottom: 2px solid var(--border);
-      padding: 10px 12px;
-      margin: 0 -12px 12px -12px;
-      display: flex; justify-content: space-between; align-items: center; gap: 8px;
+      border-bottom: 2px solid var(--outline);
+      padding: 8px 0;
     }
-    .brand { display: flex; align-items: center; gap: 8px; min-width: 0; }
-    .px-logo {
-      width: 30px; height: 30px; background: var(--accent); color: var(--accent-fg);
-      border: 2px solid var(--border); box-shadow: var(--px-shadow-sm);
-      clip-path: var(--notch);
-      display: flex; align-items: center; justify-content: center;
-      font-family: var(--font-px); font-weight: 900; font-size: 13px; flex-shrink: 0;
+    [data-style="pixel"] .app-title {
+      font-size: 20px;
+      line-height: 1;
+      letter-spacing: 1px;
     }
-    .brand-title {
-      font-family: var(--font-px); font-size: 15px; font-weight: 900;
-      text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap;
+    [data-style="pixel"] .px-subtitle {
+      display: inline-block;
+      font-size: 10px;
+      color: var(--on-surface-variant);
+      margin-left: 4px;
     }
-    .cursor-blk {
-      display: inline-block; width: 7px; height: 13px; background: var(--text);
-      margin-left: 2px; vertical-align: middle;
-      animation: blinkCursor 1s steps(1) infinite;
-    }
-    .live-pill {
-      font-family: var(--font-px); font-size: 10px; font-weight: 900;
-      padding: 2px 6px; border: 1.5px solid var(--border);
-      background: var(--surf); color: var(--text);
-      text-transform: uppercase; white-space: nowrap;
-      display: inline-flex; align-items: center; gap: 5px;
-    }
-    .walker {
-      display: none; width: 18px; height: 8px; border: 1px solid var(--border);
-      position: relative; background: var(--surf-2);
-    }
-    .walker i {
-      position: absolute; left: 0; top: 0; width: 4px; height: 6px;
-      background: var(--text); font-style: normal;
-      animation: walkBlock 0.6s steps(3) infinite;
-    }
-    .live-pill.syncing .walker { display: inline-block; }
-    .live-pill.err { background: var(--danger); color: var(--danger-fg); border-color: var(--danger); }
-
-    .top-btns { display: flex; align-items: center; gap: 5px; flex-shrink: 0; }
-    .px-btn {
-      height: 32px; padding: 0 8px;
-      background: var(--surf); color: var(--text);
-      border: 2px solid var(--border); box-shadow: var(--px-shadow-sm);
-      font-family: var(--font-px); font-size: 10.5px; font-weight: 900;
-      cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 4px;
-      text-transform: uppercase;
-    }
-    .px-btn:active { transform: translate(2px, 2px); box-shadow: none; }
-    .px-btn.accent { background: var(--accent); color: var(--accent-fg); }
-    .px-btn.danger { background: var(--danger); color: var(--danger-fg); border-color: var(--danger); }
-    .px-btn.soft { background: var(--surf-2); }
-
-    /* Error Banner */
-    .err-banner {
-      background: var(--danger-soft); color: var(--danger);
-      border: 2px solid var(--danger); box-shadow: var(--px-shadow-sm);
-      padding: 8px 10px; margin-bottom: 12px;
-      display: none; justify-content: space-between; align-items: center; gap: 8px;
-      font-family: var(--font-px); font-size: 11px; font-weight: 900;
+    [data-style="pixel"] .px-cursor {
+      display: inline-block;
+      width: 6px;
+      height: 10px;
+      background: var(--on-bg);
+      margin-left: 2px;
+      vertical-align: baseline;
+      /* Blinks maximum 6 times then holds steady */
+      animation: pxCursorBlink6 0.6s steps(1) 6 forwards;
     }
 
-    /* ==========================================================================
-       2. MONOCHROME STATUS SCREEN & SEGMENTED PROGRESS BARS
-       ========================================================================== */
-    .pixel-widget {
-      padding: 12px;
-      margin-bottom: 12px;
-      display: flex; flex-direction: column; gap: 10px;
+    /* Walking Pixel Block Spinner (Only visible while syncing) */
+    [data-style="pixel"] .sync-dot { display: none; }
+    [data-style="pixel"] .px-walker {
+      display: inline-block;
+      width: 18px;
+      height: 8px;
+      border: 1px solid var(--outline);
+      background: var(--surf-lowest);
+      position: relative;
+      flex-shrink: 0;
     }
-    .widget-head {
-      display: flex; justify-content: space-between; align-items: center;
-      font-family: var(--font-px); font-size: 10.5px; font-weight: 900; color: var(--text-dim);
-      text-transform: uppercase; border-bottom: 1.5px dotted var(--border-soft); padding-bottom: 6px;
+    [data-style="pixel"] .px-walker i {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 4px;
+      height: 6px;
+      background: var(--on-bg);
     }
-    .kpi-row {
-      display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+    [data-style="pixel"] .px-walker.syncing i {
+      animation: pxBlockWalk 0.45s steps(3) infinite;
     }
-    .kpi-cell {
-      background: var(--surf-2); border: 1.5px solid var(--border);
-      padding: 7px 8px; display: flex; flex-direction: column; gap: 2px;
+    [data-style="pixel"] .px-walker.err {
+      border-color: var(--error);
     }
-    .kpi-k { font-family: var(--font-px); font-size: 9.5px; font-weight: 800; color: var(--text-dim); text-transform: uppercase; }
-    .kpi-v { font-family: var(--font-px); font-size: 13.5px; font-weight: 900; color: var(--text); }
+    [data-style="pixel"] .px-walker.err i {
+      background: var(--error);
+    }
 
-    /* Segmented Pixel Progress Meters (luci-theme-pixel signature) */
-    .sys-strip {
-      display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px;
-      padding-top: 8px; border-top: 1.5px dotted var(--border-soft);
-      font-family: var(--font-px); font-size: 11px;
+    /* Notched Pixel Buttons, Chips, Cards & Badges */
+    [data-style="pixel"] .btn-icon,
+    [data-style="pixel"] .btn-pill,
+    [data-style="pixel"] .btn-sm,
+    [data-style="pixel"] .sheet-btn,
+    [data-style="pixel"] .bulk-btn,
+    [data-style="pixel"] .fab {
+      border: 2px solid var(--outline);
+      background: var(--surf-lowest);
+      color: var(--on-bg);
+      clip-path: var(--px-notch-sm);
+      font-size: 10px;
     }
-    .sys-box { display: flex; flex-direction: column; gap: 2px; }
-    .sys-lbl { font-size: 9.5px; color: var(--text-dim); font-weight: 800; }
-    .sys-val { font-weight: 900; }
-    .px-meter {
-      height: 8px; background: var(--surf-2); border: 1.5px solid var(--border);
-      margin-top: 2px; position: relative; overflow: hidden;
+    [data-style="pixel"] .btn-sm.tonal,
+    [data-style="pixel"] .sheet-btn.primary,
+    [data-style="pixel"] .fab {
+      background: var(--primary);
+      color: var(--on-primary);
     }
-    .px-meter > i {
-      display: block; height: 100%; font-style: normal;
+    [data-style="pixel"] .btn-sm.danger,
+    [data-style="pixel"] .sheet-btn.danger {
+      background: var(--error);
+      color: var(--on-error);
+      border-color: var(--error);
+    }
+
+    [data-style="pixel"] .chip {
+      border: 1px solid var(--outline);
+      background: var(--surf-lowest);
+      color: var(--on-bg);
+      clip-path: var(--px-notch-sm);
+      font-size: 10px;
+      height: 28px;
+    }
+    [data-style="pixel"] .chip.active {
+      background: var(--primary);
+      color: var(--on-primary);
+    }
+
+    [data-style="pixel"] .tag {
+      clip-path: var(--px-notch-sm);
+      border: 1px solid var(--outline);
+      font-size: 10px;
+      padding: 1px 5px;
+    }
+    [data-style="pixel"] .t-blk,
+    [data-style="pixel"] .t-new {
+      border-color: var(--error);
+    }
+
+    /* Always-Dark "Screen" Regions (Overview Telemetry & Sparkline Matrix) */
+    [data-style="pixel"] .overview-box {
+      background: var(--screen-bg);
+      color: var(--screen-fg);
+      border: 2px solid var(--outline);
+      clip-path: var(--px-notch);
+    }
+    [data-style="pixel"] .overview-box .stat-lbl,
+    [data-style="pixel"] .overview-box .top3-lbl {
+      color: var(--screen-dim);
+      font-size: 10px;
+    }
+    [data-style="pixel"] .overview-box .stat-val {
+      font-family: var(--font-px);
+      font-size: 20px;
+      line-height: 1.1;
+      color: var(--screen-fg);
+    }
+    [data-style="pixel"] .overview-box .dot {
+      border-radius: 0 !important;
+      background: var(--screen-fg);
+    }
+    [data-style="pixel"] .overview-box .top3-row {
+      border-top: 1px dotted var(--screen-dim);
+    }
+    [data-style="pixel"] .overview-box .top3-pill {
+      background: #161816;
+      color: var(--screen-fg);
+      border: 1px solid var(--screen-dim);
+      clip-path: var(--px-notch-sm);
+      font-size: 10px;
+    }
+    [data-style="pixel"] .overview-box .top3-pill span {
+      font-family: var(--font-px);
+      color: var(--screen-fg);
+    }
+
+    /* System Health Panel with Segmented Meters */
+    [data-style="pixel"] .sys-panel {
+      border: 2px solid var(--outline);
+      clip-path: var(--px-notch);
+    }
+    [data-style="pixel"] .sys-head {
+      font-size: 10px;
+    }
+    [data-style="pixel"] .sys-grid {
+      border-top: 1px dotted var(--outline-variant);
+    }
+    [data-style="pixel"] .sys-k { font-size: 10px; }
+    [data-style="pixel"] .sys-v { font-family: var(--font-px); font-size: 10px; }
+    [data-style="pixel"] .seg-bar {
+      display: block;
+      height: 8px;
+      border: 1px solid var(--outline);
+      background: var(--surf-highest);
+      margin-top: 2px;
+    }
+    [data-style="pixel"] .seg-bar > i {
+      display: block;
+      height: 100%;
       background: repeating-linear-gradient(
         to right,
-        var(--text) 0px,
-        var(--text) 4px,
+        var(--on-bg) 0px,
+        var(--on-bg) 4px,
         transparent 4px,
         transparent 6px
       );
     }
 
-    /* Top 3 Consumers */
-    .top3-strip {
-      display: flex; align-items: center; gap: 6px; overflow-x: auto; scrollbar-width: none;
-      padding-top: 8px; border-top: 1.5px dotted var(--border-soft);
+    /* Pixel Cards & Dotted Dividers */
+    [data-style="pixel"] .card {
+      border: 2px solid var(--outline);
+      clip-path: var(--px-notch);
+      background: var(--surf-low);
     }
-    .top3-strip::-webkit-scrollbar { display: none; }
-    .top3-chip {
-      background: var(--surf-2); border: 1.5px solid var(--border);
-      padding: 3px 8px; font-family: var(--font-px); font-size: 10.5px;
-      display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; cursor: pointer;
-      color: var(--text);
+    [data-style="pixel"] .card.offline {
+      border-style: dashed;
     }
-    .top3-chip b { max-width: 85px; overflow: hidden; text-overflow: ellipsis; }
-    .top3-chip span { font-weight: 900; text-decoration: underline; }
-
-    /* ==========================================================================
-       3. SEARCH, FILTER & SORT BAR
-       ========================================================================== */
-    .controls { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
-    .search-box {
-      display: flex; align-items: center; background: var(--surf);
-      border: 2px solid var(--border); box-shadow: var(--px-shadow-sm);
-      height: 38px; padding: 0 10px; gap: 8px;
+    [data-style="pixel"] .icon-btn {
+      border: 2px solid var(--outline);
+      clip-path: var(--px-notch-sm);
+      filter: grayscale(100%);
     }
-    .search-box input {
-      border: none; background: transparent; outline: none; width: 100%;
-      color: var(--text); font-family: var(--font-px); font-size: 12px; font-weight: 800;
+    /* User device names use fallback font cleanly if needed while keeping 10px/20px grid */
+    [data-style="pixel"] .name-main {
+      font-family: "Pixel5x7", var(--font-sans);
+      font-size: 10px;
+      letter-spacing: 0.2px;
     }
-    .chip-scroll {
-      display: flex; gap: 5px; overflow-x: auto; scrollbar-width: none; align-items: center; padding-bottom: 2px;
-    }
-    .chip-scroll::-webkit-scrollbar { display: none; }
-    .px-chip {
-      height: 27px; padding: 0 8px;
-      background: var(--surf); color: var(--text-dim);
-      border: 1.5px solid var(--border);
-      font-family: var(--font-px); font-size: 10.5px; font-weight: 800;
-      white-space: nowrap; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;
-    }
-    .px-chip.active {
-      background: var(--accent); color: var(--accent-fg);
-      box-shadow: var(--px-shadow-sm);
+    [data-style="pixel"] .name-sub,
+    [data-style="pixel"] .sw-lbl {
+      font-size: 10px;
     }
 
-    /* ==========================================================================
-       4. DEVICE CARDS (MONOCHROME NOTCHED FRAMES + DOTTED DIVIDERS)
-       ========================================================================== */
-    .grid {
-      display: grid; grid-template-columns: 1fr; gap: 10px;
+    /* Pixel Square Switch */
+    [data-style="pixel"] .track {
+      border: 2px solid var(--outline);
+      background: var(--surf-highest);
     }
-    @media (min-width: 680px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+    [data-style="pixel"] .track::before {
+      width: 12px;
+      height: 12px;
+      left: 3px;
+      bottom: 4px;
+      background: var(--on-bg);
+      transition: transform 0.08s steps(2);
+    }
+    [data-style="pixel"] .switch input:checked + .track {
+      background: var(--error);
+      border-color: var(--error);
+    }
+    [data-style="pixel"] .switch input:checked + .track::before {
+      transform: translateX(22px);
+      background: #FFFFFF;
+    }
 
-    .card {
+    /* Always-Dark Sparkline & IP/MAC Screen Well inside Card */
+    [data-style="pixel"] .matrix {
+      background: var(--screen-bg);
+      color: var(--screen-fg);
+      border: 1px solid var(--outline);
+    }
+    [data-style="pixel"] .matrix .m-k {
+      color: var(--screen-dim);
+      font-size: 10px;
+    }
+    [data-style="pixel"] .matrix .m-v {
+      font-family: var(--font-px);
+      color: var(--screen-fg);
+      font-size: 10px;
+    }
+    [data-style="pixel"] .spark-line {
+      stroke: var(--screen-fg);
+      stroke-width: 2;
+      stroke-linecap: square;
+      stroke-linejoin: miter;
+      shape-rendering: crispEdges;
+    }
+    [data-style="pixel"] .card-bot {
+      border-top: 1px dotted var(--outline-variant);
+      padding-top: 6px;
+    }
+    [data-style="pixel"] .spd {
+      font-family: var(--font-px);
+      font-size: 10px;
+    }
+
+    /* Search & Bottom Nav in Pixel Mode */
+    [data-style="pixel"] .search-box {
+      border: 2px solid var(--outline);
+      background: var(--surf-lowest);
+      clip-path: var(--px-notch-sm);
+    }
+    [data-style="pixel"] .nav-bar {
+      border-top: 2px solid var(--outline);
+      background: var(--surf-lowest);
+      height: 54px;
+    }
+    [data-style="pixel"] .nav-btn {
+      flex: 1;
+      height: 100%;
+      flex-direction: row;
+      gap: 6px;
+    }
+    [data-style="pixel"] .nav-btn + .nav-btn {
+      border-left: 2px solid var(--outline);
+    }
+    [data-style="pixel"] .nav-pill {
+      display: none;
+    }
+    [data-style="pixel"] .nav-lbl {
+      font-size: 10px;
+    }
+    [data-style="pixel"] .nav-btn.active {
+      background: var(--primary);
+      color: var(--on-primary);
+    }
+    [data-style="pixel"] .nav-btn.active .nav-lbl {
+      color: var(--on-primary);
+    }
+
+    /* 1-Bit Striped Dialog Window (sampled from dialog-dark.png) */
+    [data-style="pixel"] .dialog,
+    [data-style="pixel"] .idle-box {
+      border: 2px solid var(--outline);
+      background: var(--surf-lowest);
+      clip-path: var(--px-notch);
+      padding: 0;
+    }
+    [data-style="pixel"] .dlg-titlebar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 10px;
+      border-bottom: 2px solid var(--outline);
+      background: repeating-linear-gradient(
+        to bottom,
+        var(--outline) 0px,
+        var(--outline) 1px,
+        transparent 1px,
+        transparent 3px
+      );
+    }
+    [data-style="pixel"] .dlg-titlebar span {
+      background: var(--surf-lowest);
+      padding: 0 6px;
+      font-size: 10px;
+      color: var(--on-bg);
+    }
+    [data-style="pixel"] .dlg-inner {
+      padding: 14px;
+    }
+    [data-style="pixel"] .dlg-title {
+      font-size: 10px;
+      border-bottom: 1px dotted var(--outline-variant);
+      padding-bottom: 6px;
+    }
+    [data-style="pixel"] .dlg-desc,
+    [data-style="pixel"] .field-lbl,
+    [data-style="pixel"] .d-k,
+    [data-style="pixel"] .d-v,
+    [data-style="pixel"] .toast {
+      font-family: var(--font-px);
+      font-size: 10px;
+    }
+    [data-style="pixel"] .input-m3,
+    [data-style="pixel"] select.input-m3 {
+      border: 2px solid var(--outline);
       background: var(--surf);
-      border: 2px solid var(--border);
-      box-shadow: var(--px-shadow);
-      padding: 11px 12px;
-      display: flex; flex-direction: column; gap: 8px;
-      contain: content; cursor: pointer; user-select: none; position: relative;
+      font-size: 10px;
     }
-    .card.offline { opacity: 0.65; background: var(--surf-2); box-shadow: none; border-style: dashed; }
-    .card.pinned { border-top: 5px solid var(--text); }
-    .card.selected { background: var(--accent-soft); outline: 2px solid var(--text); }
-
-    .c-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
-    .c-left { display: flex; align-items: center; gap: 9px; min-width: 0; flex: 1; }
-
-    .sel-box {
-      width: 20px; height: 20px; border: 2px solid var(--border); background: var(--surf);
-      display: none; align-items: center; justify-content: center;
-      font-family: var(--font-px); font-weight: 900; font-size: 12px; flex-shrink: 0;
+    [data-style="pixel"] .detail-grid {
+      border: 1px dotted var(--outline);
+      background: var(--surf);
     }
-    .select-mode .sel-box { display: flex; }
-    .card.selected .sel-box { background: var(--accent); color: var(--accent-fg); }
-
-    .ico-tile {
-      width: 38px; height: 38px;
-      background: var(--surf-2); border: 2px solid var(--border); box-shadow: var(--px-shadow-sm);
-      clip-path: var(--notch);
-      font-size: 19px; display: flex; align-items: center; justify-content: center;
-      cursor: pointer; flex-shrink: 0; position: relative;
-      filter: grayscale(100%) contrast(1.15);
-    }
-    .ico-tile:active { transform: translate(2px, 2px); box-shadow: none; }
-    .pin-flag {
-      position: absolute; top: -5px; left: -5px; font-size: 10px;
-      background: var(--accent); color: var(--accent-fg); border: 1px solid var(--border);
-      padding: 0 3px; display: none;
-    }
-    .card.pinned .pin-flag { display: block; }
-
-    .c-info { display: flex; flex-direction: column; min-width: 0; flex: 1; }
-    .c-name-row { display: flex; align-items: center; gap: 4px; }
-    .c-name {
-      font-family: var(--font-px); font-size: 13.5px; font-weight: 900;
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    }
-    .btn-pen {
-      border: none; background: transparent; color: var(--text-dim);
-      font-family: var(--font-px); font-size: 13px; padding: 2px 4px; cursor: pointer;
-    }
-    .c-meta {
-      font-family: var(--font-px); font-size: 10.5px; color: var(--text-dim);
-      display: flex; align-items: center; gap: 5px;
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    [data-style="pixel"] .toast {
+      border: 2px solid var(--outline);
+      clip-path: var(--px-notch-sm);
     }
 
-    /* Pixel Block Switch (Red only when Blocked) */
-    .sw-wrap { display: flex; flex-direction: column; align-items: center; gap: 2px; flex-shrink: 0; }
-    .px-sw { position: relative; display: inline-block; width: 44px; height: 22px; }
-    .px-sw input { opacity: 0; width: 0; height: 0; }
-    .px-track {
-      position: absolute; inset: 0; background: var(--surf-2);
-      border: 2px solid var(--border); cursor: pointer;
-    }
-    .px-track::before {
-      content: ""; position: absolute; width: 12px; height: 12px; left: 3px; top: 3px;
-      background: var(--text); border: 1px solid var(--border);
-      transition: transform 0.1s steps(2);
-    }
-    .px-sw input:checked + .px-track { background: var(--danger); border-color: var(--danger); }
-    .px-sw input:checked + .px-track::before {
-      transform: translateX(22px); background: #FFFFFF; border-color: #121312;
-    }
-    .sw-txt { font-family: var(--font-px); font-size: 8.5px; font-weight: 900; color: var(--text-dim); }
-
-    /* Monochrome Zone Badges */
-    .tags { display: flex; gap: 4px; flex-wrap: wrap; }
-    .tag {
-      font-family: var(--font-px); font-size: 9.5px; font-weight: 900;
-      padding: 1px 6px; border: 1.5px solid var(--border);
-      background: var(--surf-2); color: var(--text); text-transform: uppercase;
-    }
-    .tag.inv { background: var(--accent); color: var(--accent-fg); }
-    .tag.blk { background: var(--danger); color: var(--danger-fg); border-color: var(--danger); }
-
-    /* Monochrome RSSI Pixel Bars */
-    .rssi { display: inline-flex; align-items: flex-end; gap: 2px; height: 10px; }
-    .rssi i { width: 3px; background: var(--border-soft); font-style: normal; }
-    .rssi i:nth-child(1) { height: 25%; } .rssi i:nth-child(2) { height: 50%; }
-    .rssi i:nth-child(3) { height: 75%; } .rssi i:nth-child(4) { height: 100%; }
-    .rssi[data-l="1"] i:nth-child(1) { background: var(--danger); }
-    .rssi[data-l="2"] i:nth-child(-n+2),
-    .rssi[data-l="3"] i:nth-child(-n+3),
-    .rssi[data-l="4"] i { background: var(--text); }
-
-    /* Dotted Telemetry Strip */
-    .net-box {
-      background: var(--surf-2); border: 1.5px dotted var(--border);
-      padding: 6px 8px; display: flex; justify-content: space-between; align-items: center; gap: 8px;
-    }
-    .addrs { display: flex; flex-direction: column; gap: 2px; font-family: var(--font-px); font-size: 10.5px; min-width: 0; }
-    .cp-btn {
-      border: none; background: transparent; padding: 0; text-align: left;
-      color: var(--text); font-family: inherit; font-size: inherit; cursor: pointer;
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    }
-    .cp-btn span { color: var(--text-dim); font-size: 9.5px; }
-
-    .spd-box { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-    .spd-nums { display: flex; flex-direction: column; align-items: flex-end; font-family: var(--font-px); font-size: 10.5px; font-weight: 900; }
-    .spark { width: 54px; height: 22px; display: block; border-left: 1px dotted var(--border-soft); padding-left: 4px; }
-    .spark polyline { fill: none; stroke: var(--text); stroke-width: 2; shape-rendering: crispEdges; }
-
-    /* Card Action Row */
-    .c-foot {
-      display: flex; justify-content: space-between; align-items: center; gap: 6px;
-      padding-top: 6px; border-top: 1.5px dotted var(--border-soft);
-    }
-    .foot-l { display: flex; gap: 5px; flex-wrap: wrap; }
-    .act-btn {
-      height: 26px; padding: 0 7px;
-      background: var(--surf); color: var(--text);
-      border: 1.5px solid var(--border); box-shadow: var(--px-shadow-sm);
-      font-family: var(--font-px); font-size: 10px; font-weight: 900; cursor: pointer;
-      text-transform: uppercase;
-    }
-    .act-btn:active { transform: translate(1px, 1px); box-shadow: none; }
-    .act-btn.danger { background: var(--danger); color: var(--danger-fg); border-color: var(--danger); }
-
-    /* ==========================================================================
-       5. BULK BAR, FAB & MONOCHROME TABS
-       ========================================================================== */
-    .bulk-bar {
-      position: fixed; bottom: calc(68px + env(safe-area-inset-bottom)); left: 12px; right: 12px;
-      max-width: 956px; margin: 0 auto;
-      background: var(--accent); color: var(--accent-fg);
-      border: 2px solid var(--border); box-shadow: var(--px-shadow);
-      padding: 8px 12px; display: none; justify-content: space-between; align-items: center; z-index: 45;
-    }
-    .bulk-bar.show { display: flex; }
-
-    .fab-px {
-      position: fixed; right: 16px; bottom: calc(70px + env(safe-area-inset-bottom));
-      height: 42px; padding: 0 13px;
-      background: var(--accent); color: var(--accent-fg);
-      border: 2px solid var(--border); box-shadow: var(--px-shadow);
-      clip-path: var(--notch);
-      font-family: var(--font-px); font-size: 11.5px; font-weight: 900;
-      cursor: pointer; z-index: 35; display: flex; align-items: center; gap: 6px;
-      text-transform: uppercase;
-    }
-    .fab-px:active { transform: translate(2px, 2px); box-shadow: none; }
-
-    .bottom-nav {
-      position: fixed; bottom: 0; left: 0; right: 0;
-      height: calc(56px + env(safe-area-inset-bottom));
-      padding-bottom: env(safe-area-inset-bottom);
-      background: var(--surf); border-top: 2px solid var(--border);
-      display: flex; z-index: 40;
-    }
-    .nav-item {
-      flex: 1; border: none; background: transparent; color: var(--text-dim);
-      font-family: var(--font-px); font-size: 11.5px; font-weight: 900;
-      cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;
-      text-transform: uppercase;
-    }
-    .nav-item + .nav-item { border-left: 2px solid var(--border); }
-    .nav-item.active {
-      background: var(--accent); color: var(--accent-fg);
-    }
-
-    /* ==========================================================================
-       6. MODALS & BOTTOM SHEET
-       ========================================================================== */
-    .scrim {
-      position: fixed; inset: 0; background: rgba(0, 0, 0, 0.62);
-      display: flex; align-items: center; justify-content: center; padding: 14px; z-index: 100;
-    }
-    .scrim.sheet { align-items: flex-end; padding: 0; }
-    .scrim[hidden] { display: none; }
-
-    .dialog {
-      background: var(--surf); border: 2px solid var(--border); box-shadow: var(--px-shadow);
-      padding: 16px; width: 100%; max-width: 460px; max-height: 88vh; overflow-y: auto;
-    }
-    .scrim.sheet .dialog {
-      max-width: 680px; border-bottom: none; box-shadow: 0 -4px 0 var(--border);
-      padding-bottom: calc(22px + env(safe-area-inset-bottom));
-    }
-    .dlg-h {
-      font-family: var(--font-px); font-size: 14px; font-weight: 900;
-      margin-bottom: 4px; text-transform: uppercase;
-      border-bottom: 1.5px dotted var(--border-soft); padding-bottom: 6px;
-    }
-    .dlg-p { font-family: var(--font-px); font-size: 11.5px; color: var(--text-dim); margin: 8px 0 12px 0; }
-    .px-input, select.px-input {
-      width: 100%; height: 38px; padding: 0 10px;
-      border: 2px solid var(--border); background: var(--surf-2); color: var(--text);
-      font-family: var(--font-px); font-size: 12.5px; font-weight: 800; margin-bottom: 10px; outline: none;
-    }
-    .px-lbl { font-family: var(--font-px); font-size: 10.5px; font-weight: 900; color: var(--text-dim); margin-bottom: 4px; display: block; text-transform: uppercase; }
-    .dlg-foot { display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; }
-
-    .kv-box {
-      display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
-      background: var(--surf-2); border: 1.5px dotted var(--border);
-      padding: 10px; margin-bottom: 12px;
-    }
-    .kv-k { font-family: var(--font-px); font-size: 9.5px; color: var(--text-dim); font-weight: 800; text-transform: uppercase; }
-    .kv-v { font-family: var(--font-px); font-size: 11.5px; font-weight: 900; word-break: break-all; }
-
-    .sheet-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
-    .icon-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; max-height: 200px; overflow-y: auto; margin-bottom: 10px; }
-    .icon-opt {
-      height: 40px; border: 1.5px solid var(--border); background: var(--surf-2);
-      font-size: 18px; cursor: pointer; filter: grayscale(100%);
-    }
-    .icon-opt.sel { background: var(--accent); border-width: 2.5px; }
-
-    .toast-box {
-      position: fixed; bottom: calc(70px + env(safe-area-inset-bottom)); left: 12px; right: 12px;
-      display: flex; flex-direction: column; align-items: center; gap: 6px; z-index: 120; pointer-events: none;
-    }
-    .toast {
-      padding: 8px 14px; background: var(--accent); color: var(--accent-fg);
-      border: 2px solid var(--border); box-shadow: var(--px-shadow-sm);
-      font-family: var(--font-px); font-size: 11px; font-weight: 900; text-transform: uppercase;
-    }
-
-    /* 30s Auto-Idle / Sleep Screen */
-    .idle-screen {
-      position: fixed; inset: 0; z-index: 200;
-      background: var(--bg);
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      padding: 20px; text-align: center;
-    }
-    .idle-screen[hidden] { display: none; }
-    .idle-box {
-      background: var(--surf); border: 2px solid var(--border); box-shadow: var(--px-shadow);
-      padding: 22px 24px; max-width: 340px; width: 100%;
-    }
+    /* Pixel font © Trendon (@Trendorin), Apache-2.0 */
   </style>
 </head>
-<body>
+<body data-style="pixel">
 
-  <div class="container">
-    <!-- 1. MONOCHROME PIXEL TOP BAR -->
-    <header class="top-bar">
-      <div class="brand">
-        <div class="px-logo">PX</div>
-        <span class="brand-title"><span id="brand-txt">CR6608</span><span class="cursor-blk"></span></span>
-        <span class="live-pill" id="sync-pill">
-          <span class="walker"><i></i></span>
-          <span id="sync-txt">ONLINE</span>
-        </span>
+  <header class="top-bar">
+    <div class="bar-row">
+      <div class="title-group">
+        <h1 class="app-title">CR6608</h1>
+        <span class="px-subtitle" id="px-sub"></span>
+        <span class="sync-dot" id="sync-dot" title="Trạng thái kết nối"></span>
+        <span class="px-walker" id="px-walker" title="Trạng thái đồng bộ"><i></i></span>
       </div>
-      <div class="top-btns">
-        <button type="button" class="px-btn" id="btn-poll" title="Chu kỳ làm mới">⏱ 5S</button>
-        <button type="button" class="px-btn" id="btn-theme" title="Chế độ màn hình: Auto / Dark / Light">AUTO</button>
-        <button type="button" class="px-btn" id="btn-tools" title="Công cụ & Cài đặt">⚙️</button>
-        <button type="button" class="px-btn accent" id="btn-refresh" title="Làm mới">↻</button>
+      <div class="top-actions">
+        <button type="button" class="btn-pill" id="btn-style" title="Đổi giao diện: Pixel / Material 3 / Liquid Glass">👾 Pixel</button>
+        <button type="button" class="btn-pill" id="btn-poll" title="Chu kỳ làm mới">⏱ 5s</button>
+        <button type="button" class="btn-pill" id="btn-theme" title="Chế độ màu: Tự động / Tối / Sáng">🌓 Auto</button>
+        <button type="button" class="btn-icon" id="btn-settings" title="Cài đặt & Hệ thống">⚙️</button>
+        <button type="button" class="btn-icon" id="btn-refresh" title="Làm mới ngay">↻</button>
       </div>
-    </header>
+    </div>
 
     <div class="err-banner" id="err-banner">
-      <span id="err-msg">MẤT KẾT NỐI ROUTER CR6608</span>
-      <button type="button" class="px-btn danger" id="btn-retry">THỬ LẠI</button>
+      <span id="err-msg" data-i18n="errConn">Mất kết nối tới Router CR6608</span>
+      <button type="button" class="btn-sm danger" id="btn-retry" data-i18n="retry">Thử lại</button>
     </div>
 
-    <!-- 2. MONOCHROME STATUS WIDGET -->
-    <section class="px-frame pixel-widget">
-      <div class="widget-head">
-        <span>[ SYSTEM &amp; NETWORK TELEMETRY ]</span>
-        <span id="clock-txt">--:--</span>
+    <!-- System Health Panel (Hidden automatically if API omits "sys") -->
+    <div class="sys-panel collapsed" id="sys-panel" style="display:none">
+      <div class="sys-head" id="sys-toggle">
+        <span data-i18n="sysTitle">📊 Tình trạng Router CR6608</span>
+        <span id="sys-summary" data-i18n="detailMore">Chi tiết ▾</span>
       </div>
-
-      <div class="kpi-row">
-        <div class="kpi-cell">
-          <span class="kpi-k">↓ RX RATE</span>
-          <span class="kpi-v" id="tot-rx">0 B/s</span>
+      <div class="sys-grid">
+        <div class="sys-item">
+          <span class="sys-k" data-i18n="cpuLoad">CPU Load</span>
+          <span class="sys-v" id="sys-load">-</span>
+          <span class="seg-bar"><i id="seg-cpu" style="width:0%"></i></span>
         </div>
-        <div class="kpi-cell">
-          <span class="kpi-k">↑ TX RATE</span>
-          <span class="kpi-v" id="tot-tx">0 B/s</span>
+        <div class="sys-item">
+          <span class="sys-k" data-i18n="ramUsed">RAM dùng</span>
+          <span class="sys-v" id="sys-mem">-</span>
+          <span class="seg-bar"><i id="seg-ram" style="width:0%"></i></span>
         </div>
-        <div class="kpi-cell">
-          <span class="kpi-k">CLIENTS</span>
-          <span class="kpi-v" id="tot-cnt">0 / 0</span>
+        <div class="sys-item">
+          <span class="sys-k" data-i18n="uptime">Uptime</span>
+          <span class="sys-v" id="sys-up">-</span>
         </div>
-      </div>
-
-      <!-- Segmented Pixel Progress Meters (Auto-hidden if backend omits "sys") -->
-      <div class="sys-strip" id="sys-strip" style="display:none">
-        <div class="sys-box">
-          <span class="sys-lbl">CPU LOAD</span>
-          <span class="sys-val" id="sys-load">-</span>
-          <div class="px-meter"><i id="bar-cpu" style="width:0%"></i></div>
-        </div>
-        <div class="sys-box">
-          <span class="sys-lbl">RAM USED</span>
-          <span class="sys-val" id="sys-mem">-</span>
-          <div class="px-meter"><i id="bar-ram" style="width:0%"></i></div>
-        </div>
-        <div class="sys-box">
-          <span class="sys-lbl">UPTIME</span>
-          <span class="sys-val" id="sys-up">-</span>
-        </div>
-        <div class="sys-box">
-          <span class="sys-lbl">ACTIVE</span>
-          <span class="sys-val" id="sys-cli">-</span>
+        <div class="sys-item">
+          <span class="sys-k" data-i18n="clients">Clients</span>
+          <span class="sys-v" id="sys-cli">-</span>
         </div>
       </div>
+    </div>
 
-      <!-- Top 3 Bandwidth Consumers -->
-      <div class="top3-strip" id="top3-strip" style="display:none">
-        <span class="px-font" style="font-size:10px;font-weight:900;color:var(--text-dim);white-space:nowrap">TOP 3 &gt;</span>
+    <!-- Traffic & Top 3 Bandwidth (Always-dark "Screen" in Pixel style) -->
+    <div class="overview-box">
+      <div class="traffic-row">
+        <div class="stat-box">
+          <div class="dot rx"></div>
+          <div>
+            <div class="stat-lbl" data-i18n="dlLbl">Tải xuống</div>
+            <div class="stat-val rx" id="tot-rx">0 B/s</div>
+          </div>
+        </div>
+        <div class="stat-box">
+          <div class="dot tx"></div>
+          <div>
+            <div class="stat-lbl" data-i18n="ulLbl">Tải lên</div>
+            <div class="stat-val tx" id="tot-tx">0 B/s</div>
+          </div>
+        </div>
+        <div class="stat-box" style="text-align:right">
+          <div>
+            <div class="stat-lbl" data-i18n="onlineLbl">Online</div>
+            <div class="stat-val" id="tot-cnt">0 / 0</div>
+          </div>
+        </div>
+      </div>
+      <div class="top3-row" id="top3-row" style="display:none">
+        <span class="top3-lbl" data-i18n="top3Lbl">🔥 Top 3:</span>
         <div id="top3-list" style="display:flex;gap:6px"></div>
       </div>
-    </section>
+    </div>
+  </header>
 
-    <!-- 3. SEARCH, FILTER & SORT -->
-    <section class="controls">
-      <div class="search-box">
-        <span class="px-font" style="font-weight:900">&gt;_</span>
-        <input type="search" id="search" placeholder="TÌM TÊN, IP, MAC, HÃNG, NHÓM..." autocomplete="off">
-        <button type="button" class="px-btn" id="search-clear" style="display:none;height:24px;padding:0 6px">✕</button>
-      </div>
+  <section>
+    <div class="search-box">
+      <span>🔍</span>
+      <input type="search" id="search" placeholder="Tìm tên, IP, MAC, hãng, nhóm..." autocomplete="off">
+    </div>
 
-      <div class="chip-scroll" id="filter-row">
-        <button type="button" class="px-chip active" data-f="all">TẤT CẢ</button>
-        <button type="button" class="px-chip" data-f="5g">5GHZ</button>
-        <button type="button" class="px-chip" data-f="2g">2.4GHZ</button>
-        <button type="button" class="px-chip" data-f="lan">LAN</button>
-        <button type="button" class="px-chip" data-f="blocked">ĐANG CHẶN</button>
-        <button type="button" class="px-chip" data-f="weak">SÓNG YẾU</button>
-        <div id="group-chips" style="display:inline-flex;gap:5px"></div>
-      </div>
+    <!-- Filter Chips -->
+    <div class="chips-row" id="filter-chips">
+      <div class="chip active" data-f="all" data-i18n="fAll">Tất cả</div>
+      <div class="chip" data-f="5g" data-i18n="f5g">5GHz</div>
+      <div class="chip" data-f="2g" data-i18n="f2g">2.4GHz</div>
+      <div class="chip" data-f="lan" data-i18n="fLan">LAN</div>
+      <div class="chip" data-f="blocked" data-i18n="fBlocked">Đang chặn</div>
+      <div class="chip" data-f="weak" data-i18n="fWeak">Sóng yếu</div>
+      <span class="chip-sep"></span>
+      <div id="group-chips" style="display:inline-flex;gap:6px"></div>
+    </div>
 
-      <div class="chip-scroll" id="sort-row">
-        <span class="px-font" style="font-size:10px;font-weight:900;color:var(--text-dim)">SORT:</span>
-        <button type="button" class="px-chip sort active" data-s="default">MẶC ĐỊNH</button>
-        <button type="button" class="px-chip sort" data-s="speed">TỐC ĐỘ</button>
-        <button type="button" class="px-chip sort" data-s="name">TÊN A-Z</button>
-        <button type="button" class="px-chip sort" data-s="newest">MỚI NHẤT</button>
-      </div>
-    </section>
+    <!-- Sort Chips -->
+    <div class="chips-row" id="sort-chips">
+      <span style="font-size:0.7rem;font-weight:800;color:var(--on-surface-variant);margin-right:2px" data-i18n="sortLbl">Sắp xếp:</span>
+      <div class="chip sort-chip active" data-s="default" data-i18n="sDef">Mặc định</div>
+      <div class="chip sort-chip" data-s="speed" data-i18n="sSpd">⚡ Tốc độ</div>
+      <div class="chip sort-chip" data-s="name" data-i18n="sName">🔤 Tên</div>
+      <div class="chip sort-chip" data-s="newest" data-i18n="sNew">🆕 Mới nhất</div>
+    </div>
+  </section>
 
-    <!-- 4. DEVICE GRID -->
-    <main>
-      <div class="grid" id="list"></div>
-      <div id="empty" class="px-font" style="display:none;text-align:center;padding:42px 12px;color:var(--text-dim);font-weight:800">
-        [ KHÔNG CÓ THIẾT BỊ NÀO PHÙ HỢP ]
-      </div>
-    </main>
-  </div>
+  <main>
+    <div id="list" class="grid"></div>
+    <div id="empty" data-i18n="emptyTxt" style="display:none; text-align:center; padding:42px 16px; color:var(--on-surface-variant); font-size:0.88rem;">
+      Không có thiết bị nào phù hợp.
+    </div>
+  </main>
 
-  <!-- Multi-Select Action Bar -->
+  <!-- Bulk Action Bar -->
   <div class="bulk-bar" id="bulk-bar">
-    <span class="px-font" style="font-size:11.5px;font-weight:900" id="bulk-cnt">CHỌN: 0</span>
-    <div style="display:flex;gap:6px">
-      <button type="button" class="px-btn danger" id="bulk-block">CHẶN</button>
-      <button type="button" class="px-btn" id="bulk-unblock">BỎ CHẶN</button>
-      <button type="button" class="px-btn" id="bulk-kick">KICK</button>
-      <button type="button" class="px-btn" id="bulk-exit">✕</button>
+    <span style="font-size:0.82rem;font-weight:800" id="bulk-cnt">Đã chọn 0</span>
+    <div class="bulk-btns">
+      <button type="button" class="bulk-btn" id="bulk-block" data-i18n="actBlock">Chặn</button>
+      <button type="button" class="bulk-btn" id="bulk-unblock" data-i18n="actUnblock">Bỏ chặn</button>
+      <button type="button" class="bulk-btn" id="bulk-kick">Kick</button>
+      <button type="button" class="bulk-btn" id="bulk-exit">✕</button>
     </div>
   </div>
 
-  <button type="button" class="fab-px" id="fab-add">+ CHẶN MAC</button>
+  <button type="button" class="fab" id="fab-add"><span>➕</span><span data-i18n="fabBlockMac">Chặn MAC</span></button>
 
-  <!-- Bottom Monochrome Pixel Tabs -->
-  <nav class="bottom-nav">
-    <button type="button" class="nav-item active" id="tab-clients">KẾT NỐI (<span id="cnt-cli">0</span>)</button>
-    <button type="button" class="nav-item" id="tab-blacklist">BLACKLIST (<span id="cnt-blk">0</span>)</button>
+  <nav class="nav-bar">
+    <button type="button" class="nav-btn active" id="tab-clients">
+      <div class="nav-pill">📱</div>
+      <span class="nav-lbl"><span data-i18n="tabConn">Kết nối</span> (<span id="cnt-cli">0</span>)</span>
+    </button>
+    <button type="button" class="nav-btn" id="tab-blacklist">
+      <div class="nav-pill">🚫</div>
+      <span class="nav-lbl">Blacklist (<span id="cnt-blk">0</span>)</span>
+    </button>
   </nav>
 
-  <!-- Dialog / Bottom Sheet -->
-  <div class="scrim" id="dlg-scrim" hidden>
-    <div class="dialog" id="dlg-box" role="dialog" aria-modal="true">
-      <div class="dlg-h" id="dlg-title"></div>
-      <div class="dlg-p" id="dlg-desc"></div>
-      <div id="dlg-body" style="display:none"></div>
-      <div class="dlg-foot" id="dlg-foot">
-        <button type="button" class="px-btn" id="dlg-cancel">ĐÓNG</button>
-        <button type="button" class="px-btn accent" id="dlg-ok">XÁC NHẬN</button>
+  <!-- Universal 1-Bit / M3 / Glass Dialog & Bottom Sheet -->
+  <div class="scrim hidden" id="dlg-scrim">
+    <div class="dialog" id="dlg-box">
+      <div class="dlg-titlebar">
+        <span>[ CR6608.SYS ]</span>
+        <span>[ X ]</span>
+      </div>
+      <div class="dlg-inner">
+        <div class="sheet-handle" id="sheet-handle" style="display:none"></div>
+        <h3 class="dlg-title" id="dlg-title"></h3>
+        <p class="dlg-desc" id="dlg-desc"></p>
+        <div id="dlg-body" style="display:none"></div>
+        <div class="dlg-actions" id="dlg-actions">
+          <button type="button" class="btn-sm" id="dlg-cancel" data-i18n="btnClose">Đóng</button>
+          <button type="button" class="btn-sm danger" id="dlg-ok" data-i18n="btnConfirm">Xác nhận</button>
+        </div>
       </div>
     </div>
   </div>
 
-  <div class="toast-box" id="toast-box"></div>
+  <div id="toast-box"></div>
 
-  <!-- Auto-Close / Sleep Screen after 30s inactivity -->
+  <!-- 30s Inactivity Auto-Close / Sleep Overlay -->
   <div class="idle-screen" id="idle-screen" hidden>
     <div class="idle-box">
-      <div class="px-logo" style="margin:0 auto 10px auto">ZZ</div>
-      <div class="dlg-h" style="border:none">ĐÃ TẠM ĐÓNG PHIÊN (30S)</div>
-      <p class="dlg-p" style="margin-bottom:14px">Ngắt kết nối nền để tiết kiệm pin và tài nguyên Router CR6608.</p>
-      <button type="button" class="px-btn accent" id="btn-wake" style="width:100%;height:38px">↻ MỞ LẠI QUẢN LÝ</button>
+      <div class="dlg-titlebar"><span>[ IDLE.30S ]</span><span>[ ZZ ]</span></div>
+      <div class="dlg-inner">
+        <h3 class="dlg-title" id="idle-title">Đã tạm đóng phiên (30s)</h3>
+        <p class="dlg-desc" id="idle-desc">Ngắt kết nối nền để tiết kiệm pin và tài nguyên Router.</p>
+        <button type="button" class="btn-sm tonal" id="btn-wake" style="width:100%;padding:8px">↻ MỞ LẠI QUẢN LÝ</button>
+      </div>
     </div>
   </div>
 
   <script>
     /**
-     * Xiaomi CR6608 Device Manager v5.3 (Trendorin/luci-theme-pixel Edition)
+     * Xiaomi CR6608 Device Manager v5.4
+     * Styles: Pixel (Default, LuCI Pixel Port) | Material 3 | iOS Liquid Glass
      * Single-file Vanilla JS | Zero External Deps | Diff DOM
      */
     const DEMO_MODE = false;
     const API = '/cgi-bin/devmgr';
     const IDLE_TIMEOUT_MS = 30000;
-    const STORAGE_KEY = 'cr6608_px_v5_prefs';
-    const KNOWN_KEY = 'cr6608_px_v5_known';
-    const CACHE_KEY = 'cr6608_px_v5_cache';
+    const STORAGE_KEY = 'cr6608_v54_prefs';
+    const KNOWN_KEY = 'cr6608_v54_known';
 
     const ICONS = ['📱','💻','🖥️','📺','📟','🎮','💡','📷','🤖','🔊','⌚','🔌','🖨️','📡','🚗','🔒','❄️','🧹','📻','🚪','🛎️','🌐','📦','🏷️'];
     const DEFAULT_GROUPS = ['Gia đình', 'Khách', 'IoT'];
@@ -746,17 +1168,50 @@
       ['38:F8:89','Huawei'],['70:54:F5','Huawei']
     ]);
 
+    const I18N_MAP = {
+      errConn: 'Mất kết nối tới Router CR6608',
+      retry: 'Thử lại',
+      sysTitle: '📊 Tình trạng Router CR6608',
+      detailMore: 'Chi tiết ▾',
+      cpuLoad: 'CPU Load',
+      ramUsed: 'RAM dùng',
+      uptime: 'Uptime',
+      clients: 'Clients',
+      dlLbl: 'Tải xuống',
+      ulLbl: 'Tải lên',
+      onlineLbl: 'Online',
+      top3Lbl: '🔥 Top 3:',
+      fAll: 'Tất cả',
+      f5g: '5GHz',
+      f2g: '2.4GHz',
+      fLan: 'LAN',
+      fBlocked: 'Đang chặn',
+      fWeak: 'Sóng yếu',
+      sortLbl: 'Sắp xếp:',
+      sDef: 'Mặc định',
+      sSpd: '⚡ Tốc độ',
+      sName: '🔤 Tên',
+      sNew: '🆕 Mới nhất',
+      emptyTxt: 'Không có thiết bị nào phù hợp.',
+      actBlock: 'Chặn',
+      actUnblock: 'Bỏ chặn',
+      fabBlockMac: 'Chặn MAC',
+      tabConn: 'Kết nối',
+      btnClose: 'Đóng',
+      btnConfirm: 'Xác nhận'
+    };
+
     const domRegistry = new Map();
     const speedHistory = new Map();
 
     const defaultPrefs = {
-      theme: 'auto', // auto -> dark -> light (matches luci-theme-pixel)
-      pollMs: 5000,
+      theme: 'auto',      // auto -> dark -> light
+      style: 'pixel',     // pixel (default) -> m3 -> glass
+      pollMs: 5000,       // 5000 -> 10000 -> 30000 -> 0
       icons: {},
       pinned: [],
       groups: {},
-      customGroups: [],
-      notes: {}
+      customGroups: []
     };
 
     const state = {
@@ -782,19 +1237,32 @@
     };
 
     const $ = id => document.getElementById(id);
-    const vibrate = (ms = 14) => navigator.vibrate && navigator.vibrate(ms);
+    const vibrate = (ms = 16) => navigator.vibrate && navigator.vibrate(ms);
+
+    // Strip Vietnamese diacritics ONLY when Pixel style is active (Pixel5x7 font safety)
+    function stripDiacritics(str) {
+      return String(str)
+        .replace(/đ/g, 'd').replace(/Đ/g, 'D')
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    }
+
+    function uiTxt(str) {
+      if (state.prefs.style !== 'pixel') return str;
+      // Strip emoji & diacritics for crisp 5x7 pixel labels
+      return stripDiacritics(str).replace(/[^\x20-\x7E]/g, '').trim();
+    }
 
     function loadPrefs() {
       try {
         const raw = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
         return {
           theme: ['auto', 'dark', 'light'].includes(raw.theme) ? raw.theme : 'auto',
+          style: ['pixel', 'm3', 'glass'].includes(raw.style) ? raw.style : 'pixel',
           pollMs: typeof raw.pollMs === 'number' ? raw.pollMs : 5000,
           icons: raw.icons || {},
           pinned: Array.isArray(raw.pinned) ? raw.pinned : [],
           groups: raw.groups || {},
-          customGroups: Array.isArray(raw.customGroups) ? raw.customGroups : [],
-          notes: raw.notes || {}
+          customGroups: Array.isArray(raw.customGroups) ? raw.customGroups : []
         };
       } catch (e) {
         return { ...defaultPrefs };
@@ -805,56 +1273,92 @@
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state.prefs));
     }
 
-    function applyTheme() {
-      const sysDark = matchMedia('(prefers-color-scheme: dark)').matches;
-      const active = state.prefs.theme === 'auto' ? (sysDark ? 'dark' : 'light') : state.prefs.theme;
-      document.documentElement.dataset.theme = active;
-      $('meta-theme').content = active === 'dark' ? '#0C0D0C' : '#E6E7E5';
-      $('btn-theme').textContent = state.prefs.theme.toUpperCase();
-      const pSec = state.prefs.pollMs === 0 ? 'TAY' : (state.prefs.pollMs / 1000) + 'S';
-      $('btn-poll').textContent = `⏱ ${pSec}`;
-    }
-
-    function decodeBrandTitle() {
-      const target = 'CR6608';
-      const chars = '0123456789ABCDEF#%';
-      const el = $('brand-txt');
-      let step = 0;
-      const iv = setInterval(() => {
-        step++;
-        el.textContent = target.split('').map((ch, idx) =>
-          step > idx + 2 ? ch : chars[Math.floor(Math.random() * chars.length)]
-        ).join('');
-        if (step > target.length + 3) {
-          el.textContent = target;
-          clearInterval(iv);
+    function syncStaticTexts() {
+      const isPx = state.prefs.style === 'pixel';
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.dataset.i18n;
+        if (I18N_MAP[key]) {
+          el.textContent = isPx ? uiTxt(I18N_MAP[key]).toUpperCase() : I18N_MAP[key];
         }
-      }, 45);
+      });
+      $('search').placeholder = isPx
+        ? 'TIM TEN, IP, MAC, HANG, NHOM...'
+        : 'Tìm tên, IP, MAC, hãng, nhóm...';
+      $('idle-title').textContent = isPx ? 'DA TAM DONG PHIEN (30S)' : 'Đã tạm đóng phiên (30s)';
+      $('idle-desc').textContent = isPx ? 'NGAT KET NOI NEN DE TIET KIEM PIN.' : 'Ngắt kết nối nền để tiết kiệm pin và tài nguyên Router.';
+      $('btn-wake').textContent = isPx ? 'MO LAI QUAN LY' : '↻ Mở lại quản lý';
     }
 
-    function updateClock() {
-      const now = new Date();
-      $('clock-txt').textContent = now.toTimeString().slice(0, 5);
+    function typePixelSubtitle() {
+      const el = $('px-sub');
+      if (state.prefs.style !== 'pixel') {
+        el.textContent = '';
+        return;
+      }
+      const phrase = 'DEVMGR //';
+      let idx = 0;
+      el.textContent = '';
+      const iv = setInterval(() => {
+        idx++;
+        el.textContent = phrase.slice(0, idx);
+        if (idx >= phrase.length) {
+          clearInterval(iv);
+          const cur = document.createElement('span');
+          cur.className = 'px-cursor';
+          el.appendChild(cur);
+        }
+      }, 55);
+    }
+
+    function applyAppearance() {
+      const sysDark = matchMedia('(prefers-color-scheme: dark)').matches;
+      const activeTheme = state.prefs.theme === 'auto' ? (sysDark ? 'dark' : 'light') : state.prefs.theme;
+      document.documentElement.dataset.theme = activeTheme;
+      document.documentElement.dataset.style = state.prefs.style;
+      document.body.dataset.style = state.prefs.style;
+
+      if (state.prefs.style === 'pixel') {
+        $('meta-theme').content = activeTheme === 'dark' ? '#0B0C0B' : '#E2E3E0';
+        $('btn-style').textContent = 'PIXEL';
+      } else if (state.prefs.style === 'glass') {
+        $('meta-theme').content = activeTheme === 'dark' ? '#0B1221' : '#E4EEFF';
+        $('btn-style').textContent = '🫧 Glass';
+      } else {
+        $('meta-theme').content = activeTheme === 'dark' ? '#111318' : '#F8F9FF';
+        $('btn-style').textContent = '✨ M3';
+      }
+
+      const thLbl = state.prefs.theme === 'auto' ? 'Auto' : state.prefs.theme === 'dark' ? 'Tối' : 'Sáng';
+      $('btn-theme').textContent = state.prefs.style === 'pixel' ? uiTxt(thLbl).toUpperCase() : `🌓 ${thLbl}`;
+
+      const pSec = state.prefs.pollMs === 0 ? (state.prefs.style === 'pixel' ? 'TAY' : 'Tay') : (state.prefs.pollMs / 1000) + 's';
+      $('btn-poll').textContent = state.prefs.style === 'pixel' ? pSec.toUpperCase() : `⏱ ${pSec}`;
+
+      syncStaticTexts();
+      renderGroupChips();
+      // Force card cache invalidation when switching between Pixel & M3/Glass
+      for (const ref of domRegistry.values()) ref.cache = {};
+      render();
     }
 
     function toast(msg) {
       const box = $('toast-box');
       const el = document.createElement('div');
       el.className = 'toast';
-      el.textContent = msg;
+      el.textContent = state.prefs.style === 'pixel' ? uiTxt(msg).toUpperCase() : msg;
       box.appendChild(el);
-      setTimeout(() => el.remove(), 2300);
+      setTimeout(() => el.remove(), 2400);
     }
 
     function copyText(txt, lbl) {
       vibrate();
       if (navigator.clipboard && window.isSecureContext) {
-        navigator.clipboard.writeText(txt).then(() => toast(`ĐÃ CHÉP ${lbl}: ${txt}`));
+        navigator.clipboard.writeText(txt).then(() => toast(`Đã chép ${lbl}: ${txt}`));
       } else {
         const i = document.createElement('input');
         i.value = txt; document.body.appendChild(i); i.select();
         document.execCommand('copy'); i.remove();
-        toast(`ĐÃ CHÉP ${lbl}: ${txt}`);
+        toast(`Đã chép ${lbl}: ${txt}`);
       }
     }
 
@@ -878,16 +1382,16 @@
       const d = Math.floor(sec / 86400);
       const h = Math.floor((sec % 86400) / 3600);
       const m = Math.floor((sec % 3600) / 60);
-      return d > 0 ? `${d}D ${h}H` : `${h}H ${m}M`;
+      return d > 0 ? `${d}d ${h}h` : `${h}h ${m}m`;
     }
 
     function fmtLastSeen(unixSec) {
       if (!unixSec || unixSec <= 0) return '';
       const diff = Math.max(1, Math.floor(Date.now() / 1000) - unixSec);
-      if (diff < 60) return 'VỪA XONG';
-      if (diff < 3600) return `${Math.floor(diff / 60)}P TRƯỚC`;
-      if (diff < 86400) return `${Math.floor(diff / 3600)}H TRƯỚC`;
-      return `${Math.floor(diff / 86400)}D TRƯỚC`;
+      if (diff < 60) return uiTxt('Thấy lần cuối vừa xong');
+      if (diff < 3600) return uiTxt(`Thấy lần cuối ${Math.floor(diff / 60)} phút trước`);
+      if (diff < 86400) return uiTxt(`Thấy lần cuối ${Math.floor(diff / 3600)} giờ trước`);
+      return uiTxt(`Thấy lần cuối ${Math.floor(diff / 86400)} ngày trước`);
     }
 
     function fmtQos(kbps) {
@@ -917,8 +1421,8 @@
         const host = isGarbageHostname(d.hostname) ? '' : d.hostname.trim();
         if (host) name = host;
         else if (vendor) name = `${vendor} · ${last4}`;
-        else if (rand) name = `Thiết bị riêng tư · ${last4}`;
-        else name = 'Không rõ';
+        else if (rand) name = state.prefs.style === 'pixel' ? `Thiet bi rieng tu - ${last4}` : `Thiết bị riêng tư · ${last4}`;
+        else name = state.prefs.style === 'pixel' ? 'Khong ro' : 'Không rõ';
       }
 
       let icon = state.prefs.icons[mac];
@@ -934,24 +1438,36 @@
       return { name, vendor, icon, rand };
     }
 
+    // Stepped staircase sparkline in Pixel mode, smooth polyline in M3/Glass
     function buildSparkPoints(mac) {
       const arr = speedHistory.get(mac);
       if (!arr || arr.length < 2) return '';
       const max = Math.max(1024, ...arr);
-      const w = 50, h = 20;
+      const w = 68, h = 22;
       const step = w / (arr.length - 1);
-      return arr.map((v, i) => `${(i * step).toFixed(1)},${(h - (v / max) * (h - 2) - 1).toFixed(1)}`).join(' ');
+      const isPx = state.prefs.style === 'pixel';
+      const pts = [];
+      arr.forEach((v, i) => {
+        const x = (i * step).toFixed(1);
+        const y = (h - (v / max) * (h - 3) - 1.5).toFixed(1);
+        if (isPx && i > 0) {
+          const prevY = pts[pts.length - 1].split(',')[1];
+          pts.push(`${x},${prevY}`);
+        }
+        pts.push(`${x},${y}`);
+      });
+      return pts.join(' ');
     }
 
-    function makeTag(text, cls) {
-      const s = document.createElement('span');
-      s.className = `tag ${cls}`;
-      s.textContent = text;
-      return s;
+    function createTag(text, cls) {
+      const sp = document.createElement('span');
+      sp.className = `tag ${cls}`;
+      sp.textContent = state.prefs.style === 'pixel' ? uiTxt(text).toUpperCase() : text;
+      return sp;
     }
 
     /* ==========================================================================
-       DOM DIFFING ENGINE (WOL REMOVED)
+       6. DOM DIFFING ENGINE (card._d + textContent + insertBefore)
        ========================================================================== */
     function syncCard(container, d) {
       const mac = d.mac;
@@ -961,7 +1477,7 @@
       const isPinned = state.prefs.pinned.includes(mac);
       const isSel = state.selected.has(mac);
       const grp = state.prefs.groups[mac] || '';
-      const note = (state.prefs.notes[mac] || '').trim();
+      const isPx = state.prefs.style === 'pixel';
 
       let rssiLvl = 0;
       if (d.band !== 'LAN' && typeof d.signal === 'number' && d.signal < 0) {
@@ -974,50 +1490,43 @@
         el.className = 'card';
         el.dataset.mac = mac;
         el.innerHTML = `
-          <div class="c-head">
-            <div class="c-left">
-              <div class="sel-box">✓</div>
-              <button type="button" class="ico-tile" title="Đổi biểu tượng">
+          <div class="card-top">
+            <div class="profile">
+              <div class="sel-chk">✓</div>
+              <button type="button" class="icon-btn" title="Đổi biểu tượng">
                 <span class="v-ico"></span>
-                <span class="pin-flag">📌</span>
+                <span class="pin-mark">📌</span>
               </button>
-              <div class="c-info">
-                <div class="c-name-row">
-                  <span class="c-name v-name"></span>
-                  <button type="button" class="btn-pen" title="Đổi tên">✎</button>
+              <div class="names">
+                <div class="name-row">
+                  <span class="name-main v-name"></span>
+                  <button type="button" class="btn-edit-name" title="Đổi tên">✎</button>
                 </div>
-                <div class="c-meta">
+                <div class="name-sub">
                   <span class="v-sub"></span>
                   <span class="rssi v-rssi"><i></i><i></i><i></i><i></i></span>
                 </div>
+                <div class="tags v-tags"></div>
               </div>
             </div>
-            <div class="sw-wrap">
-              <label class="px-sw"><input type="checkbox" class="v-chk"><span class="px-track"></span></label>
-              <span class="sw-txt">CHẶN</span>
+            <div class="switch-wrap">
+              <label class="switch"><input type="checkbox" class="v-chk"><span class="track"></span></label>
+              <span class="sw-lbl v-swlbl">CHẶN</span>
             </div>
           </div>
-          <div class="tags v-tags"></div>
-          <div class="net-box">
-            <div class="addrs">
-              <button type="button" class="cp-btn c-ip"><span>IP: </span><b class="v-ip"></b></button>
-              <button type="button" class="cp-btn c-mac"><span>MAC: </span><b class="v-mac"></b></button>
-            </div>
-            <div class="spd-box">
-              <div class="spd-nums">
-                <span>↓ <span class="v-rx"></span></span>
-                <span>↑ <span class="v-tx"></span></span>
-              </div>
-              <svg class="spark" viewBox="0 0 54 22"><polyline class="v-spark" points=""></polyline></svg>
-            </div>
+          <div class="matrix">
+            <div class="m-col c-ip"><span class="m-k v-kip">IP / CỔNG</span><span class="m-v v-ip"></span></div>
+            <div class="m-col c-mac"><span class="m-k">MAC</span><span class="m-v v-mac"></span></div>
+            <svg class="spark-svg" viewBox="0 0 68 24" preserveAspectRatio="none"><polyline class="spark-line v-spark" points=""></polyline></svg>
           </div>
-          <div class="c-foot">
-            <div class="foot-l">
-              <button type="button" class="act-btn b-qos">QoS</button>
-              <button type="button" class="act-btn b-static">Gán IP</button>
-              <button type="button" class="act-btn b-kick">Kick</button>
+          <div class="card-bot">
+            <div class="spd"><span class="spd-d">↓ <span class="v-rx"></span></span><span class="spd-u">↑ <span class="v-tx"></span></span></div>
+            <div class="btns">
+              <button type="button" class="btn-sm tonal b-qos">QoS</button>
+              <button type="button" class="btn-sm b-static">Gán IP</button>
+              <button type="button" class="btn-sm b-kick">Kick</button>
+              <button type="button" class="btn-sm danger b-bl">Blacklist</button>
             </div>
-            <button type="button" class="act-btn danger b-bl">Blacklist</button>
           </div>
         `;
 
@@ -1029,6 +1538,8 @@
           rssi: el.querySelector('.v-rssi'),
           tags: el.querySelector('.v-tags'),
           chk: el.querySelector('.v-chk'),
+          swlbl: el.querySelector('.v-swlbl'),
+          kip: el.querySelector('.v-kip'),
           ip: el.querySelector('.v-ip'),
           mac: el.querySelector('.v-mac'),
           spark: el.querySelector('.v-spark'),
@@ -1040,12 +1551,27 @@
           cache: {}
         };
 
-        el.querySelector('.ico-tile').onclick = e => { e.stopPropagation(); vibrate(); openIconPicker(el._d.mac, ref.cache.ico); };
-        el.querySelector('.btn-pen').onclick = e => { e.stopPropagation(); vibrate(); openRename(el._d); };
-        el.querySelector('.c-ip').onclick = e => { e.stopPropagation(); if (el._d.ip) copyText(el._d.ip, 'IP'); };
-        el.querySelector('.c-mac').onclick = e => { e.stopPropagation(); copyText(el._d.mac, 'MAC'); };
+        // Always read latest data from el._d
+        el.querySelector('.icon-btn').onclick = e => {
+          e.stopPropagation();
+          vibrate();
+          openIconPicker(el._d.mac, ref.cache.ico);
+        };
+        el.querySelector('.btn-edit-name').onclick = e => {
+          e.stopPropagation();
+          vibrate();
+          openRename(el._d);
+        };
+        el.querySelector('.c-ip').onclick = e => {
+          e.stopPropagation();
+          if (el._d.ip) copyText(el._d.ip, 'IP');
+        };
+        el.querySelector('.c-mac').onclick = e => {
+          e.stopPropagation();
+          copyText(el._d.mac, 'MAC');
+        };
 
-        el.querySelector('.sw-wrap').onclick = e => e.stopPropagation();
+        el.querySelector('.switch-wrap').onclick = e => e.stopPropagation();
         ref.chk.onchange = e => {
           vibrate();
           const cur = el._d;
@@ -1053,19 +1579,23 @@
             .then(ok => { if (!ok) e.target.checked = !e.target.checked; else fetchList(); });
         };
 
-        el.querySelector('.b-qos').onclick = e => { e.stopPropagation(); vibrate(); openQosModal(el._d); };
+        el.querySelector('.b-qos').onclick = e => {
+          e.stopPropagation();
+          vibrate();
+          openQosModal(el._d);
+        };
         ref.stat.onclick = e => {
           e.stopPropagation();
           const cur = el._d;
           if (!cur.ip) return;
-          openConfirm('CỐ ĐỊNH IP', `Khóa cứng IP ${cur.ip} cho "${resolveProfile(cur).name}"?`, () =>
+          openConfirm('Cố định IP (Static DHCP)', `Khóa cứng IP ${cur.ip} cho "${resolveProfile(cur).name}"?`, () =>
             postAction({ action: 'static_lease', mac: cur.mac, ip: cur.ip })
           );
         };
         ref.kick.onclick = e => {
           e.stopPropagation();
           const cur = el._d;
-          openConfirm('KICK KHỎI WI-FI', `Ngắt kết nối ngay của "${resolveProfile(cur).name}"?`, () =>
+          openConfirm('Kick khỏi Wi-Fi', `Ngắt kết nối ngay của "${resolveProfile(cur).name}"?`, () =>
             postAction({ action: 'kick', mac: cur.mac }).then(ok => ok && fetchList())
           );
         };
@@ -1073,16 +1603,16 @@
           e.stopPropagation();
           const cur = el._d;
           const isBl = Boolean(cur.blacklisted);
-          openConfirm(isBl ? 'BỎ BLACKLIST' : 'THÊM BLACKLIST', `${isBl ? 'Cho phép' : 'Cấm vĩnh viễn'} "${resolveProfile(cur).name}"?`, () =>
+          openConfirm(isBl ? 'Bỏ Blacklist' : 'Thêm Blacklist', `${isBl ? 'Cho phép' : 'Cấm vĩnh viễn'} "${resolveProfile(cur).name}"?`, () =>
             postAction({ action: isBl ? 'blacklist_remove' : 'blacklist_add', mac: cur.mac }).then(ok => ok && fetchList())
           );
         };
 
-        let lpTimer = null, lpFired = false;
+        let lpTimer = null, lpTriggered = false;
         el.addEventListener('pointerdown', e => {
           if (e.target.closest('button, label, input')) return;
-          lpFired = false;
-          lpTimer = setTimeout(() => { lpFired = true; enterSelectMode(el._d.mac); }, 450);
+          lpTriggered = false;
+          lpTimer = setTimeout(() => { lpTriggered = true; enterSelectMode(el._d.mac); }, 480);
         });
         const cancelLp = () => { if (lpTimer) { clearTimeout(lpTimer); lpTimer = null; } };
         el.addEventListener('pointerup', cancelLp);
@@ -1090,9 +1620,9 @@
         el.addEventListener('pointercancel', cancelLp);
 
         el.onclick = () => {
-          if (lpFired) return;
+          if (lpTriggered) return;
           if (state.selectMode) toggleSelect(el._d.mac);
-          else { vibrate(10); openDetailSheet(el._d); }
+          else { vibrate(12); openDetailSheet(el._d); }
         };
 
         domRegistry.set(mac, ref);
@@ -1105,11 +1635,12 @@
       if (c.offline !== offline) { ref.el.classList.toggle('offline', offline); c.offline = offline; }
       if (c.pinned !== isPinned) { ref.el.classList.toggle('pinned', isPinned); c.pinned = isPinned; }
       if (c.sel !== isSel) { ref.el.classList.toggle('selected', isSel); c.sel = isSel; }
+
       if (c.ico !== prof.icon) { ref.ico.textContent = prof.icon; c.ico = prof.icon; }
       if (c.name !== prof.name) { ref.name.textContent = prof.name; c.name = prof.name; }
 
-      const statusTxt = d.online ? 'ONLINE' : (fmtLastSeen(d.last_seen) || 'OFFLINE');
-      const subTxt = `${prof.vendor ? prof.vendor + ' · ' : ''}${statusTxt}`;
+      const statusTxt = d.online ? 'Online' : (fmtLastSeen(d.last_seen) || 'Offline');
+      const subTxt = `${prof.vendor ? prof.vendor + ' - ' : ''}${statusTxt}`;
       if (c.subTxt !== subTxt) { ref.sub.textContent = subTxt; c.subTxt = subTxt; }
 
       if (c.rssiLvl !== rssiLvl) {
@@ -1124,24 +1655,29 @@
       }
 
       const qosTxt = fmtQos(Number(d.qos_rate || 0));
-      const tagKey = `${isNew}|${prof.rand}|${d.band}|${grp}|${d.blocked}|${qosTxt}|${note}`;
+      const tagKey = `${isPx}|${isNew}|${prof.rand}|${d.band}|${grp}|${d.blocked}|${qosTxt}`;
       if (c.tagKey !== tagKey) {
         ref.tags.textContent = '';
-        if (isNew) ref.tags.appendChild(makeTag('MỚI', 'inv'));
-        if (d.band) ref.tags.appendChild(makeTag(d.band, ''));
-        if (grp) ref.tags.appendChild(makeTag(grp, ''));
-        if (prof.rand) ref.tags.appendChild(makeTag('MAC RIÊNG TƯ', ''));
-        if (qosTxt) ref.tags.appendChild(makeTag(`MAX ${qosTxt}`, ''));
-        if (d.blocked) ref.tags.appendChild(makeTag('ĐANG CHẶN', 'blk'));
-        if (note) ref.tags.appendChild(makeTag(`NOTE: ${note}`, ''));
-        ref.tags.style.display = ref.tags.children.length ? 'flex' : 'none';
+        if (isNew) ref.tags.appendChild(createTag('Mới', 't-new'));
+        if (prof.rand) ref.tags.appendChild(createTag('MAC riêng tư', 't-rand'));
+        if (d.band) ref.tags.appendChild(createTag(d.band, 't-band'));
+        if (grp) ref.tags.appendChild(createTag(grp, 't-grp'));
+        if (qosTxt) ref.tags.appendChild(createTag(`Max ${qosTxt}`, 't-qos'));
+        if (d.blocked) ref.tags.appendChild(createTag('Bị chặn', 't-blk'));
         c.tagKey = tagKey;
       }
 
       const blk = Boolean(d.blocked);
       if (c.blk !== blk) { ref.chk.checked = blk; c.blk = blk; }
 
-      const ipStr = d.ip || 'CHƯA CẤP IP';
+      if (c.style !== state.prefs.style) {
+        ref.swlbl.textContent = isPx ? 'CHAN' : 'CHẶN';
+        ref.kip.textContent = isPx ? 'IP / CONG' : 'IP / CỔNG 📋';
+        ref.stat.textContent = isPx ? 'GAN IP' : 'Gán IP';
+        c.style = state.prefs.style;
+      }
+
+      const ipStr = `${d.ip || (isPx ? 'CHUA CAP IP' : 'Chưa cấp IP')} (${d.iface || 'eth'})`;
       if (c.ipStr !== ipStr) { ref.ip.textContent = ipStr; c.ipStr = ipStr; }
       if (c.mac !== mac) { ref.mac.textContent = mac; c.mac = mac; }
 
@@ -1160,14 +1696,15 @@
       if (c.canKick !== canKick) { ref.kick.style.display = canKick ? 'inline-block' : 'none'; c.canKick = canKick; }
 
       const isBl = Boolean(d.blacklisted);
-      if (c.bl !== isBl) { ref.bl.textContent = isBl ? 'BỎ BLACKLIST' : 'BLACKLIST'; c.bl = isBl; }
+      const blTxt = isPx ? (isBl ? 'BO BLACKLIST' : 'BLACKLIST') : (isBl ? 'Bỏ Blacklist' : 'Blacklist');
+      if (c.blTxt !== blTxt) { ref.bl.textContent = blTxt; c.blTxt = blTxt; }
     }
 
     /* ==========================================================================
-       MULTI-SELECT
+       7. MULTI-SELECT & RENDER PIPELINE
        ========================================================================== */
     function enterSelectMode(mac) {
-      vibrate(30);
+      vibrate(35);
       state.selectMode = true;
       state.selected.clear();
       if (mac) state.selected.add(mac);
@@ -1185,7 +1722,7 @@
     }
 
     function toggleSelect(mac) {
-      vibrate(10);
+      vibrate(12);
       if (state.selected.has(mac)) state.selected.delete(mac);
       else state.selected.add(mac);
       if (state.selected.size === 0) exitSelectMode();
@@ -1196,7 +1733,9 @@
       const bar = $('bulk-bar');
       if (state.selectMode && state.selected.size > 0) {
         bar.classList.add('show');
-        $('bulk-cnt').textContent = `CHỌN: ${state.selected.size}`;
+        $('bulk-cnt').textContent = state.prefs.style === 'pixel'
+          ? `DA CHON ${state.selected.size}`
+          : `Đã chọn ${state.selected.size}`;
       } else {
         bar.classList.remove('show');
       }
@@ -1206,86 +1745,87 @@
       const macs = [...state.selected];
       if (!macs.length) return;
       exitSelectMode();
-      toast(`ĐANG GỬI LỆNH CHO ${macs.length} THIẾT BỊ...`);
+      toast(`Đang gửi lệnh ${action} cho ${macs.length} thiết bị...`);
       for (const mac of macs) {
         const dev = state.devices.find(x => x.mac === mac);
         if (!dev) continue;
         if (action === 'kick' && (!dev.online || dev.band === 'LAN')) continue;
         await postAction({ action, mac }, true);
       }
-      toast('HOÀN TẤT THAO TÁC HÀNG LOẠT');
+      toast('Hoàn tất thao tác hàng loạt');
       fetchList();
     }
 
-    /* ==========================================================================
-       RENDER PIPELINE
-       ========================================================================== */
     function renderGroupChips() {
       const wrap = $('group-chips');
       const allGroups = [...new Set([...DEFAULT_GROUPS, ...state.prefs.customGroups])];
       wrap.textContent = '';
       allGroups.forEach(g => {
-        const b = document.createElement('button');
-        b.type = 'button';
-        b.className = `px-chip ${state.groupFilter === g ? 'active' : ''}`;
-        b.textContent = g.toUpperCase();
-        b.onclick = () => {
+        const c = document.createElement('div');
+        c.className = `chip ${state.groupFilter === g ? 'active' : ''}`;
+        c.textContent = state.prefs.style === 'pixel' ? uiTxt(g).toUpperCase() : g;
+        c.onclick = () => {
           vibrate();
           state.groupFilter = state.groupFilter === g ? '' : g;
           renderGroupChips();
           render();
         };
-        wrap.appendChild(b);
+        wrap.appendChild(c);
       });
     }
 
-    function renderSys() {
-      const strip = $('sys-strip');
+    function renderSysPanel() {
+      const panel = $('sys-panel');
       if (!state.sys || typeof state.sys !== 'object') {
-        strip.style.display = 'none';
+        panel.style.display = 'none';
         return;
       }
-      strip.style.display = 'grid';
+      panel.style.display = 'block';
       const s = state.sys;
       const load = typeof s.load === 'number' ? s.load : null;
       const mem = typeof s.mem_used_pct === 'number' ? s.mem_used_pct : null;
       $('sys-load').textContent = load !== null ? load.toFixed(2) : '-';
-      $('bar-cpu').style.width = load !== null ? `${Math.min(100, Math.round(load * 25))}%` : '0%';
+      $('seg-cpu').style.width = load !== null ? `${Math.min(100, Math.round(load * 25))}%` : '0%';
       $('sys-mem').textContent = mem !== null ? `${mem}%` : '-';
-      $('bar-ram').style.width = mem !== null ? `${Math.min(100, mem)}%` : '0%';
+      $('seg-ram').style.width = mem !== null ? `${Math.min(100, mem)}%` : '0%';
       $('sys-up').textContent = fmtUptime(s.uptime);
       $('sys-cli').textContent = typeof s.clients === 'number' ? String(s.clients) : '-';
     }
 
     function renderTop3(clients) {
-      const strip = $('top3-strip');
+      const row = $('top3-row');
       const listEl = $('top3-list');
-      const top = clients
+      const active = clients
         .filter(d => d.online && ((d.rx || 0) + (d.tx || 0)) > 0)
         .sort((a, b) => ((b.rx || 0) + (b.tx || 0)) - ((a.rx || 0) + (a.tx || 0)))
         .slice(0, 3);
 
-      if (!top.length) {
-        strip.style.display = 'none';
+      if (!active.length) {
+        row.style.display = 'none';
         return;
       }
-      strip.style.display = 'flex';
+      row.style.display = 'flex';
       listEl.textContent = '';
-      top.forEach(d => {
+      active.forEach(d => {
         const p = resolveProfile(d);
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'top3-chip';
-        const b = document.createElement('b'); b.textContent = p.name;
-        const sp = document.createElement('span'); sp.textContent = fmtSpeed((d.rx || 0) + (d.tx || 0));
-        btn.append(document.createTextNode(p.icon + ' '), b, sp);
-        btn.onclick = () => openDetailSheet(d);
-        listEl.appendChild(btn);
+        const pill = document.createElement('div');
+        pill.className = 'top3-pill';
+        const b = document.createElement('b');
+        b.textContent = p.name;
+        const sp = document.createElement('span');
+        sp.textContent = fmtSpeed((d.rx || 0) + (d.tx || 0));
+        if (state.prefs.style === 'pixel') {
+          pill.append(b, document.createTextNode(' '), sp);
+        } else {
+          pill.append(document.createTextNode(p.icon + ' '), b, sp);
+        }
+        pill.onclick = () => openDetailSheet(d);
+        listEl.appendChild(pill);
       });
     }
 
     function render() {
-      renderSys();
+      renderSysPanel();
       const container = $('list');
 
       let list = state.devices.filter(d =>
@@ -1307,10 +1847,8 @@
         list = list.filter(d => {
           const p = resolveProfile(d);
           const g = (state.prefs.groups[d.mac] || '').toLowerCase();
-          const n = (state.prefs.notes[d.mac] || '').toLowerCase();
           return d.mac.toLowerCase().includes(q) || (d.ip && d.ip.includes(q)) ||
-                 p.name.toLowerCase().includes(q) || p.vendor.toLowerCase().includes(q) ||
-                 g.includes(q) || n.includes(q);
+                 p.name.toLowerCase().includes(q) || p.vendor.toLowerCase().includes(q) || g.includes(q);
         });
       }
 
@@ -1367,11 +1905,11 @@
     }
 
     /* ==========================================================================
-       API COMMUNICATION
+       8. API COMMUNICATION & POLLING
        ========================================================================== */
     async function postAction(payload, silent = false) {
       if (state.writing) {
-        if (!silent) toast('ĐANG GỬI LỆNH KHÁC, VUI LÒNG ĐỢI...');
+        if (!silent) toast('Đang gửi lệnh khác, vui lòng đợi...');
         return false;
       }
       state.writing = true;
@@ -1380,9 +1918,9 @@
 
       try {
         if (DEMO_MODE) {
-          await new Promise(r => setTimeout(r, 180));
+          await new Promise(r => setTimeout(r, 200));
           if (payload.action === 'reboot') {
-            clearTimeout(tid); if (!silent) toast('DEMO: ĐÃ GỬI LỆNH REBOOT'); return true;
+            clearTimeout(tid); if (!silent) toast('Đã gửi lệnh khởi động lại'); return true;
           }
           const dev = state.devices.find(x => x.mac === payload.mac);
           if (dev) {
@@ -1397,7 +1935,7 @@
             state.devices.push({ mac: payload.mac, ip: '', hostname: '', name: '', vendor: '', iface: 'phy1-ap0', band: '5G', signal: 0, rx: 0, tx: 0, qos_rate: 0, online: false, blocked: false, blacklisted: true });
           }
           clearTimeout(tid);
-          if (!silent) toast('DEMO: THÀNH CÔNG');
+          if (!silent) { vibrate(); toast('Thành công'); }
           render();
           return true;
         }
@@ -1411,14 +1949,14 @@
         clearTimeout(tid);
         const data = await res.json();
         if (data && data.ok) {
-          if (!silent) toast('THÀNH CÔNG');
+          if (!silent) { vibrate(); toast('Thành công'); }
           return true;
         }
-        if (!silent) toast((data && data.error) || 'ROUTER TỪ CHỐI THAO TÁC');
+        if (!silent) toast((data && data.error) || 'Router từ chối thao tác');
         return false;
       } catch (e) {
         clearTimeout(tid);
-        if (!silent) toast(e.name === 'AbortError' ? 'QUÁ THỜI GIAN (4S)' : 'LỖI KẾT NỐI ROUTER');
+        if (!silent) toast(e.name === 'AbortError' ? 'Quá thời gian (4s)' : 'Lỗi kết nối Router');
         return false;
       } finally {
         state.writing = false;
@@ -1469,19 +2007,20 @@
     async function fetchList() {
       if (state.isIdle) return;
       if (state.timer) { clearTimeout(state.timer); state.timer = null; }
-      const pill = $('sync-pill');
-      pill.className = 'live-pill syncing';
-      $('sync-txt').textContent = 'SYNC';
+      const dot = $('sync-dot');
+      const walker = $('px-walker');
+      dot.className = 'sync-dot syncing';
+      walker.className = 'px-walker syncing';
 
       if (DEMO_MODE) {
         if (!state.devices.length) {
           const now = Math.floor(Date.now() / 1000);
-          state.sys = { load: 0.42, mem_used_pct: 38, uptime: 184200, clients: 4 };
+          state.sys = { load: 0.35, mem_used_pct: 41, uptime: 174200, clients: 4 };
           state.devices = [
-            { mac: 'F0:99:BF:11:22:33', ip: '192.168.2.10', hostname: 'Pixel-9-Pro', name: '', vendor: 'Apple', iface: 'phy1-ap0', band: '5G', signal: -46, rx: 1650000, tx: 290000, qos_rate: 0, online: true, blocked: false, blacklisted: false, day_rx: 2850000000, day_tx: 340000000 },
-            { mac: 'B4:FB:E4:44:55:66', ip: '192.168.2.15', hostname: 'Mi-TV', name: 'TV Phòng Khách', vendor: 'Xiaomi', iface: 'phy1-ap0', band: '5G', signal: -61, rx: 4150000, tx: 102000, qos_rate: 5120, online: true, blocked: false, blacklisted: false, day_rx: 9120000000, day_tx: 130000000 },
-            { mac: 'D8:3A:DD:77:88:99', ip: '192.168.2.20', hostname: 'raspberrypi', name: '', vendor: 'Raspberry Pi', iface: 'eth0.1', band: 'LAN', signal: 0, rx: 84000, tx: 31000, qos_rate: 0, online: true, blocked: false, blacklisted: false, day_rx: 612000000, day_tx: 490000000 },
-            { mac: '3E:A1:90:AA:BB:CC', ip: '192.168.2.35', hostname: 'android-8f92a1bc', name: '', vendor: 'ShouldIgnore', iface: 'phy0-ap0', band: '2.4G', signal: -78, rx: 0, tx: 0, qos_rate: 0, online: false, blocked: true, blacklisted: false, last_seen: now - 5400, day_rx: 120000000, day_tx: 15000000 }
+            { mac: 'F0:99:BF:11:22:33', ip: '192.168.2.10', hostname: 'iPhone-Pro', name: '', vendor: 'Apple', iface: 'phy1-ap0', band: '5G', signal: -48, rx: 1450000, tx: 230000, qos_rate: 0, online: true, blocked: false, blacklisted: false, day_rx: 2450000000, day_tx: 320000000 },
+            { mac: 'B4:FB:E4:44:55:66', ip: '192.168.2.15', hostname: 'Mi-TV', name: 'TV Phòng Khách', vendor: 'Xiaomi', iface: 'phy1-ap0', band: '5G', signal: -63, rx: 3850000, tx: 92000, qos_rate: 5120, online: true, blocked: false, blacklisted: false, day_rx: 8920000000, day_tx: 110000000 },
+            { mac: 'D8:3A:DD:77:88:99', ip: '192.168.2.20', hostname: 'raspberrypi', name: '', vendor: 'Raspberry Pi', iface: 'eth0.1', band: 'LAN', signal: 0, rx: 64000, tx: 21000, qos_rate: 0, online: true, blocked: false, blacklisted: false, day_rx: 512000000, day_tx: 480000000 },
+            { mac: '3E:A1:90:AA:BB:CC', ip: '192.168.2.35', hostname: 'android-8f92a1bc', name: '', vendor: 'ShouldIgnore', iface: 'phy0-ap0', band: '2.4G', signal: -79, rx: 0, tx: 0, qos_rate: 0, online: false, blocked: true, blacklisted: false, last_seen: now - 7200, day_rx: 120000000, day_tx: 15000000 }
           ];
         } else {
           state.devices.forEach(d => {
@@ -1492,8 +2031,8 @@
           });
         }
         processIncomingDevices(state.devices);
-        pill.className = 'live-pill';
-        $('sync-txt').textContent = 'DEMO';
+        dot.className = 'sync-dot';
+        walker.className = 'px-walker';
         $('err-banner').style.display = 'none';
         render();
         scheduleNextPoll();
@@ -1512,21 +2051,18 @@
         state.devices = Array.isArray(json.devices) ? json.devices : [];
         processIncomingDevices(state.devices);
 
-        try { localStorage.setItem(CACHE_KEY, JSON.stringify({ sys: state.sys, devices: state.devices })); } catch (e) {}
-
         state.errors = 0;
         state.backoff = 5000;
-        pill.className = 'live-pill';
-        $('sync-txt').textContent = 'ONLINE';
+        dot.className = 'sync-dot';
+        walker.className = 'px-walker';
         $('err-banner').style.display = 'none';
         render();
       } catch (e) {
         clearTimeout(tid);
         state.errors++;
         state.backoff = state.errors === 1 ? 5000 : state.errors === 2 ? 10000 : 30000;
-        pill.className = 'live-pill err';
-        $('sync-txt').textContent = 'OFFLINE';
-        $('err-msg').textContent = `MẤT KẾT NỐI ROUTER (THỬ LẠI SAU ${state.backoff / 1000}S)`;
+        dot.className = 'sync-dot err';
+        walker.className = 'px-walker err';
         $('err-banner').style.display = 'flex';
       } finally {
         scheduleNextPoll();
@@ -1534,15 +2070,17 @@
     }
 
     /* ==========================================================================
-       MODALS & BOTTOM SHEET (WOL REMOVED)
+       9. DIALOGS & BOTTOM SHEET (WOL REMOVED)
        ========================================================================== */
     let dlgCb = null;
 
-    function openModal({ title, desc, sheet = false, okText = 'XÁC NHẬN', okClass = 'accent', showOk = true, buildBody, onOk }) {
+    function openModal({ title, desc, sheet = false, okText = 'Xác nhận', okClass = 'danger', showOk = true, buildBody, onOk }) {
+      const isPx = state.prefs.style === 'pixel';
       const scrim = $('dlg-scrim');
-      scrim.classList.toggle('sheet', sheet);
-      $('dlg-title').textContent = title;
-      $('dlg-desc').textContent = desc || '';
+      scrim.classList.toggle('sheet-mode', sheet && !isPx);
+      $('sheet-handle').style.display = (sheet && !isPx) ? 'block' : 'none';
+      $('dlg-title').textContent = isPx ? uiTxt(title).toUpperCase() : title;
+      $('dlg-desc').textContent = isPx ? uiTxt(desc || '') : (desc || '');
 
       const body = $('dlg-body');
       body.textContent = '';
@@ -1554,86 +2092,88 @@
       }
 
       const okBtn = $('dlg-ok');
-      okBtn.style.display = showOk ? 'inline-flex' : 'none';
-      okBtn.textContent = okText;
-      okBtn.className = `px-btn ${okClass}`;
+      okBtn.style.display = showOk ? 'inline-block' : 'none';
+      okBtn.textContent = isPx ? uiTxt(okText).toUpperCase() : okText;
+      okBtn.className = `btn-sm ${okClass}`;
       dlgCb = onOk || null;
 
-      scrim.hidden = false;
+      scrim.classList.remove('hidden');
     }
 
     function closeDlg() {
-      $('dlg-scrim').hidden = true;
+      $('dlg-scrim').classList.add('hidden');
       $('dlg-body').textContent = '';
       dlgCb = null;
     }
 
     $('dlg-cancel').onclick = closeDlg;
     $('dlg-scrim').onclick = e => { if (e.target === $('dlg-scrim')) closeDlg(); };
-    document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('dlg-scrim').hidden) closeDlg(); });
     $('dlg-ok').onclick = () => {
       const cb = dlgCb;
-      if (cb) cb();
       closeDlg();
+      if (cb) cb();
     };
 
     function openConfirm(title, desc, cb) {
-      openModal({ title, desc, okText: 'XÁC NHẬN', okClass: 'danger', onOk: cb });
+      openModal({ title, desc, okText: 'Xác nhận', okClass: 'danger', onOk: cb });
     }
 
     function openDetailSheet(d) {
+      const isPx = state.prefs.style === 'pixel';
       const prof = resolveProfile(d);
       const isPinned = state.prefs.pinned.includes(d.mac);
       const curGrp = state.prefs.groups[d.mac] || '';
-      const curNote = state.prefs.notes[d.mac] || '';
       const allGroups = [...new Set([...DEFAULT_GROUPS, ...state.prefs.customGroups])];
 
       openModal({
-        title: `${prof.icon} ${prof.name}`,
-        desc: `${d.mac} · ${d.online ? 'ĐANG HOẠT ĐỘNG' : (fmtLastSeen(d.last_seen) || 'NGOẠI TUYẾN')}`,
+        title: isPx ? prof.name : `${prof.icon} ${prof.name}`,
+        desc: `${d.mac} - ${d.online ? (isPx ? 'DANG KET NOI' : 'Đang kết nối') : (fmtLastSeen(d.last_seen) || 'Offline')}`,
         sheet: true,
         showOk: false,
         buildBody: body => {
           const grid = document.createElement('div');
-          grid.className = 'kv-box';
+          grid.className = 'detail-grid';
           const items = [
-            ['ĐỊA CHỈ IP', d.ip || 'CHƯA CẤP'],
-            ['CỔNG / BĂNG TẦN', `${d.iface || '-'} (${d.band || '-'})`],
-            ['NHÀ SẢN XUẤT', prof.rand ? 'MAC RIÊNG TƯ' : (prof.vendor || 'KHÔNG RÕ')],
-            ['TÍN HIỆU WI-FI', d.band === 'LAN' ? 'CÁP LAN' : (d.signal ? `${d.signal} dBm` : '-')],
-            ['TỐC ĐỘ HIỆN TẠI', `↓ ${fmtSpeed(d.rx)} / ↑ ${fmtSpeed(d.tx)}`]
+            [isPx ? 'DIA CHI IP' : 'Địa chỉ IP', d.ip || (isPx ? 'CHUA CAP' : 'Chưa cấp')],
+            [isPx ? 'CONG / BANG TAN' : 'Interface / Băng tần', `${d.iface || '-'} (${d.band || '-'})`],
+            [isPx ? 'NHA SAN XUAT' : 'Nhà sản xuất', prof.rand ? (isPx ? 'MAC RIENG TU' : 'MAC riêng tư') : (prof.vendor || (isPx ? 'KHONG RO' : 'Không rõ'))],
+            [isPx ? 'TIN HIEU WI-FI' : 'Tín hiệu Wi-Fi', d.band === 'LAN' ? 'LAN' : (d.signal ? `${d.signal} dBm` : '-')],
+            [isPx ? 'TOC DO HIEN TAI' : 'Tốc độ hiện tại', `↓ ${fmtSpeed(d.rx)} / ↑ ${fmtSpeed(d.tx)}`]
           ];
           if (typeof d.day_rx === 'number' || typeof d.day_tx === 'number') {
-            items.push(['DỮ LIỆU HÔM NAY', `↓ ${fmtBytes(d.day_rx)} / ↑ ${fmtBytes(d.day_tx)}`]);
+            items.push([isPx ? 'LUU LUONG HOM NAY' : 'Lưu lượng hôm nay', `↓ ${fmtBytes(d.day_rx)} / ↑ ${fmtBytes(d.day_tx)}`]);
           }
           items.forEach(([k, v]) => {
             const box = document.createElement('div');
-            const kl = document.createElement('div'); kl.className = 'kv-k'; kl.textContent = k;
-            const vl = document.createElement('div'); vl.className = 'kv-v'; vl.textContent = v;
+            box.className = 'd-item';
+            const kl = document.createElement('span'); kl.className = 'd-k'; kl.textContent = k;
+            const vl = document.createElement('span'); vl.className = 'd-v'; vl.textContent = v;
             box.append(kl, vl);
             grid.appendChild(box);
           });
           body.appendChild(grid);
 
-          // Group Selection
           const gLbl = document.createElement('label');
-          gLbl.className = 'px-lbl';
-          gLbl.textContent = 'PHÂN NHÓM THIẾT BỊ';
+          gLbl.className = 'field-lbl';
+          gLbl.textContent = isPx ? 'NHOM THIET BI' : 'Nhóm thiết bị (Lưu trên máy)';
           const gSel = document.createElement('select');
-          gSel.className = 'px-input';
-          const optNone = document.createElement('option'); optNone.value = ''; optNone.textContent = '-- KHÔNG PHÂN NHÓM --';
+          gSel.className = 'input-m3';
+          const optNone = document.createElement('option'); optNone.value = '';
+          optNone.textContent = isPx ? '-- KHONG PHAN NHOM --' : '-- Không phân nhóm --';
           gSel.appendChild(optNone);
           allGroups.forEach(g => {
-            const o = document.createElement('option'); o.value = g; o.textContent = g.toUpperCase();
+            const o = document.createElement('option'); o.value = g;
+            o.textContent = isPx ? uiTxt(g).toUpperCase() : g;
             if (g === curGrp) o.selected = true;
             gSel.appendChild(o);
           });
-          const optNew = document.createElement('option'); optNew.value = '__new__'; optNew.textContent = '+ TẠO NHÓM MỚI...';
+          const optNew = document.createElement('option'); optNew.value = '__new__';
+          optNew.textContent = isPx ? '+ TAO NHOM MOI...' : '+ Tạo nhóm mới...';
           gSel.appendChild(optNew);
 
           gSel.onchange = () => {
             if (gSel.value === '__new__') {
-              const name = prompt('Nhập tên nhóm mới:');
+              const name = prompt(isPx ? 'Nhap ten nhom moi:' : 'Nhập tên nhóm mới:');
               if (name && name.trim()) {
                 const clean = name.trim().slice(0, 20);
                 if (!state.prefs.customGroups.includes(clean)) state.prefs.customGroups.push(clean);
@@ -1645,52 +2185,31 @@
             } else {
               if (gSel.value) state.prefs.groups[d.mac] = gSel.value;
               else delete state.prefs.groups[d.mac];
-              savePrefs(); render(); toast('ĐÃ CẬP NHẬT NHÓM');
+              savePrefs(); render(); toast('Đã cập nhật nhóm');
             }
           };
           body.append(gLbl, gSel);
 
-          // Local Note Field
-          const nLbl = document.createElement('label');
-          nLbl.className = 'px-lbl';
-          nLbl.textContent = 'GHI CHÚ NHANH (LƯU TRÊN MÁY)';
-          const nRow = document.createElement('div');
-          nRow.style.cssText = 'display:flex;gap:6px;margin-bottom:10px';
-          const nInp = document.createElement('input');
-          nInp.className = 'px-input'; nInp.style.marginBottom = '0'; nInp.maxLength = 30;
-          nInp.placeholder = 'VD: Máy của bố, Camera cổng...';
-          nInp.value = curNote;
-          const nBtn = document.createElement('button');
-          nBtn.type = 'button'; nBtn.className = 'px-btn accent'; nBtn.style.height = '38px';
-          nBtn.textContent = 'LƯU';
-          nBtn.onclick = () => {
-            const v = nInp.value.trim();
-            if (v) state.prefs.notes[d.mac] = v;
-            else delete state.prefs.notes[d.mac];
-            savePrefs(); render(); toast('ĐÃ LƯU GHI CHÚ');
-          };
-          nRow.append(nInp, nBtn);
-          body.append(nLbl, nRow);
-
-          // Quick Actions Grid (WOL removed)
           const actGrid = document.createElement('div');
           actGrid.className = 'sheet-actions';
+
           const mkBtn = (txt, cls, fn) => {
             const b = document.createElement('button');
-            b.type = 'button'; b.className = `px-btn ${cls}`; b.style.height = '38px'; b.textContent = txt;
+            b.type = 'button'; b.className = `sheet-btn ${cls}`;
+            b.textContent = isPx ? uiTxt(txt).toUpperCase() : txt;
             b.onclick = () => { closeDlg(); fn(); };
             actGrid.appendChild(b);
           };
 
-          mkBtn(isPinned ? '📌 BỎ GHIM' : '📌 GHIM ĐẦU TRANG', 'accent', () => {
+          mkBtn(isPinned ? '📌 Bỏ ghim đầu trang' : '📌 Ghim lên đầu', 'primary', () => {
             if (isPinned) state.prefs.pinned = state.prefs.pinned.filter(x => x !== d.mac);
             else state.prefs.pinned.unshift(d.mac);
-            savePrefs(); render(); toast(isPinned ? 'ĐÃ BỎ GHIM' : 'ĐÃ GHIM LÊN ĐẦU');
+            savePrefs(); render(); toast(isPinned ? 'Đã bỏ ghim' : 'Đã ghim lên đầu');
           });
-          mkBtn('✎ ĐỔI TÊN MÁY', 'soft', () => openRename(d));
-          mkBtn('⏱ GIỚI HẠN QOS', 'soft', () => openQosModal(d));
-          if (d.ip) mkBtn('🔒 GÁN IP CỐ ĐỊNH', 'soft', () => postAction({ action: 'static_lease', mac: d.mac, ip: d.ip }));
-          if (d.online && d.band !== 'LAN') mkBtn('👢 KICK WI-FI', 'danger', () => postAction({ action: 'kick', mac: d.mac }).then(ok => ok && fetchList()));
+          mkBtn('✎ Đổi tên', '', () => openRename(d));
+          mkBtn('⏱ Giới hạn QoS', '', () => openQosModal(d));
+          if (d.ip) mkBtn('🔒 Gán IP cố định', '', () => postAction({ action: 'static_lease', mac: d.mac, ip: d.ip }));
+          if (d.online && d.band !== 'LAN') mkBtn('👢 Kick Wi-Fi', 'danger', () => postAction({ action: 'kick', mac: d.mac }).then(ok => ok && fetchList()));
           body.appendChild(actGrid);
         }
       });
@@ -1699,13 +2218,13 @@
     function openRename(d) {
       const prof = resolveProfile(d);
       openModal({
-        title: 'ĐỔI TÊN THIẾT BỊ',
-        desc: `Lưu tên trên Router cho [${d.mac}] (xóa trống để bỏ tên tự đặt):`,
-        okText: 'LƯU TÊN',
-        okClass: 'accent',
+        title: 'Đổi tên thiết bị',
+        desc: `Lưu tên trên Router cho [${d.mac}] (để trống để xóa tên tự đặt):`,
+        okText: 'Lưu tên',
+        okClass: 'tonal',
         buildBody: body => {
           const inp = document.createElement('input');
-          inp.className = 'px-input'; inp.maxLength = 32; inp.id = 'inp-rename';
+          inp.className = 'input-m3'; inp.maxLength = 32; inp.id = 'inp-rename';
           inp.value = (d.name || '').trim();
           inp.placeholder = prof.name;
           body.appendChild(inp);
@@ -1723,19 +2242,20 @@
     function openQosModal(d) {
       const curRate = Number(d.qos_rate || 0);
       openModal({
-        title: 'GIỚI HẠN BĂNG THÔNG (QOS)',
-        desc: `Tốc độ tối đa (KB/s) cho "${resolveProfile(d).name}". Nhập 0 để gỡ, tối thiểu 16 KB/s:`,
-        okText: 'ÁP DỤNG',
-        okClass: 'accent',
+        title: 'Giới hạn băng thông (QoS)',
+        desc: `Đặt tốc độ tối đa (KB/s) cho "${resolveProfile(d).name}". Nhập 0 để gỡ, tối thiểu 16 KB/s:`,
+        okText: 'Áp dụng',
+        okClass: 'tonal',
         buildBody: body => {
           const inp = document.createElement('input');
-          inp.type = 'number'; inp.min = '0'; inp.step = '16'; inp.className = 'px-input'; inp.id = 'inp-qos';
+          inp.type = 'number'; inp.min = '0'; inp.step = '16'; inp.className = 'input-m3'; inp.id = 'inp-qos';
           inp.value = curRate;
           const pRow = document.createElement('div');
-          pRow.style.cssText = 'display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px';
-          [[0,'GỠ (0)'],[512,'512 KB/S'],[1024,'1 MB/S'],[3072,'3 MB/S'],[5120,'5 MB/S']].forEach(([v, l]) => {
+          pRow.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px';
+          [[0,'Gỡ (0)'],[512,'512 KB/s'],[1024,'1 MB/s'],[3072,'3 MB/s'],[5120,'5 MB/s']].forEach(([v, l]) => {
             const b = document.createElement('button');
-            b.type = 'button'; b.className = 'px-btn soft'; b.textContent = l;
+            b.type = 'button'; b.className = 'btn-sm tonal';
+            b.textContent = state.prefs.style === 'pixel' ? uiTxt(l).toUpperCase() : l;
             b.onclick = () => { inp.value = v; };
             pRow.appendChild(b);
           });
@@ -1754,10 +2274,10 @@
     function openIconPicker(mac, cur) {
       let chosen = cur;
       openModal({
-        title: 'CHỌN BIỂU TƯỢNG',
+        title: 'Chọn biểu tượng',
         desc: `Biểu tượng hiển thị cho [${mac}]:`,
-        okText: 'LƯU',
-        okClass: 'accent',
+        okText: 'Lưu',
+        okClass: 'tonal',
         buildBody: body => {
           const g = document.createElement('div');
           g.className = 'icon-grid';
@@ -1777,20 +2297,22 @@
         },
         onOk: () => {
           state.prefs.icons[mac] = chosen;
-          savePrefs(); render(); toast(`ĐÃ ĐỔI BIỂU TƯỢNG ${chosen}`);
+          savePrefs();
+          render();
+          toast(`Đã đổi biểu tượng ${chosen}`);
         }
       });
     }
 
     function openAddMac() {
       openModal({
-        title: 'THÊM VÀO BLACKLIST',
+        title: 'Thêm vào Blacklist',
         desc: 'Nhập địa chỉ MAC cần cấm kết nối vĩnh viễn:',
-        okText: 'CHẶN MAC',
+        okText: 'Chặn MAC',
         okClass: 'danger',
         buildBody: body => {
           const inp = document.createElement('input');
-          inp.className = 'px-input'; inp.maxLength = 17; inp.id = 'inp-mac';
+          inp.className = 'input-m3'; inp.maxLength = 17; inp.id = 'inp-mac';
           inp.placeholder = 'AA:BB:CC:DD:EE:FF';
           body.appendChild(inp);
           setTimeout(() => inp.focus(), 50);
@@ -1800,34 +2322,30 @@
           if (/^([0-9A-F]{2}[:-]){5}([0-9A-F]{2})$/.test(mac)) {
             postAction({ action: 'blacklist_add', mac }).then(ok => ok && fetchList());
           } else {
-            toast('ĐỊA CHỈ MAC KHÔNG HỢP LỆ');
+            toast('Địa chỉ MAC không hợp lệ');
           }
         }
       });
     }
 
-    function openToolsModal() {
+    function openSettingsModal() {
+      const isPx = state.prefs.style === 'pixel';
       openModal({
-        title: 'CÔNG CỤ & HỆ THỐNG',
-        desc: 'Quản lý dữ liệu cài đặt, chọn nhiều thiết bị hoặc khởi động lại CR6608:',
+        title: 'Cài đặt & Quản trị Router',
+        desc: 'Sao lưu cấu hình giao diện ra JSON hoặc khởi động lại CR6608:',
         showOk: false,
         buildBody: body => {
-          const selBtn = document.createElement('button');
-          selBtn.type = 'button'; selBtn.className = 'px-btn soft'; selBtn.style.cssText = 'width:100%;height:38px;margin-bottom:8px';
-          selBtn.textContent = '☑️ BẬT CHẾ ĐỘ CHỌN NHIỀU HÀNG LOẠT';
-          selBtn.onclick = () => { closeDlg(); enterSelectMode(null); };
-
           const expBtn = document.createElement('button');
-          expBtn.type = 'button'; expBtn.className = 'px-btn accent'; expBtn.style.cssText = 'width:100%;height:38px;margin-bottom:8px';
-          expBtn.textContent = '📤 XUẤT CÀI ĐẶT (.JSON)';
+          expBtn.type = 'button'; expBtn.className = 'sheet-btn primary'; expBtn.style.width = '100%'; expBtn.style.marginBottom = '8px';
+          expBtn.textContent = isPx ? 'XUAT CAI DAT (.JSON)' : '📤 Xuất toàn bộ cài đặt (.json)';
           expBtn.onclick = () => {
             const blob = new Blob([JSON.stringify(state.prefs, null, 2)], { type: 'application/json' });
             const a = document.createElement('a');
             a.href = URL.createObjectURL(blob);
-            a.download = `cr6608-pixel-${new Date().toISOString().slice(0,10)}.json`;
+            a.download = `cr6608-settings-${new Date().toISOString().slice(0,10)}.json`;
             a.click();
             URL.revokeObjectURL(a.href);
-            toast('ĐÃ XUẤT FILE CẤU HÌNH JSON');
+            toast('Đã tải xuống file cấu hình JSON');
           };
 
           const impInp = document.createElement('input');
@@ -1841,40 +2359,42 @@
                 const parsed = JSON.parse(String(reader.result));
                 if (typeof parsed !== 'object' || !parsed) throw new Error();
                 state.prefs = { ...defaultPrefs, ...parsed };
-                savePrefs(); applyTheme(); renderGroupChips(); render(); closeDlg();
-                toast('ĐÃ KHÔI PHỤC CÀI ĐẶT');
+                savePrefs();
+                applyAppearance();
+                closeDlg();
+                toast('Đã khôi phục toàn bộ cài đặt');
               } catch (err) {
-                toast('FILE JSON KHÔNG HỢP LỆ');
+                toast('File JSON không hợp lệ');
               }
             };
             reader.readAsText(file);
           };
 
           const impBtn = document.createElement('button');
-          impBtn.type = 'button'; impBtn.className = 'px-btn soft'; impBtn.style.cssText = 'width:100%;height:38px;margin-bottom:14px';
-          impBtn.textContent = '📥 NHẬP CÀI ĐẶT TỪ JSON';
+          impBtn.type = 'button'; impBtn.className = 'sheet-btn'; impBtn.style.width = '100%'; impBtn.style.marginBottom = '14px';
+          impBtn.textContent = isPx ? 'NHAP CAI DAT TU JSON' : '📥 Nhập cài đặt từ file JSON';
           impBtn.onclick = () => impInp.click();
 
           const rebBtn = document.createElement('button');
-          rebBtn.type = 'button'; rebBtn.className = 'px-btn danger'; rebBtn.style.cssText = 'width:100%;height:38px';
-          rebBtn.textContent = '🔄 KHỞI ĐỘNG LẠI ROUTER CR6608';
+          rebBtn.type = 'button'; rebBtn.className = 'sheet-btn danger'; rebBtn.style.width = '100%';
+          rebBtn.textContent = isPx ? 'KHOI DONG LAI ROUTER CR6608' : '🔄 Khởi động lại Router CR6608';
           rebBtn.onclick = () => {
-            openConfirm('XÁC NHẬN BƯỚC 1/2', 'Router sẽ ngắt mạng trong khoảng 1 phút. Tiếp tục?', () => {
+            openConfirm('Xác nhận bước 1/2', 'Router sẽ ngắt toàn bộ Wi-Fi và mạng trong khoảng 1 phút. Tiếp tục?', () => {
               setTimeout(() => {
-                openConfirm('XÁC NHẬN CUỐI CÙNG (2/2)', 'Bạn chắc chắn muốn KHỞI ĐỘNG LẠI router ngay bây giờ?', () => {
+                openConfirm('Xác nhận cuối cùng (2/2)', 'Bạn chắc chắn muốn KHỞI ĐỘNG LẠI router ngay bây giờ?', () => {
                   postAction({ action: 'reboot' });
                 });
               }, 120);
             });
           };
 
-          body.append(selBtn, expBtn, impInp, impBtn, rebBtn);
+          body.append(expBtn, impInp, impBtn, rebBtn);
         }
       });
     }
 
     /* ==========================================================================
-       30S AUTO-IDLE / AUTO-CLOSE CONTROLLER
+       10. 30S INACTIVITY AUTO-CLOSE / SLEEP
        ========================================================================== */
     function enterIdleState() {
       if (state.isIdle) return;
@@ -1882,8 +2402,6 @@
       if (state.timer) { clearTimeout(state.timer); state.timer = null; }
       closeDlg();
       if (state.selectMode) exitSelectMode();
-      $('sync-pill').className = 'live-pill';
-      $('sync-txt').textContent = 'IDLE';
       $('idle-screen').hidden = false;
       try { window.close(); } catch (e) {}
     }
@@ -1903,40 +2421,51 @@
     }
 
     /* ==========================================================================
-       INITIALIZATION
+       11. INITIALIZATION & EVENT LISTENERS
        ========================================================================== */
     (function init() {
-      applyTheme();
-      decodeBrandTitle();
-      renderGroupChips();
-      updateClock();
-      setInterval(updateClock, 15000);
+      applyAppearance();
+      typePixelSubtitle();
 
       matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
-        if (state.prefs.theme === 'auto') applyTheme();
+        if (state.prefs.theme === 'auto') applyAppearance();
       });
 
-      // Fixed: Theme cycle auto -> dark -> light (luci-theme-pixel behavior)
+      // Style cycle: pixel -> m3 -> glass
+      $('btn-style').onclick = () => {
+        vibrate();
+        const order = ['pixel', 'm3', 'glass'];
+        state.prefs.style = order[(order.indexOf(state.prefs.style) + 1) % order.length];
+        savePrefs();
+        applyAppearance();
+        typePixelSubtitle();
+      };
+
+      // Theme cycle: auto -> dark -> light
       $('btn-theme').onclick = () => {
         vibrate();
         const order = ['auto', 'dark', 'light'];
         state.prefs.theme = order[(order.indexOf(state.prefs.theme) + 1) % order.length];
         savePrefs();
-        applyTheme();
-        toast(`GIAO DIỆN: ${state.prefs.theme.toUpperCase()}`);
+        applyAppearance();
       };
 
-      // Fixed: Poll interval cycle 5s -> 10s -> 30s -> Manual
+      // Poll interval cycle: 5s -> 10s -> 30s -> manual
       $('btn-poll').onclick = () => {
         vibrate();
         const cycle = [5000, 10000, 30000, 0];
         const next = cycle[(cycle.indexOf(state.prefs.pollMs) + 1) % cycle.length];
         state.prefs.pollMs = next;
         savePrefs();
-        applyTheme();
+        applyAppearance();
         scheduleNextPoll();
-        toast(next === 0 ? 'CHẾ ĐỘ LÀM MỚI THỦ CÔNG' : `TỰ LÀM MỚI MỖI ${next / 1000}S`);
+        toast(next === 0 ? 'Chế độ làm mới thủ công' : `Tự làm mới mỗi ${next / 1000} giây`);
       };
+
+      $('btn-settings').onclick = () => { vibrate(); openSettingsModal(); };
+      $('btn-refresh').onclick = () => { vibrate(); toast('Đang cập nhật...'); fetchList(); };
+      $('btn-retry').onclick = fetchList;
+      $('fab-add').onclick = () => { vibrate(); openAddMac(); };
 
       $('btn-wake').onclick = wakeFromIdle;
       ['pointerdown', 'keydown', 'scroll', 'touchstart'].forEach(evt => {
@@ -1944,10 +2473,13 @@
       });
       resetIdleTimer();
 
-      $('btn-tools').onclick = () => { vibrate(); openToolsModal(); };
-      $('btn-refresh').onclick = () => { vibrate(); toast('ĐANG CẬP NHẬT...'); fetchList(); };
-      $('btn-retry').onclick = fetchList;
-      $('fab-add').onclick = () => { vibrate(); openAddMac(); };
+      $('sys-toggle').onclick = () => {
+        const p = $('sys-panel');
+        p.classList.toggle('collapsed');
+        const isCol = p.classList.contains('collapsed');
+        const lbl = isCol ? 'Chi tiết ▾' : 'Thu gọn ▴';
+        $('sys-summary').textContent = state.prefs.style === 'pixel' ? uiTxt(lbl).toUpperCase() : lbl;
+      };
 
       $('bulk-block').onclick = () => runBulkAction('block');
       $('bulk-unblock').onclick = () => runBulkAction('unblock');
@@ -1955,38 +2487,29 @@
       $('bulk-exit').onclick = exitSelectMode;
 
       let sTimer = null;
-      const searchInp = $('search');
-      const clearBtn = $('search-clear');
-      searchInp.oninput = e => {
-        clearBtn.style.display = e.target.value ? 'inline-flex' : 'none';
+      $('search').oninput = e => {
         clearTimeout(sTimer);
         sTimer = setTimeout(() => {
           state.query = e.target.value.trim().toLowerCase();
           render();
-        }, 100);
-      };
-      clearBtn.onclick = () => {
-        searchInp.value = '';
-        clearBtn.style.display = 'none';
-        state.query = '';
-        render();
+        }, 120);
       };
 
-      $('filter-row').onclick = e => {
-        const c = e.target.closest('.px-chip[data-f]');
+      $('filter-chips').onclick = e => {
+        const c = e.target.closest('.chip[data-f]');
         if (!c) return;
         vibrate();
-        $('filter-row').querySelectorAll('.px-chip[data-f]').forEach(x => x.classList.remove('active'));
+        $('filter-chips').querySelectorAll('.chip[data-f]').forEach(x => x.classList.remove('active'));
         c.classList.add('active');
         state.filter = c.dataset.f;
         render();
       };
 
-      $('sort-row').onclick = e => {
-        const c = e.target.closest('.px-chip[data-s]');
+      $('sort-chips').onclick = e => {
+        const c = e.target.closest('.chip[data-s]');
         if (!c) return;
         vibrate();
-        $('sort-row').querySelectorAll('.px-chip[data-s]').forEach(x => x.classList.remove('active'));
+        $('sort-chips').querySelectorAll('.chip[data-s]').forEach(x => x.classList.remove('active'));
         c.classList.add('active');
         state.sort = c.dataset.s;
         render();
@@ -1995,15 +2518,13 @@
       $('tab-clients').onclick = () => {
         if (state.tab === 'clients') return;
         vibrate(); state.tab = 'clients';
-        $('tab-clients').classList.add('active');
-        $('tab-blacklist').classList.remove('active');
+        $('tab-clients').classList.add('active'); $('tab-blacklist').classList.remove('active');
         render();
       };
       $('tab-blacklist').onclick = () => {
         if (state.tab === 'blacklist') return;
         vibrate(); state.tab = 'blacklist';
-        $('tab-blacklist').classList.add('active');
-        $('tab-clients').classList.remove('active');
+        $('tab-blacklist').classList.add('active'); $('tab-clients').classList.remove('active');
         render();
       };
 
