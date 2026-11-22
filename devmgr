@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="theme-color" content="#F3F5EC" id="meta-theme">
-  <title>CR6608 · PIXEL DEVMGR v5.1</title>
+  <title>CR6608 · PIXEL DEVMGR v5.2</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
@@ -471,6 +471,21 @@
       border: 2px solid var(--border); box-shadow: var(--px-shadow-sm);
       font-family: var(--font-px); font-size: 11.5px; font-weight: 800;
     }
+
+    /* Idle / Auto-Close Overlay after 30s inactivity */
+    .idle-screen {
+      position: fixed; inset: 0; z-index: 200;
+      background: var(--bg);
+      background-image: radial-gradient(var(--border-soft) 1px, transparent 1px);
+      background-size: 16px 16px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 20px; text-align: center; gap: 12px;
+    }
+    .idle-screen[hidden] { display: none; }
+    .idle-box {
+      background: var(--surf); border: 2px solid var(--border); box-shadow: var(--px-shadow);
+      padding: 22px 24px; max-width: 340px; width: 100%;
+    }
   </style>
 </head>
 <body>
@@ -617,13 +632,24 @@
 
   <div class="toast-box" id="toast-box"></div>
 
+  <!-- Auto-Close / Sleep Screen after 30s inactivity -->
+  <div class="idle-screen" id="idle-screen" hidden>
+    <div class="idle-box">
+      <div class="px-logo" style="margin:0 auto 10px auto">ZZ</div>
+      <div class="dlg-h">ĐÃ TẠM ĐÓNG PHIÊN (30S)</div>
+      <p class="dlg-p" style="margin-bottom:14px">Ngắt kết nối nền để tiết kiệm pin và tài nguyên Router CR6608.</p>
+      <button type="button" class="px-btn accent" id="btn-wake" style="width:100%;height:38px">↻ MỞ LẠI QUẢN LÝ</button>
+    </div>
+  </div>
+
   <script>
     /**
-     * Xiaomi CR6608 Device Manager v5.0 (Google Pixel + Retro Pixel Font Edition)
-     * Single-file Vanilla JS | Zero External Deps | Diff DOM | Full API Compatibility
+     * Xiaomi CR6608 Device Manager v5.2 (Clean + Auto-Idle 30s)
+     * Single-file Vanilla JS | Zero External Deps | Diff DOM
      */
     const DEMO_MODE = false;
     const API = '/cgi-bin/devmgr';
+    const IDLE_TIMEOUT_MS = 30000;
     const STORAGE_KEY = 'cr6608_px_v5_prefs';
     const KNOWN_KEY = 'cr6608_px_v5_known';
     const CACHE_KEY = 'cr6608_px_v5_cache';
@@ -671,7 +697,9 @@
       sessionNew: new Set(),
       firstOrder: new Map(),
       selectMode: false,
-      selected: new Set()
+      selected: new Set(),
+      isIdle: false,
+      idleTimer: null
     };
 
     const $ = id => document.getElementById(id);
@@ -888,7 +916,6 @@
           </div>
           <div class="c-foot">
             <div class="foot-l">
-              <button type="button" class="act-btn warn b-msg" title="Gửi thông báo tới trình duyệt máy này">📢 Báo</button>
               <button type="button" class="act-btn info b-qos">QoS</button>
               <button type="button" class="act-btn b-static">Gán IP</button>
               <button type="button" class="act-btn b-wol">WOL</button>
@@ -911,7 +938,6 @@
           spark: el.querySelector('.v-spark'),
           rx: el.querySelector('.v-rx'),
           tx: el.querySelector('.v-tx'),
-          msg: el.querySelector('.b-msg'),
           stat: el.querySelector('.b-static'),
           kick: el.querySelector('.b-kick'),
           bl: el.querySelector('.b-bl'),
@@ -931,7 +957,6 @@
             .then(ok => { if (!ok) e.target.checked = !e.target.checked; else fetchList(); });
         };
 
-        ref.msg.onclick = e => { e.stopPropagation(); vibrate(); openNotifyModal(el._d); };
         el.querySelector('.b-qos').onclick = e => { e.stopPropagation(); vibrate(); openQosModal(el._d); };
         ref.stat.onclick = e => {
           e.stopPropagation();
@@ -1038,9 +1063,6 @@
       if (c.rxStr !== rxStr) { ref.rx.textContent = rxStr; c.rxStr = rxStr; }
       const txStr = fmtSpeed(d.tx);
       if (c.txStr !== txStr) { ref.tx.textContent = txStr; c.txStr = txStr; }
-
-      const canMsg = Boolean(d.online && d.ip && !d.blacklisted);
-      if (c.canMsg !== canMsg) { ref.msg.style.display = canMsg ? 'inline-block' : 'none'; c.canMsg = canMsg; }
 
       const canStatic = Boolean(d.ip && !d.blacklisted);
       if (c.canStatic !== canStatic) { ref.stat.style.display = canStatic ? 'inline-block' : 'none'; c.canStatic = canStatic; }
@@ -1349,13 +1371,14 @@
 
     function scheduleNextPoll() {
       if (state.timer) { clearTimeout(state.timer); state.timer = null; }
-      if (document.visibilityState !== 'visible') return;
+      if (state.isIdle || document.visibilityState !== 'visible') return;
       if (state.prefs.pollMs === 0 && state.errors === 0) return;
       const wait = state.errors > 0 ? state.backoff : state.prefs.pollMs;
       if (wait > 0) state.timer = setTimeout(fetchList, wait);
     }
 
     async function fetchList() {
+      if (state.isIdle) return;
       if (state.timer) { clearTimeout(state.timer); state.timer = null; }
       const pill = $('sync-pill');
       pill.className = 'live-pill syncing';
@@ -1575,67 +1598,12 @@
             else state.prefs.pinned.unshift(d.mac);
             savePrefs(); render(); toast(isPinned ? 'ĐÃ BỎ GHIM' : 'ĐÃ GHIM LÊN ĐẦU');
           });
-          if (d.online && d.ip) mkBtn('📢 GỬI THÔNG BÁO', 'warn', () => openNotifyModal(d));
           mkBtn('✎ ĐỔI TÊN MÁY', 'soft', () => openRename(d));
           mkBtn('⏱ GIỚI HẠN QOS', 'soft', () => openQosModal(d));
           if (d.ip) mkBtn('🔒 GÁN IP CỐ ĐỊNH', 'soft', () => postAction({ action: 'static_lease', mac: d.mac, ip: d.ip }));
           mkBtn('⚡ WAKE-ON-LAN', 'soft', () => postAction({ action: 'wol', mac: d.mac }));
           if (d.online && d.band !== 'LAN') mkBtn('👢 KICK WI-FI', 'danger', () => postAction({ action: 'kick', mac: d.mac }).then(ok => ok && fetchList()));
           body.appendChild(actGrid);
-        }
-      });
-    }
-
-    function openNotifyModal(d) {
-      const prof = resolveProfile(d);
-      openModal({
-        title: '📢 GỬI THÔNG BÁO TỚI ĐT',
-        desc: `Chuyển hướng HTTP (port 80) của "${prof.name}" (${d.ip}) về trang thông báo trong 30s (không ngắt Internet):`,
-        okText: 'GỬI NGAY',
-        okClass: 'accent',
-        buildBody: body => {
-          const presets = [
-            '⏰ Đến giờ nghỉ ngơi rồi!',
-            '🍽️ Xuống ăn cơm thôi!',
-            '📶 Wi-Fi sắp bảo trì 5 phút',
-            '📞 Bố/Mẹ đang gọi điện thoại!'
-          ];
-          const pWrap = document.createElement('div');
-          pWrap.style.cssText = 'display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px';
-          presets.forEach(txt => {
-            const b = document.createElement('button');
-            b.type = 'button'; b.className = 'px-btn soft'; b.style.fontSize = '10px';
-            b.textContent = txt;
-            b.onclick = () => { inp.value = txt; };
-            pWrap.appendChild(b);
-          });
-
-          const inp = document.createElement('input');
-          inp.className = 'px-input'; inp.maxLength = 120; inp.id = 'inp-notify';
-          inp.placeholder = 'Nhập nội dung thông báo...';
-          inp.value = presets[0];
-
-          const hint = document.createElement('div');
-          hint.className = 'px-font';
-          hint.style.cssText = 'font-size:10.5px;color:var(--text-dim);margin-bottom:6px';
-          const noticeUrl = `http://${location.hostname || '192.168.2.1'}/notice.html`;
-          hint.textContent = `Lưu ý: Chỉ chuyển hướng cổng HTTP (80) để không mất mạng. Link xem: ${noticeUrl}`;
-
-          const copyBtn = document.createElement('button');
-          copyBtn.type = 'button';
-          copyBtn.className = 'px-btn soft';
-          copyBtn.style.cssText = 'font-size:10px;height:28px';
-          copyBtn.textContent = '📋 CHÉP LINK THÔNG BÁO';
-          copyBtn.onclick = () => copyText(noticeUrl, 'LINK');
-
-          body.append(pWrap, inp, hint, copyBtn);
-          setTimeout(() => inp.focus(), 50);
-        },
-        onOk: () => {
-          const msg = $('inp-notify').value.trim();
-          if (!msg) return toast('VUI LÒNG NHẬP NỘI DUNG');
-          const safeMac = /^([0-9A-F]{2}:){5}[0-9A-F]{2}$/i.test(d.mac || '') ? d.mac.toUpperCase() : '00:00:00:00:00:00';
-          postAction({ action: 'notify', mac: safeMac, ip: d.ip, message: msg });
         }
       });
     }
@@ -1818,6 +1786,35 @@
     }
 
     /* ==========================================================================
+       30S AUTO-IDLE / AUTO-CLOSE CONTROLLER
+       ========================================================================== */
+    function enterIdleState() {
+      if (state.isIdle) return;
+      state.isIdle = true;
+      if (state.timer) { clearTimeout(state.timer); state.timer = null; }
+      closeDlg();
+      if (state.selectMode) exitSelectMode();
+      $('sync-pill').className = 'live-pill';
+      $('sync-pill').textContent = 'IDLE';
+      $('idle-screen').hidden = false;
+      try { window.close(); } catch (e) {}
+    }
+
+    function resetIdleTimer() {
+      if (state.isIdle) return;
+      if (state.idleTimer) clearTimeout(state.idleTimer);
+      state.idleTimer = setTimeout(enterIdleState, IDLE_TIMEOUT_MS);
+    }
+
+    function wakeFromIdle() {
+      vibrate();
+      state.isIdle = false;
+      $('idle-screen').hidden = true;
+      resetIdleTimer();
+      fetchList();
+    }
+
+    /* ==========================================================================
        INITIALIZATION
        ========================================================================== */
     (function init() {
@@ -1826,40 +1823,11 @@
       updateClock();
       setInterval(updateClock, 15000);
 
-      if (!DEMO_MODE) {
-        try {
-          const cached = JSON.parse(localStorage.getItem(CACHE_KEY) || 'null');
-          if (cached && Array.isArray(cached.devices)) {
-            state.sys = cached.sys || null;
-            state.devices = cached.devices;
-            processIncomingDevices(state.devices);
-            render();
-          }
-        } catch (e) {}
-      }
-
-      matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
-        if (state.prefs.theme === 'auto') applyTheme();
+      $('btn-wake').onclick = wakeFromIdle;
+      ['pointerdown', 'keydown', 'scroll', 'touchstart'].forEach(evt => {
+        document.addEventListener(evt, resetIdleTimer, { passive: true });
       });
-
-      $('btn-theme').onclick = () => {
-        vibrate();
-        const curDark = document.documentElement.dataset.theme === 'dark';
-        state.prefs.theme = curDark ? 'light' : 'dark';
-        savePrefs();
-        applyTheme();
-      };
-
-      $('btn-poll').onclick = () => {
-        vibrate();
-        const cycle = [5000, 10000, 30000, 0];
-        const next = cycle[(cycle.indexOf(state.prefs.pollMs) + 1) % cycle.length];
-        state.prefs.pollMs = next;
-        savePrefs();
-        applyTheme();
-        scheduleNextPoll();
-        toast(next === 0 ? 'CHẾ ĐỘ LÀM MỚI THỦ CÔNG' : `TỰ LÀM MỚI MỖI ${next / 1000} GIÂY`);
-      };
+      resetIdleTimer();
 
       $('btn-tools').onclick = () => { vibrate(); openToolsModal(); };
       $('btn-refresh').onclick = () => { vibrate(); toast('ĐANG CẬP NHẬT...'); fetchList(); };
@@ -1925,8 +1893,11 @@
       };
 
       document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'visible') fetchList();
-        else if (state.timer) { clearTimeout(state.timer); state.timer = null; }
+        if (document.visibilityState === 'visible') {
+          if (!state.isIdle) { resetIdleTimer(); fetchList(); }
+        } else {
+          if (state.timer) { clearTimeout(state.timer); state.timer = null; }
+        }
       });
 
       fetchList();
