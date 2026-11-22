@@ -3,87 +3,127 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="theme-color" content="#F3F5EC" id="meta-theme">
-  <title>CR6608 · PIXEL DEVMGR v5.2</title>
+  <meta name="theme-color" content="#0D0E0D" id="meta-theme">
+  <title>CR6608 · PIXEL DEVMGR</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
     /* ==========================================================================
-       GOOGLE PIXEL + RETRO PIXEL FONT DESIGN SYSTEM (ZERO EXTERNAL DEPS)
+       TRENDORIN / LUCI-THEME-PIXEL MONOCHROME DESIGN SYSTEM
+       - Near-black & light-grey monochrome screen palette
+       - Red reserved strictly for errors & destructive actions
+       - Notched pixel frames, dotted rules, CRT scanlines, stepped motion
        ========================================================================== */
     :root {
-      /* Crisp geometric pixel-style font stack using built-in OS fonts */
       --font-px: ui-monospace, "Cascadia Mono", "Consolas", "Courier New", monospace;
       --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 
-      /* Google Pixel Sage / Material You Dynamic Palette (Light) */
-      --bg: #F3F5EC;
-      --surf: #FFFFFF;
-      --surf-2: #E8ECE0;
-      --surf-3: #DCE2D1;
-      --text: #141812;
-      --text-dim: #4E5649;
-      --border: #141812;
-      --border-soft: #B8C2AE;
+      /* Light Monochrome Screen Palette */
+      --bg: #E6E7E5;
+      --surf: #F3F4F2;
+      --surf-2: #DCDEDB;
+      --surf-3: #CECFCC;
+      --text: #121312;
+      --text-dim: #4E504E;
+      --border: #121312;
+      --border-soft: #8D908D;
 
-      --accent: #2E6B27;
-      --accent-fg: #FFFFFF;
-      --accent-soft: #C8F0BE;
-      --accent-soft-fg: #0A2106;
+      --accent: #121312;
+      --accent-fg: #F3F4F2;
+      --accent-soft: #D3D5D2;
+      --accent-soft-fg: #121312;
 
-      --warn: #B25E00;
-      --warn-soft: #FFE0B5;
-      --danger: #BA1A1A;
-      --danger-soft: #FFDAD6;
-      --info: #005AC1;
-      --info-soft: #D8E2FF;
+      /* Red strictly for errors and destructive buttons */
+      --danger: #C62828;
+      --danger-fg: #FFFFFF;
+      --danger-soft: #F4D6D6;
 
-      --px-shadow: 3px 3px 0px #141812;
-      --px-shadow-sm: 2px 2px 0px #141812;
+      --scanline: rgba(18, 19, 18, 0.035);
+      --px-shadow: 3px 3px 0px #121312;
+      --px-shadow-sm: 2px 2px 0px #121312;
+
+      /* Notched 4px pixel corner clip-path */
+      --notch: polygon(
+        0 4px, 4px 4px, 4px 0,
+        calc(100% - 4px) 0, calc(100% - 4px) 4px, 100% 4px,
+        100% calc(100% - 4px), calc(100% - 4px) calc(100% - 4px), calc(100% - 4px) 100%,
+        4px 100%, 4px calc(100% - 4px), 0 calc(100% - 4px)
+      );
     }
 
     [data-theme="dark"] {
-      /* Google Pixel Dark OLED + Phosphor Sage */
-      --bg: #10130E;
-      --surf: #181D15;
-      --surf-2: #22291E;
-      --surf-3: #2C3527;
-      --text: #E5ECE0;
-      --text-dim: #9DA896;
-      --border: #8FA184;
-      --border-soft: #3B4635;
+      /* Dark Monochrome Phosphor Screen Palette */
+      --bg: #0C0D0C;
+      --surf: #151615;
+      --surf-2: #1E201E;
+      --surf-3: #282B28;
+      --text: #E5E7E4;
+      --text-dim: #8E918D;
+      --border: #C4C7C3;
+      --border-soft: #434643;
 
-      --accent: #8CD97E;
-      --accent-fg: #072104;
-      --accent-soft: #1B4216;
-      --accent-soft-fg: #C8F0BE;
+      --accent: #E5E7E4;
+      --accent-fg: #0C0D0C;
+      --accent-soft: #2A2D2A;
+      --accent-soft-fg: #E5E7E4;
 
-      --warn: #FFB95C;
-      --warn-soft: #4A2800;
-      --danger: #FFB4AB;
-      --danger-soft: #690005;
-      --info: #ADC6FF;
-      --info-soft: #00306C;
+      --danger: #E53935;
+      --danger-fg: #FFFFFF;
+      --danger-soft: #3B1616;
 
+      --scanline: rgba(255, 255, 255, 0.03);
       --px-shadow: 3px 3px 0px #000000;
       --px-shadow-sm: 2px 2px 0px #000000;
     }
 
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+      body::after { display: none !important; }
+    }
+
+    @keyframes crtFlicker {
+      0% { opacity: 0.35; }
+      50% { opacity: 0.85; }
+      100% { opacity: 1; }
+    }
+
+    @keyframes blinkCursor {
+      0%, 49% { opacity: 1; }
+      50%, 100% { opacity: 0; }
+    }
+
+    @keyframes walkBlock {
+      0% { transform: translateX(0); }
+      33% { transform: translateX(6px); }
+      66% { transform: translateX(12px); }
+      100% { transform: translateX(0); }
     }
 
     body {
       font-family: var(--font-ui);
       background-color: var(--bg);
-      /* Subtle Pixel Dot Matrix Background */
-      background-image: radial-gradient(var(--border-soft) 1px, transparent 1px);
-      background-size: 16px 16px;
       color: var(--text);
       line-height: 1.4;
       font-size: 14px;
-      padding-bottom: calc(82px + env(safe-area-inset-bottom));
+      padding-bottom: calc(80px + env(safe-area-inset-bottom));
       min-height: 100vh;
+      animation: crtFlicker 0.18s steps(3) 1;
+    }
+
+    /* Subtle CRT Scanlines Overlay */
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 999;
+      background: repeating-linear-gradient(
+        to bottom,
+        transparent 0px,
+        transparent 2px,
+        var(--scanline) 2px,
+        var(--scanline) 4px
+      );
     }
 
     .px-font {
@@ -98,8 +138,23 @@
       padding: 0 12px;
     }
 
+    /* Notched Pixel Frame Utility */
+    .px-frame {
+      background: var(--surf);
+      border: 2px solid var(--border);
+      box-shadow: var(--px-shadow);
+      position: relative;
+    }
+    .px-frame::before {
+      content: "";
+      position: absolute;
+      inset: 2px;
+      border: 1px dotted var(--border-soft);
+      pointer-events: none;
+    }
+
     /* ==========================================================================
-       1. PIXEL TOP APP BAR
+       1. MONOCHROME PIXEL TOP BAR
        ========================================================================== */
     .top-bar {
       position: sticky; top: 0; z-index: 40;
@@ -113,34 +168,50 @@
     .px-logo {
       width: 30px; height: 30px; background: var(--accent); color: var(--accent-fg);
       border: 2px solid var(--border); box-shadow: var(--px-shadow-sm);
+      clip-path: var(--notch);
       display: flex; align-items: center; justify-content: center;
-      font-family: var(--font-px); font-weight: 900; font-size: 14px; flex-shrink: 0;
+      font-family: var(--font-px); font-weight: 900; font-size: 13px; flex-shrink: 0;
     }
     .brand-title {
       font-family: var(--font-px); font-size: 15px; font-weight: 900;
-      text-transform: uppercase; letter-spacing: 0.02em; white-space: nowrap;
+      text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap;
+    }
+    .cursor-blk {
+      display: inline-block; width: 7px; height: 13px; background: var(--text);
+      margin-left: 2px; vertical-align: middle;
+      animation: blinkCursor 1s steps(1) infinite;
     }
     .live-pill {
-      font-family: var(--font-px); font-size: 10px; font-weight: 800;
+      font-family: var(--font-px); font-size: 10px; font-weight: 900;
       padding: 2px 6px; border: 1.5px solid var(--border);
-      background: var(--accent-soft); color: var(--accent-soft-fg);
+      background: var(--surf); color: var(--text);
       text-transform: uppercase; white-space: nowrap;
+      display: inline-flex; align-items: center; gap: 5px;
     }
-    .live-pill.syncing { background: var(--info-soft); color: var(--info); }
-    .live-pill.err { background: var(--danger-soft); color: var(--danger); }
+    .walker {
+      display: none; width: 18px; height: 8px; border: 1px solid var(--border);
+      position: relative; background: var(--surf-2);
+    }
+    .walker i {
+      position: absolute; left: 0; top: 0; width: 4px; height: 6px;
+      background: var(--text); font-style: normal;
+      animation: walkBlock 0.6s steps(3) infinite;
+    }
+    .live-pill.syncing .walker { display: inline-block; }
+    .live-pill.err { background: var(--danger); color: var(--danger-fg); border-color: var(--danger); }
 
-    .top-btns { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+    .top-btns { display: flex; align-items: center; gap: 5px; flex-shrink: 0; }
     .px-btn {
-      height: 32px; padding: 0 9px;
+      height: 32px; padding: 0 8px;
       background: var(--surf); color: var(--text);
       border: 2px solid var(--border); box-shadow: var(--px-shadow-sm);
-      font-family: var(--font-px); font-size: 11px; font-weight: 800;
+      font-family: var(--font-px); font-size: 10.5px; font-weight: 900;
       cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 4px;
       text-transform: uppercase;
     }
     .px-btn:active { transform: translate(2px, 2px); box-shadow: none; }
     .px-btn.accent { background: var(--accent); color: var(--accent-fg); }
-    .px-btn.danger { background: var(--danger); color: #FFF; }
+    .px-btn.danger { background: var(--danger); color: var(--danger-fg); border-color: var(--danger); }
     .px-btn.soft { background: var(--surf-2); }
 
     /* Error Banner */
@@ -149,24 +220,21 @@
       border: 2px solid var(--danger); box-shadow: var(--px-shadow-sm);
       padding: 8px 10px; margin-bottom: 12px;
       display: none; justify-content: space-between; align-items: center; gap: 8px;
-      font-family: var(--font-px); font-size: 11.5px; font-weight: 700;
+      font-family: var(--font-px); font-size: 11px; font-weight: 900;
     }
 
     /* ==========================================================================
-       2. PIXEL AT-A-GLANCE WIDGET (GOOGLE PIXEL STYLE + TELEMETRY)
+       2. MONOCHROME STATUS SCREEN & SEGMENTED PROGRESS BARS
        ========================================================================== */
     .pixel-widget {
-      background: var(--surf);
-      border: 2px solid var(--border);
-      box-shadow: var(--px-shadow);
       padding: 12px;
       margin-bottom: 12px;
       display: flex; flex-direction: column; gap: 10px;
     }
     .widget-head {
       display: flex; justify-content: space-between; align-items: center;
-      font-family: var(--font-px); font-size: 11px; font-weight: 800; color: var(--text-dim);
-      text-transform: uppercase;
+      font-family: var(--font-px); font-size: 10.5px; font-weight: 900; color: var(--text-dim);
+      text-transform: uppercase; border-bottom: 1.5px dotted var(--border-soft); padding-bottom: 6px;
     }
     .kpi-row {
       display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
@@ -175,75 +243,79 @@
       background: var(--surf-2); border: 1.5px solid var(--border);
       padding: 7px 8px; display: flex; flex-direction: column; gap: 2px;
     }
-    .kpi-k { font-family: var(--font-px); font-size: 10px; font-weight: 700; color: var(--text-dim); text-transform: uppercase; }
-    .kpi-v { font-family: var(--font-px); font-size: 13.5px; font-weight: 900; }
-    .kpi-v.rx { color: var(--info); }
-    .kpi-v.tx { color: var(--accent); }
+    .kpi-k { font-family: var(--font-px); font-size: 9.5px; font-weight: 800; color: var(--text-dim); text-transform: uppercase; }
+    .kpi-v { font-family: var(--font-px); font-size: 13.5px; font-weight: 900; color: var(--text); }
 
-    /* Hardware System Health Bars */
+    /* Segmented Pixel Progress Meters (luci-theme-pixel signature) */
     .sys-strip {
       display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px;
-      padding-top: 8px; border-top: 1.5px dashed var(--border-soft);
+      padding-top: 8px; border-top: 1.5px dotted var(--border-soft);
       font-family: var(--font-px); font-size: 11px;
     }
     .sys-box { display: flex; flex-direction: column; gap: 2px; }
-    .sys-lbl { font-size: 9.5px; color: var(--text-dim); font-weight: 700; }
+    .sys-lbl { font-size: 9.5px; color: var(--text-dim); font-weight: 800; }
     .sys-val { font-weight: 900; }
     .px-meter {
-      height: 6px; background: var(--surf-3); border: 1px solid var(--border);
-      margin-top: 2px; overflow: hidden;
+      height: 8px; background: var(--surf-2); border: 1.5px solid var(--border);
+      margin-top: 2px; position: relative; overflow: hidden;
     }
-    .px-meter > i { display: block; height: 100%; background: var(--accent); font-style: normal; }
+    .px-meter > i {
+      display: block; height: 100%; font-style: normal;
+      background: repeating-linear-gradient(
+        to right,
+        var(--text) 0px,
+        var(--text) 4px,
+        transparent 4px,
+        transparent 6px
+      );
+    }
 
     /* Top 3 Consumers */
     .top3-strip {
       display: flex; align-items: center; gap: 6px; overflow-x: auto; scrollbar-width: none;
-      padding-top: 8px; border-top: 1.5px dashed var(--border-soft);
+      padding-top: 8px; border-top: 1.5px dotted var(--border-soft);
     }
     .top3-strip::-webkit-scrollbar { display: none; }
     .top3-chip {
       background: var(--surf-2); border: 1.5px solid var(--border);
-      padding: 3px 8px; font-family: var(--font-px); font-size: 11px;
+      padding: 3px 8px; font-family: var(--font-px); font-size: 10.5px;
       display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; cursor: pointer;
       color: var(--text);
     }
     .top3-chip b { max-width: 85px; overflow: hidden; text-overflow: ellipsis; }
-    .top3-chip span { color: var(--info); font-weight: 900; }
+    .top3-chip span { font-weight: 900; text-decoration: underline; }
 
     /* ==========================================================================
-       3. PIXEL SEARCH, FILTER & SORT BAR
+       3. SEARCH, FILTER & SORT BAR
        ========================================================================== */
     .controls { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
     .search-box {
       display: flex; align-items: center; background: var(--surf);
       border: 2px solid var(--border); box-shadow: var(--px-shadow-sm);
-      height: 40px; padding: 0 10px; gap: 8px;
+      height: 38px; padding: 0 10px; gap: 8px;
     }
     .search-box input {
       border: none; background: transparent; outline: none; width: 100%;
-      color: var(--text); font-family: var(--font-px); font-size: 12.5px; font-weight: 700;
+      color: var(--text); font-family: var(--font-px); font-size: 12px; font-weight: 800;
     }
     .chip-scroll {
-      display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; align-items: center; padding-bottom: 2px;
+      display: flex; gap: 5px; overflow-x: auto; scrollbar-width: none; align-items: center; padding-bottom: 2px;
     }
     .chip-scroll::-webkit-scrollbar { display: none; }
     .px-chip {
-      height: 28px; padding: 0 9px;
+      height: 27px; padding: 0 8px;
       background: var(--surf); color: var(--text-dim);
       border: 1.5px solid var(--border);
-      font-family: var(--font-px); font-size: 11px; font-weight: 800;
+      font-family: var(--font-px); font-size: 10.5px; font-weight: 800;
       white-space: nowrap; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;
     }
     .px-chip.active {
-      background: var(--accent-soft); color: var(--accent-soft-fg);
+      background: var(--accent); color: var(--accent-fg);
       box-shadow: var(--px-shadow-sm);
-    }
-    .px-chip.sort.active {
-      background: var(--info-soft); color: var(--info);
     }
 
     /* ==========================================================================
-       4. DEVICE CARDS (PIXEL BLOCK GRID + TACTILE CONTROLS)
+       4. DEVICE CARDS (MONOCHROME NOTCHED FRAMES + DOTTED DIVIDERS)
        ========================================================================== */
     .grid {
       display: grid; grid-template-columns: 1fr; gap: 10px;
@@ -255,12 +327,12 @@
       border: 2px solid var(--border);
       box-shadow: var(--px-shadow);
       padding: 11px 12px;
-      display: flex; flex-direction: column; gap: 9px;
+      display: flex; flex-direction: column; gap: 8px;
       contain: content; cursor: pointer; user-select: none; position: relative;
     }
-    .card.offline { opacity: 0.72; background: var(--surf-2); box-shadow: none; }
-    .card.pinned { border-top: 5px solid var(--accent); }
-    .card.selected { background: var(--accent-soft); }
+    .card.offline { opacity: 0.65; background: var(--surf-2); box-shadow: none; border-style: dashed; }
+    .card.pinned { border-top: 5px solid var(--text); }
+    .card.selected { background: var(--accent-soft); outline: 2px solid var(--text); }
 
     .c-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
     .c-left { display: flex; align-items: center; gap: 9px; min-width: 0; flex: 1; }
@@ -274,15 +346,17 @@
     .card.selected .sel-box { background: var(--accent); color: var(--accent-fg); }
 
     .ico-tile {
-      width: 40px; height: 40px;
+      width: 38px; height: 38px;
       background: var(--surf-2); border: 2px solid var(--border); box-shadow: var(--px-shadow-sm);
-      font-size: 20px; display: flex; align-items: center; justify-content: center;
+      clip-path: var(--notch);
+      font-size: 19px; display: flex; align-items: center; justify-content: center;
       cursor: pointer; flex-shrink: 0; position: relative;
+      filter: grayscale(100%) contrast(1.15);
     }
     .ico-tile:active { transform: translate(2px, 2px); box-shadow: none; }
     .pin-flag {
-      position: absolute; top: -6px; left: -6px; font-size: 11px;
-      background: var(--accent); color: var(--accent-fg); border: 1.5px solid var(--border);
+      position: absolute; top: -5px; left: -5px; font-size: 10px;
+      background: var(--accent); color: var(--accent-fg); border: 1px solid var(--border);
       padding: 0 3px; display: none;
     }
     .card.pinned .pin-flag { display: block; }
@@ -290,95 +364,94 @@
     .c-info { display: flex; flex-direction: column; min-width: 0; flex: 1; }
     .c-name-row { display: flex; align-items: center; gap: 4px; }
     .c-name {
-      font-size: 14.5px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      font-family: var(--font-px); font-size: 13.5px; font-weight: 900;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
     .btn-pen {
       border: none; background: transparent; color: var(--text-dim);
       font-family: var(--font-px); font-size: 13px; padding: 2px 4px; cursor: pointer;
     }
     .c-meta {
-      font-family: var(--font-px); font-size: 11px; color: var(--text-dim);
+      font-family: var(--font-px); font-size: 10.5px; color: var(--text-dim);
       display: flex; align-items: center; gap: 5px;
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
 
-    /* Pixel Block Switch */
+    /* Pixel Block Switch (Red only when Blocked) */
     .sw-wrap { display: flex; flex-direction: column; align-items: center; gap: 2px; flex-shrink: 0; }
-    .px-sw { position: relative; display: inline-block; width: 44px; height: 24px; }
+    .px-sw { position: relative; display: inline-block; width: 44px; height: 22px; }
     .px-sw input { opacity: 0; width: 0; height: 0; }
     .px-track {
-      position: absolute; inset: 0; background: var(--surf-3);
+      position: absolute; inset: 0; background: var(--surf-2);
       border: 2px solid var(--border); cursor: pointer;
     }
     .px-track::before {
-      content: ""; position: absolute; width: 14px; height: 14px; left: 3px; top: 3px;
-      background: var(--text-dim); border: 1.5px solid var(--border);
-      transition: transform 0.12s steps(2);
+      content: ""; position: absolute; width: 12px; height: 12px; left: 3px; top: 3px;
+      background: var(--text); border: 1px solid var(--border);
+      transition: transform 0.1s steps(2);
     }
-    .px-sw input:checked + .px-track { background: var(--danger); }
+    .px-sw input:checked + .px-track { background: var(--danger); border-color: var(--danger); }
     .px-sw input:checked + .px-track::before {
-      transform: translateX(20px); background: #FFFFFF;
+      transform: translateX(22px); background: #FFFFFF; border-color: #121312;
     }
-    .sw-txt { font-family: var(--font-px); font-size: 9px; font-weight: 900; color: var(--text-dim); }
+    .sw-txt { font-family: var(--font-px); font-size: 8.5px; font-weight: 900; color: var(--text-dim); }
 
-    /* Tags */
+    /* Monochrome Zone Badges */
     .tags { display: flex; gap: 4px; flex-wrap: wrap; }
     .tag {
-      font-family: var(--font-px); font-size: 10px; font-weight: 800;
+      font-family: var(--font-px); font-size: 9.5px; font-weight: 900;
       padding: 1px 6px; border: 1.5px solid var(--border);
       background: var(--surf-2); color: var(--text); text-transform: uppercase;
     }
-    .tag.grp { background: var(--info-soft); color: var(--info); }
-    .tag.qos { background: var(--warn-soft); color: var(--warn); }
-    .tag.blk { background: var(--danger-soft); color: var(--danger); }
-    .tag.new { background: var(--accent); color: var(--accent-fg); }
+    .tag.inv { background: var(--accent); color: var(--accent-fg); }
+    .tag.blk { background: var(--danger); color: var(--danger-fg); border-color: var(--danger); }
 
-    /* Pixel RSSI Bars */
-    .rssi { display: inline-flex; align-items: flex-end; gap: 2px; height: 11px; }
+    /* Monochrome RSSI Pixel Bars */
+    .rssi { display: inline-flex; align-items: flex-end; gap: 2px; height: 10px; }
     .rssi i { width: 3px; background: var(--border-soft); font-style: normal; }
     .rssi i:nth-child(1) { height: 25%; } .rssi i:nth-child(2) { height: 50%; }
     .rssi i:nth-child(3) { height: 75%; } .rssi i:nth-child(4) { height: 100%; }
     .rssi[data-l="1"] i:nth-child(1) { background: var(--danger); }
-    .rssi[data-l="2"] i:nth-child(-n+2) { background: var(--warn); }
-    .rssi[data-l="3"] i:nth-child(-n+3), .rssi[data-l="4"] i { background: var(--accent); }
+    .rssi[data-l="2"] i:nth-child(-n+2),
+    .rssi[data-l="3"] i:nth-child(-n+3),
+    .rssi[data-l="4"] i { background: var(--text); }
 
-    /* Telemetry Strip (IP/MAC + Speed + Pixel Sparkline) */
+    /* Dotted Telemetry Strip */
     .net-box {
-      background: var(--surf-2); border: 1.5px solid var(--border);
+      background: var(--surf-2); border: 1.5px dotted var(--border);
       padding: 6px 8px; display: flex; justify-content: space-between; align-items: center; gap: 8px;
     }
-    .addrs { display: flex; flex-direction: column; gap: 2px; font-family: var(--font-px); font-size: 11px; min-width: 0; }
+    .addrs { display: flex; flex-direction: column; gap: 2px; font-family: var(--font-px); font-size: 10.5px; min-width: 0; }
     .cp-btn {
       border: none; background: transparent; padding: 0; text-align: left;
       color: var(--text); font-family: inherit; font-size: inherit; cursor: pointer;
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
-    .cp-btn span { color: var(--text-dim); font-size: 10px; }
+    .cp-btn span { color: var(--text-dim); font-size: 9.5px; }
 
     .spd-box { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-    .spd-nums { display: flex; flex-direction: column; align-items: flex-end; font-family: var(--font-px); font-size: 11px; font-weight: 900; }
-    .spd-d { color: var(--info); }
-    .spd-u { color: var(--accent); }
-    .spark { width: 54px; height: 22px; display: block; }
-    .spark polyline { fill: none; stroke: var(--accent); stroke-width: 2; shape-rendering: crispEdges; }
+    .spd-nums { display: flex; flex-direction: column; align-items: flex-end; font-family: var(--font-px); font-size: 10.5px; font-weight: 900; }
+    .spark { width: 54px; height: 22px; display: block; border-left: 1px dotted var(--border-soft); padding-left: 4px; }
+    .spark polyline { fill: none; stroke: var(--text); stroke-width: 2; shape-rendering: crispEdges; }
 
     /* Card Action Row */
-    .c-foot { display: flex; justify-content: space-between; align-items: center; gap: 6px; }
+    .c-foot {
+      display: flex; justify-content: space-between; align-items: center; gap: 6px;
+      padding-top: 6px; border-top: 1.5px dotted var(--border-soft);
+    }
     .foot-l { display: flex; gap: 5px; flex-wrap: wrap; }
     .act-btn {
-      height: 27px; padding: 0 7px;
+      height: 26px; padding: 0 7px;
       background: var(--surf); color: var(--text);
       border: 1.5px solid var(--border); box-shadow: var(--px-shadow-sm);
-      font-family: var(--font-px); font-size: 10.5px; font-weight: 800; cursor: pointer;
+      font-family: var(--font-px); font-size: 10px; font-weight: 900; cursor: pointer;
       text-transform: uppercase;
     }
     .act-btn:active { transform: translate(1px, 1px); box-shadow: none; }
-    .act-btn.info { background: var(--info-soft); color: var(--info); }
-    .act-btn.warn { background: var(--warn-soft); color: var(--warn); }
-    .act-btn.danger { background: var(--danger-soft); color: var(--danger); }
+    .act-btn.danger { background: var(--danger); color: var(--danger-fg); border-color: var(--danger); }
 
     /* ==========================================================================
-       5. BULK BAR, PIXEL FAB & BOTTOM NAVIGATION
+       5. BULK BAR, FAB & MONOCHROME TABS
        ========================================================================== */
     .bulk-bar {
       position: fixed; bottom: calc(68px + env(safe-area-inset-bottom)); left: 12px; right: 12px;
@@ -390,11 +463,12 @@
     .bulk-bar.show { display: flex; }
 
     .fab-px {
-      position: fixed; right: 16px; bottom: calc(72px + env(safe-area-inset-bottom));
-      height: 44px; padding: 0 14px;
+      position: fixed; right: 16px; bottom: calc(70px + env(safe-area-inset-bottom));
+      height: 42px; padding: 0 13px;
       background: var(--accent); color: var(--accent-fg);
       border: 2px solid var(--border); box-shadow: var(--px-shadow);
-      font-family: var(--font-px); font-size: 12px; font-weight: 900;
+      clip-path: var(--notch);
+      font-family: var(--font-px); font-size: 11.5px; font-weight: 900;
       cursor: pointer; z-index: 35; display: flex; align-items: center; gap: 6px;
       text-transform: uppercase;
     }
@@ -402,27 +476,27 @@
 
     .bottom-nav {
       position: fixed; bottom: 0; left: 0; right: 0;
-      height: calc(58px + env(safe-area-inset-bottom));
+      height: calc(56px + env(safe-area-inset-bottom));
       padding-bottom: env(safe-area-inset-bottom);
       background: var(--surf); border-top: 2px solid var(--border);
       display: flex; z-index: 40;
     }
     .nav-item {
       flex: 1; border: none; background: transparent; color: var(--text-dim);
-      font-family: var(--font-px); font-size: 12px; font-weight: 800;
+      font-family: var(--font-px); font-size: 11.5px; font-weight: 900;
       cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;
       text-transform: uppercase;
     }
     .nav-item + .nav-item { border-left: 2px solid var(--border); }
     .nav-item.active {
-      background: var(--accent-soft); color: var(--accent-soft-fg); font-weight: 900;
+      background: var(--accent); color: var(--accent-fg);
     }
 
     /* ==========================================================================
-       6. PIXEL MODALS & BOTTOM SHEET
+       6. MODALS & BOTTOM SHEET
        ========================================================================== */
     .scrim {
-      position: fixed; inset: 0; background: rgba(0, 0, 0, 0.55);
+      position: fixed; inset: 0; background: rgba(0, 0, 0, 0.62);
       display: flex; align-items: center; justify-content: center; padding: 14px; z-index: 100;
     }
     .scrim.sheet { align-items: flex-end; padding: 0; }
@@ -436,50 +510,52 @@
       max-width: 680px; border-bottom: none; box-shadow: 0 -4px 0 var(--border);
       padding-bottom: calc(22px + env(safe-area-inset-bottom));
     }
-    .dlg-h { font-family: var(--font-px); font-size: 15px; font-weight: 900; margin-bottom: 4px; text-transform: uppercase; }
-    .dlg-p { font-size: 12.5px; color: var(--text-dim); margin-bottom: 12px; }
+    .dlg-h {
+      font-family: var(--font-px); font-size: 14px; font-weight: 900;
+      margin-bottom: 4px; text-transform: uppercase;
+      border-bottom: 1.5px dotted var(--border-soft); padding-bottom: 6px;
+    }
+    .dlg-p { font-family: var(--font-px); font-size: 11.5px; color: var(--text-dim); margin: 8px 0 12px 0; }
     .px-input, select.px-input {
       width: 100%; height: 38px; padding: 0 10px;
       border: 2px solid var(--border); background: var(--surf-2); color: var(--text);
-      font-family: var(--font-px); font-size: 13px; font-weight: 700; margin-bottom: 10px; outline: none;
+      font-family: var(--font-px); font-size: 12.5px; font-weight: 800; margin-bottom: 10px; outline: none;
     }
-    .px-lbl { font-family: var(--font-px); font-size: 11px; font-weight: 800; color: var(--text-dim); margin-bottom: 4px; display: block; text-transform: uppercase; }
+    .px-lbl { font-family: var(--font-px); font-size: 10.5px; font-weight: 900; color: var(--text-dim); margin-bottom: 4px; display: block; text-transform: uppercase; }
     .dlg-foot { display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; }
 
     .kv-box {
       display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
-      background: var(--surf-2); border: 1.5px solid var(--border);
+      background: var(--surf-2); border: 1.5px dotted var(--border);
       padding: 10px; margin-bottom: 12px;
     }
-    .kv-k { font-family: var(--font-px); font-size: 10px; color: var(--text-dim); font-weight: 700; text-transform: uppercase; }
-    .kv-v { font-family: var(--font-px); font-size: 12px; font-weight: 900; word-break: break-all; }
+    .kv-k { font-family: var(--font-px); font-size: 9.5px; color: var(--text-dim); font-weight: 800; text-transform: uppercase; }
+    .kv-v { font-family: var(--font-px); font-size: 11.5px; font-weight: 900; word-break: break-all; }
 
     .sheet-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
     .icon-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; max-height: 200px; overflow-y: auto; margin-bottom: 10px; }
     .icon-opt {
       height: 40px; border: 1.5px solid var(--border); background: var(--surf-2);
-      font-size: 18px; cursor: pointer;
+      font-size: 18px; cursor: pointer; filter: grayscale(100%);
     }
-    .icon-opt.sel { background: var(--accent-soft); border-width: 2.5px; }
+    .icon-opt.sel { background: var(--accent); border-width: 2.5px; }
 
     .toast-box {
       position: fixed; bottom: calc(70px + env(safe-area-inset-bottom)); left: 12px; right: 12px;
       display: flex; flex-direction: column; align-items: center; gap: 6px; z-index: 120; pointer-events: none;
     }
     .toast {
-      padding: 8px 14px; background: var(--text); color: var(--bg);
+      padding: 8px 14px; background: var(--accent); color: var(--accent-fg);
       border: 2px solid var(--border); box-shadow: var(--px-shadow-sm);
-      font-family: var(--font-px); font-size: 11.5px; font-weight: 800;
+      font-family: var(--font-px); font-size: 11px; font-weight: 900; text-transform: uppercase;
     }
 
-    /* Idle / Auto-Close Overlay after 30s inactivity */
+    /* 30s Auto-Idle / Sleep Screen */
     .idle-screen {
       position: fixed; inset: 0; z-index: 200;
       background: var(--bg);
-      background-image: radial-gradient(var(--border-soft) 1px, transparent 1px);
-      background-size: 16px 16px;
       display: flex; flex-direction: column; align-items: center; justify-content: center;
-      padding: 20px; text-align: center; gap: 12px;
+      padding: 20px; text-align: center;
     }
     .idle-screen[hidden] { display: none; }
     .idle-box {
@@ -491,16 +567,19 @@
 <body>
 
   <div class="container">
-    <!-- 1. PIXEL TOP BAR -->
+    <!-- 1. MONOCHROME PIXEL TOP BAR -->
     <header class="top-bar">
       <div class="brand">
         <div class="px-logo">PX</div>
-        <span class="brand-title">CR6608</span>
-        <span class="live-pill" id="sync-pill">ONLINE</span>
+        <span class="brand-title"><span id="brand-txt">CR6608</span><span class="cursor-blk"></span></span>
+        <span class="live-pill" id="sync-pill">
+          <span class="walker"><i></i></span>
+          <span id="sync-txt">ONLINE</span>
+        </span>
       </div>
       <div class="top-btns">
         <button type="button" class="px-btn" id="btn-poll" title="Chu kỳ làm mới">⏱ 5S</button>
-        <button type="button" class="px-btn" id="btn-theme" title="Sáng / Tối">🌓</button>
+        <button type="button" class="px-btn" id="btn-theme" title="Chế độ màn hình: Auto / Dark / Light">AUTO</button>
         <button type="button" class="px-btn" id="btn-tools" title="Công cụ & Cài đặt">⚙️</button>
         <button type="button" class="px-btn accent" id="btn-refresh" title="Làm mới">↻</button>
       </div>
@@ -508,24 +587,24 @@
 
     <div class="err-banner" id="err-banner">
       <span id="err-msg">MẤT KẾT NỐI ROUTER CR6608</span>
-      <button type="button" class="px-btn" id="btn-retry">THỬ LẠI</button>
+      <button type="button" class="px-btn danger" id="btn-retry">THỬ LẠI</button>
     </div>
 
-    <!-- 2. PIXEL AT-A-GLANCE WIDGET -->
-    <section class="pixel-widget">
+    <!-- 2. MONOCHROME STATUS WIDGET -->
+    <section class="px-frame pixel-widget">
       <div class="widget-head">
-        <span>📡 NETWORK TELEMETRY</span>
+        <span>[ SYSTEM &amp; NETWORK TELEMETRY ]</span>
         <span id="clock-txt">--:--</span>
       </div>
 
       <div class="kpi-row">
         <div class="kpi-cell">
-          <span class="kpi-k">↓ DOWNLOAD</span>
-          <span class="kpi-v rx" id="tot-rx">0 B/s</span>
+          <span class="kpi-k">↓ RX RATE</span>
+          <span class="kpi-v" id="tot-rx">0 B/s</span>
         </div>
         <div class="kpi-cell">
-          <span class="kpi-k">↑ UPLOAD</span>
-          <span class="kpi-v tx" id="tot-tx">0 B/s</span>
+          <span class="kpi-k">↑ TX RATE</span>
+          <span class="kpi-v" id="tot-tx">0 B/s</span>
         </div>
         <div class="kpi-cell">
           <span class="kpi-k">CLIENTS</span>
@@ -533,7 +612,7 @@
         </div>
       </div>
 
-      <!-- Hardware Telemetry (Auto-hidden if backend omits "sys") -->
+      <!-- Segmented Pixel Progress Meters (Auto-hidden if backend omits "sys") -->
       <div class="sys-strip" id="sys-strip" style="display:none">
         <div class="sys-box">
           <span class="sys-lbl">CPU LOAD</span>
@@ -557,7 +636,7 @@
 
       <!-- Top 3 Bandwidth Consumers -->
       <div class="top3-strip" id="top3-strip" style="display:none">
-        <span class="px-font" style="font-size:10px;font-weight:900;color:var(--text-dim);white-space:nowrap">🔥 TOP 3:</span>
+        <span class="px-font" style="font-size:10px;font-weight:900;color:var(--text-dim);white-space:nowrap">TOP 3 &gt;</span>
         <div id="top3-list" style="display:flex;gap:6px"></div>
       </div>
     </section>
@@ -577,22 +656,22 @@
         <button type="button" class="px-chip" data-f="lan">LAN</button>
         <button type="button" class="px-chip" data-f="blocked">ĐANG CHẶN</button>
         <button type="button" class="px-chip" data-f="weak">SÓNG YẾU</button>
-        <div id="group-chips" style="display:inline-flex;gap:6px"></div>
+        <div id="group-chips" style="display:inline-flex;gap:5px"></div>
       </div>
 
       <div class="chip-scroll" id="sort-row">
-        <span class="px-font" style="font-size:10.5px;font-weight:800;color:var(--text-dim)">SORT:</span>
+        <span class="px-font" style="font-size:10px;font-weight:900;color:var(--text-dim)">SORT:</span>
         <button type="button" class="px-chip sort active" data-s="default">MẶC ĐỊNH</button>
-        <button type="button" class="px-chip sort" data-s="speed">⚡ TỐC ĐỘ</button>
-        <button type="button" class="px-chip sort" data-s="name">🔤 TÊN A-Z</button>
-        <button type="button" class="px-chip sort" data-s="newest">🆕 MỚI NHẤT</button>
+        <button type="button" class="px-chip sort" data-s="speed">TỐC ĐỘ</button>
+        <button type="button" class="px-chip sort" data-s="name">TÊN A-Z</button>
+        <button type="button" class="px-chip sort" data-s="newest">MỚI NHẤT</button>
       </div>
     </section>
 
     <!-- 4. DEVICE GRID -->
     <main>
       <div class="grid" id="list"></div>
-      <div id="empty" class="px-font" style="display:none;text-align:center;padding:42px 12px;color:var(--text-dim);font-weight:700">
+      <div id="empty" class="px-font" style="display:none;text-align:center;padding:42px 12px;color:var(--text-dim);font-weight:800">
         [ KHÔNG CÓ THIẾT BỊ NÀO PHÙ HỢP ]
       </div>
     </main>
@@ -600,7 +679,7 @@
 
   <!-- Multi-Select Action Bar -->
   <div class="bulk-bar" id="bulk-bar">
-    <span class="px-font" style="font-size:12px;font-weight:900" id="bulk-cnt">CHỌN: 0</span>
+    <span class="px-font" style="font-size:11.5px;font-weight:900" id="bulk-cnt">CHỌN: 0</span>
     <div style="display:flex;gap:6px">
       <button type="button" class="px-btn danger" id="bulk-block">CHẶN</button>
       <button type="button" class="px-btn" id="bulk-unblock">BỎ CHẶN</button>
@@ -611,10 +690,10 @@
 
   <button type="button" class="fab-px" id="fab-add">+ CHẶN MAC</button>
 
-  <!-- Bottom Pixel Tabs -->
+  <!-- Bottom Monochrome Pixel Tabs -->
   <nav class="bottom-nav">
-    <button type="button" class="nav-item active" id="tab-clients">📱 KẾT NỐI (<span id="cnt-cli">0</span>)</button>
-    <button type="button" class="nav-item" id="tab-blacklist">🚫 BLACKLIST (<span id="cnt-blk">0</span>)</button>
+    <button type="button" class="nav-item active" id="tab-clients">KẾT NỐI (<span id="cnt-cli">0</span>)</button>
+    <button type="button" class="nav-item" id="tab-blacklist">BLACKLIST (<span id="cnt-blk">0</span>)</button>
   </nav>
 
   <!-- Dialog / Bottom Sheet -->
@@ -636,7 +715,7 @@
   <div class="idle-screen" id="idle-screen" hidden>
     <div class="idle-box">
       <div class="px-logo" style="margin:0 auto 10px auto">ZZ</div>
-      <div class="dlg-h">ĐÃ TẠM ĐÓNG PHIÊN (30S)</div>
+      <div class="dlg-h" style="border:none">ĐÃ TẠM ĐÓNG PHIÊN (30S)</div>
       <p class="dlg-p" style="margin-bottom:14px">Ngắt kết nối nền để tiết kiệm pin và tài nguyên Router CR6608.</p>
       <button type="button" class="px-btn accent" id="btn-wake" style="width:100%;height:38px">↻ MỞ LẠI QUẢN LÝ</button>
     </div>
@@ -644,7 +723,7 @@
 
   <script>
     /**
-     * Xiaomi CR6608 Device Manager v5.2 (Clean + Auto-Idle 30s)
+     * Xiaomi CR6608 Device Manager v5.3 (Trendorin/luci-theme-pixel Edition)
      * Single-file Vanilla JS | Zero External Deps | Diff DOM
      */
     const DEMO_MODE = false;
@@ -671,13 +750,13 @@
     const speedHistory = new Map();
 
     const defaultPrefs = {
-      theme: 'auto',
+      theme: 'auto', // auto -> dark -> light (matches luci-theme-pixel)
       pollMs: 5000,
       icons: {},
       pinned: [],
       groups: {},
       customGroups: [],
-      notes: {} // Extra feature: Local device notes per MAC
+      notes: {}
     };
 
     const state = {
@@ -709,7 +788,7 @@
       try {
         const raw = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
         return {
-          theme: raw.theme || 'auto',
+          theme: ['auto', 'dark', 'light'].includes(raw.theme) ? raw.theme : 'auto',
           pollMs: typeof raw.pollMs === 'number' ? raw.pollMs : 5000,
           icons: raw.icons || {},
           pinned: Array.isArray(raw.pinned) ? raw.pinned : [],
@@ -730,9 +809,27 @@
       const sysDark = matchMedia('(prefers-color-scheme: dark)').matches;
       const active = state.prefs.theme === 'auto' ? (sysDark ? 'dark' : 'light') : state.prefs.theme;
       document.documentElement.dataset.theme = active;
-      $('meta-theme').content = active === 'dark' ? '#10130E' : '#F3F5EC';
+      $('meta-theme').content = active === 'dark' ? '#0C0D0C' : '#E6E7E5';
+      $('btn-theme').textContent = state.prefs.theme.toUpperCase();
       const pSec = state.prefs.pollMs === 0 ? 'TAY' : (state.prefs.pollMs / 1000) + 'S';
       $('btn-poll').textContent = `⏱ ${pSec}`;
+    }
+
+    function decodeBrandTitle() {
+      const target = 'CR6608';
+      const chars = '0123456789ABCDEF#%';
+      const el = $('brand-txt');
+      let step = 0;
+      const iv = setInterval(() => {
+        step++;
+        el.textContent = target.split('').map((ch, idx) =>
+          step > idx + 2 ? ch : chars[Math.floor(Math.random() * chars.length)]
+        ).join('');
+        if (step > target.length + 3) {
+          el.textContent = target;
+          clearInterval(iv);
+        }
+      }, 45);
     }
 
     function updateClock() {
@@ -787,10 +884,10 @@
     function fmtLastSeen(unixSec) {
       if (!unixSec || unixSec <= 0) return '';
       const diff = Math.max(1, Math.floor(Date.now() / 1000) - unixSec);
-      if (diff < 60) return 'Thấy vừa xong';
-      if (diff < 3600) return `Thấy ${Math.floor(diff / 60)}p trước`;
-      if (diff < 86400) return `Thấy ${Math.floor(diff / 3600)}h trước`;
-      return `Thấy ${Math.floor(diff / 86400)}d trước`;
+      if (diff < 60) return 'VỪA XONG';
+      if (diff < 3600) return `${Math.floor(diff / 60)}P TRƯỚC`;
+      if (diff < 86400) return `${Math.floor(diff / 3600)}H TRƯỚC`;
+      return `${Math.floor(diff / 86400)}D TRƯỚC`;
     }
 
     function fmtQos(kbps) {
@@ -841,7 +938,7 @@
       const arr = speedHistory.get(mac);
       if (!arr || arr.length < 2) return '';
       const max = Math.max(1024, ...arr);
-      const w = 54, h = 20;
+      const w = 50, h = 20;
       const step = w / (arr.length - 1);
       return arr.map((v, i) => `${(i * step).toFixed(1)},${(h - (v / max) * (h - 2) - 1).toFixed(1)}`).join(' ');
     }
@@ -854,7 +951,7 @@
     }
 
     /* ==========================================================================
-       DOM DIFFING ENGINE
+       DOM DIFFING ENGINE (WOL REMOVED)
        ========================================================================== */
     function syncCard(container, d) {
       const mac = d.mac;
@@ -908,17 +1005,16 @@
             </div>
             <div class="spd-box">
               <div class="spd-nums">
-                <span class="spd-d">↓ <span class="v-rx"></span></span>
-                <span class="spd-u">↑ <span class="v-tx"></span></span>
+                <span>↓ <span class="v-rx"></span></span>
+                <span>↑ <span class="v-tx"></span></span>
               </div>
               <svg class="spark" viewBox="0 0 54 22"><polyline class="v-spark" points=""></polyline></svg>
             </div>
           </div>
           <div class="c-foot">
             <div class="foot-l">
-              <button type="button" class="act-btn info b-qos">QoS</button>
+              <button type="button" class="act-btn b-qos">QoS</button>
               <button type="button" class="act-btn b-static">Gán IP</button>
-              <button type="button" class="act-btn b-wol">WOL</button>
               <button type="button" class="act-btn b-kick">Kick</button>
             </div>
             <button type="button" class="act-btn danger b-bl">Blacklist</button>
@@ -962,21 +1058,14 @@
           e.stopPropagation();
           const cur = el._d;
           if (!cur.ip) return;
-          openConfirm('Cố định IP', `Khóa cứng IP ${cur.ip} cho "${resolveProfile(cur).name}"?`, () =>
+          openConfirm('CỐ ĐỊNH IP', `Khóa cứng IP ${cur.ip} cho "${resolveProfile(cur).name}"?`, () =>
             postAction({ action: 'static_lease', mac: cur.mac, ip: cur.ip })
-          );
-        };
-        el.querySelector('.b-wol').onclick = e => {
-          e.stopPropagation();
-          const cur = el._d;
-          openConfirm('Wake-on-LAN', `Gửi gói Magic Packet tới [${cur.mac}]?`, () =>
-            postAction({ action: 'wol', mac: cur.mac })
           );
         };
         ref.kick.onclick = e => {
           e.stopPropagation();
           const cur = el._d;
-          openConfirm('Kick khỏi Wi-Fi', `Ngắt kết nối ngay của "${resolveProfile(cur).name}"?`, () =>
+          openConfirm('KICK KHỎI WI-FI', `Ngắt kết nối ngay của "${resolveProfile(cur).name}"?`, () =>
             postAction({ action: 'kick', mac: cur.mac }).then(ok => ok && fetchList())
           );
         };
@@ -984,7 +1073,7 @@
           e.stopPropagation();
           const cur = el._d;
           const isBl = Boolean(cur.blacklisted);
-          openConfirm(isBl ? 'Bỏ Blacklist' : 'Thêm Blacklist', `${isBl ? 'Cho phép' : 'Cấm vĩnh viễn'} "${resolveProfile(cur).name}"?`, () =>
+          openConfirm(isBl ? 'BỎ BLACKLIST' : 'THÊM BLACKLIST', `${isBl ? 'Cho phép' : 'Cấm vĩnh viễn'} "${resolveProfile(cur).name}"?`, () =>
             postAction({ action: isBl ? 'blacklist_remove' : 'blacklist_add', mac: cur.mac }).then(ok => ok && fetchList())
           );
         };
@@ -1038,13 +1127,13 @@
       const tagKey = `${isNew}|${prof.rand}|${d.band}|${grp}|${d.blocked}|${qosTxt}|${note}`;
       if (c.tagKey !== tagKey) {
         ref.tags.textContent = '';
-        if (isNew) ref.tags.appendChild(makeTag('MỚI', 'new'));
+        if (isNew) ref.tags.appendChild(makeTag('MỚI', 'inv'));
         if (d.band) ref.tags.appendChild(makeTag(d.band, ''));
-        if (grp) ref.tags.appendChild(makeTag(grp, 'grp'));
+        if (grp) ref.tags.appendChild(makeTag(grp, ''));
         if (prof.rand) ref.tags.appendChild(makeTag('MAC RIÊNG TƯ', ''));
-        if (qosTxt) ref.tags.appendChild(makeTag(`MAX ${qosTxt}`, 'qos'));
+        if (qosTxt) ref.tags.appendChild(makeTag(`MAX ${qosTxt}`, ''));
         if (d.blocked) ref.tags.appendChild(makeTag('ĐANG CHẶN', 'blk'));
-        if (note) ref.tags.appendChild(makeTag(`📝 ${note}`, ''));
+        if (note) ref.tags.appendChild(makeTag(`NOTE: ${note}`, ''));
         ref.tags.style.display = ref.tags.children.length ? 'flex' : 'none';
         c.tagKey = tagKey;
       }
@@ -1382,7 +1471,7 @@
       if (state.timer) { clearTimeout(state.timer); state.timer = null; }
       const pill = $('sync-pill');
       pill.className = 'live-pill syncing';
-      pill.textContent = 'SYNC...';
+      $('sync-txt').textContent = 'SYNC';
 
       if (DEMO_MODE) {
         if (!state.devices.length) {
@@ -1404,7 +1493,7 @@
         }
         processIncomingDevices(state.devices);
         pill.className = 'live-pill';
-        pill.textContent = 'DEMO';
+        $('sync-txt').textContent = 'DEMO';
         $('err-banner').style.display = 'none';
         render();
         scheduleNextPoll();
@@ -1428,7 +1517,7 @@
         state.errors = 0;
         state.backoff = 5000;
         pill.className = 'live-pill';
-        pill.textContent = 'ONLINE';
+        $('sync-txt').textContent = 'ONLINE';
         $('err-banner').style.display = 'none';
         render();
       } catch (e) {
@@ -1436,7 +1525,7 @@
         state.errors++;
         state.backoff = state.errors === 1 ? 5000 : state.errors === 2 ? 10000 : 30000;
         pill.className = 'live-pill err';
-        pill.textContent = 'OFFLINE';
+        $('sync-txt').textContent = 'OFFLINE';
         $('err-msg').textContent = `MẤT KẾT NỐI ROUTER (THỬ LẠI SAU ${state.backoff / 1000}S)`;
         $('err-banner').style.display = 'flex';
       } finally {
@@ -1445,7 +1534,7 @@
     }
 
     /* ==========================================================================
-       MODALS & PIXEL BOTTOM SHEET
+       MODALS & BOTTOM SHEET (WOL REMOVED)
        ========================================================================== */
     let dlgCb = null;
 
@@ -1583,7 +1672,7 @@
           nRow.append(nInp, nBtn);
           body.append(nLbl, nRow);
 
-          // Quick Actions Grid
+          // Quick Actions Grid (WOL removed)
           const actGrid = document.createElement('div');
           actGrid.className = 'sheet-actions';
           const mkBtn = (txt, cls, fn) => {
@@ -1601,7 +1690,6 @@
           mkBtn('✎ ĐỔI TÊN MÁY', 'soft', () => openRename(d));
           mkBtn('⏱ GIỚI HẠN QOS', 'soft', () => openQosModal(d));
           if (d.ip) mkBtn('🔒 GÁN IP CỐ ĐỊNH', 'soft', () => postAction({ action: 'static_lease', mac: d.mac, ip: d.ip }));
-          mkBtn('⚡ WAKE-ON-LAN', 'soft', () => postAction({ action: 'wol', mac: d.mac }));
           if (d.online && d.band !== 'LAN') mkBtn('👢 KICK WI-FI', 'danger', () => postAction({ action: 'kick', mac: d.mac }).then(ok => ok && fetchList()));
           body.appendChild(actGrid);
         }
@@ -1736,7 +1824,7 @@
             const blob = new Blob([JSON.stringify(state.prefs, null, 2)], { type: 'application/json' });
             const a = document.createElement('a');
             a.href = URL.createObjectURL(blob);
-            a.download = `cr6608-pixel-v5-${new Date().toISOString().slice(0,10)}.json`;
+            a.download = `cr6608-pixel-${new Date().toISOString().slice(0,10)}.json`;
             a.click();
             URL.revokeObjectURL(a.href);
             toast('ĐÃ XUẤT FILE CẤU HÌNH JSON');
@@ -1795,7 +1883,7 @@
       closeDlg();
       if (state.selectMode) exitSelectMode();
       $('sync-pill').className = 'live-pill';
-      $('sync-pill').textContent = 'IDLE';
+      $('sync-txt').textContent = 'IDLE';
       $('idle-screen').hidden = false;
       try { window.close(); } catch (e) {}
     }
@@ -1819,9 +1907,36 @@
        ========================================================================== */
     (function init() {
       applyTheme();
+      decodeBrandTitle();
       renderGroupChips();
       updateClock();
       setInterval(updateClock, 15000);
+
+      matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+        if (state.prefs.theme === 'auto') applyTheme();
+      });
+
+      // Fixed: Theme cycle auto -> dark -> light (luci-theme-pixel behavior)
+      $('btn-theme').onclick = () => {
+        vibrate();
+        const order = ['auto', 'dark', 'light'];
+        state.prefs.theme = order[(order.indexOf(state.prefs.theme) + 1) % order.length];
+        savePrefs();
+        applyTheme();
+        toast(`GIAO DIỆN: ${state.prefs.theme.toUpperCase()}`);
+      };
+
+      // Fixed: Poll interval cycle 5s -> 10s -> 30s -> Manual
+      $('btn-poll').onclick = () => {
+        vibrate();
+        const cycle = [5000, 10000, 30000, 0];
+        const next = cycle[(cycle.indexOf(state.prefs.pollMs) + 1) % cycle.length];
+        state.prefs.pollMs = next;
+        savePrefs();
+        applyTheme();
+        scheduleNextPoll();
+        toast(next === 0 ? 'CHẾ ĐỘ LÀM MỚI THỦ CÔNG' : `TỰ LÀM MỚI MỖI ${next / 1000}S`);
+      };
 
       $('btn-wake').onclick = wakeFromIdle;
       ['pointerdown', 'keydown', 'scroll', 'touchstart'].forEach(evt => {
